@@ -45,6 +45,7 @@ export default function App() {
         <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
         <Route path="/projects/:id/sast" element={<ProtectedRoute><SASTResults /></ProtectedRoute>} />
         <Route path="/projects/:id/dast" element={<ProtectedRoute><DASTResults /></ProtectedRoute>} />
+        <Route path="/projects/:id/iac" element={<ProtectedRoute><IaCSecurity /></ProtectedRoute>} />
         <Route path="/cicd" element={<ProtectedRoute><CICDPipeline /></ProtectedRoute>} />
         <Route path="/dependencies" element={<ProtectedRoute><Dependencies /></ProtectedRoute>} />
         <Route path="/iac" element={<ProtectedRoute><IaCSecurity /></ProtectedRoute>} />

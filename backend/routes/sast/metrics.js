@@ -16,12 +16,26 @@ async function fetchSonarMetrics(projectId) {
     "ncloc",
   ].join(",");
 
+  // First verify the project key actually exists in SonarQube for this projectId.
+  // This prevents returning stale metrics from a different project's last scan.
+  try {
+    await axios.get(
+      `${sonarHost}/api/projects/search?projects=${encodeURIComponent(projectKey)}`,
+      sonarAuthAxiosConfig()
+    );
+  } catch (e) {
+    return null;
+  }
+
   const res = await axios.get(
     `${sonarHost}/api/measures/component?component=${encodeURIComponent(projectKey)}&metricKeys=${metricKeys}`,
     sonarAuthAxiosConfig()
   );
 
-  const measures = res.data?.component?.measures || [];
+  // If SonarQube returns no component (project key doesn't exist), return null
+  if (!res.data?.component) return null;
+
+  const measures = res.data.component.measures || [];
   const byMetric = Object.fromEntries(measures.map((m) => [m.metric, m.value]));
   return {
     bugs: Number(byMetric.bugs || 0),

@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const crypto = require("crypto");
 const pool = require("../db");
 const auth = require("../middleware/auth");
 
@@ -190,9 +191,48 @@ router.post("/", auth, async (req, res) => {
       });
     }
 
+    // Generate Webhook Secret
+    const webhookSecret = crypto.randomBytes(16).toString("hex");
+    let webhookId = null;
+
+    // Attempt to register webhook with GitHub
+    if (isUsableGithubToken(githubToken)) {
+      try {
+        const parsed = parseGithubUrl(repoUrl);
+        const webhookUrl = process.env.PUBLIC_URL 
+          ? `${process.env.PUBLIC_URL}/api/webhooks/github` 
+          : "http://localhost:3000/api/webhooks/github"; // Fallback for local testing
+          
+        const hookRes = await axios.post(
+          `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/hooks`,
+          {
+            name: "web",
+            active: true,
+            events: ["push"],
+            config: {
+              url: webhookUrl,
+              content_type: "json",
+              secret: webhookSecret,
+              insecure_ssl: "0"
+            }
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${githubToken.trim()}`,
+              Accept: "application/vnd.github.v3+json"
+            }
+          }
+        );
+        webhookId = hookRes.data.id.toString();
+      } catch (err) {
+        console.warn("[projects] Failed to register GitHub webhook:", err.response?.data?.message || err.message);
+        // We continue anyway so local testing with test scripts still works.
+      }
+    }
+
     const insert = await pool.query(
-      "INSERT INTO projects (user_id, name, repo_url, language, framework, database_tech, github_token, is_private) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
-      [req.user.id, name, repoUrl, language, framework, databaseTech, isUsableGithubToken(githubToken) ? githubToken.trim() : null, isPrivateRepo]
+      "INSERT INTO projects (user_id, name, repo_url, language, framework, database_tech, github_token, is_private, webhook_id, webhook_secret) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *",
+      [req.user.id, name, repoUrl, language, framework, databaseTech, isUsableGithubToken(githubToken) ? githubToken.trim() : null, isPrivateRepo, webhookId, webhookSecret]
     );
 
     return res.status(201).json({
@@ -214,7 +254,7 @@ router.post("/", auth, async (req, res) => {
 router.get("/", auth, async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT id, name, repo_url, language, framework, database_tech, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC",
+      "SELECT id, name, repo_url, language, framework, database_tech, target_url, webhook_secret, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC",
       [req.user.id]
     );
     const projects = await Promise.all(
@@ -255,6 +295,21 @@ router.get("/:id/scans", auth, async (req, res) => {
   }
 });
 
+router.get("/:id/pipelines", auth, async (req, res) => {
+  try {
+    const exists = await pool.query("SELECT id FROM projects WHERE id = $1 AND user_id = $2", [req.params.id, req.user.id]);
+    if (!exists.rows.length) return res.status(404).json({ error: "Project not found" });
+
+    const pipelines = await pool.query(
+      "SELECT * FROM pipeline_executions WHERE project_id = $1 ORDER BY started_at DESC LIMIT 20",
+      [req.params.id]
+    );
+    return res.json({ pipelines: pipelines.rows });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to fetch pipeline history" });
+  }
+});
+
 router.delete("/:id", auth, async (req, res) => {
   const projectId = Number.parseInt(String(req.params.id ?? "").trim(), 10);
   if (!Number.isInteger(projectId) || projectId < 1) {
@@ -276,6 +331,11 @@ router.delete("/:id", auth, async (req, res) => {
     await client.query("DELETE FROM dependency_scans WHERE project_id = $1", [projectId]);
     await client.query("DELETE FROM scan_results WHERE project_id = $1", [projectId]);
     await client.query("DELETE FROM scan_history WHERE project_id = $1", [projectId]);
+    await client.query("DELETE FROM iac_findings WHERE project_id = $1", [projectId]);
+    await client.query("DELETE FROM iac_scans WHERE project_id = $1", [projectId]);
+    await client.query("DELETE FROM dast_findings WHERE project_id = $1", [projectId]);
+    await client.query("DELETE FROM dast_scans WHERE project_id = $1", [projectId]);
+    await client.query("DELETE FROM pipeline_executions WHERE project_id = $1", [projectId]);
     const deleted = await client.query(
       "DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING id",
       [projectId, req.user.id]

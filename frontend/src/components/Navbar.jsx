@@ -8,7 +8,7 @@ const titles = {
   "/projects": "Projects",
   "/cicd": "CI/CD",
   "/dependencies": "Dependencies",
-  "/iac": "IaC",
+  "/iac": "IaC Security",
   "/cloud": "Cloud",
   "/kubernetes": "Kubernetes",
   "/compliance": "Compliance",
@@ -26,9 +26,11 @@ export default function Navbar() {
     ? "SAST Results"
     : pathname.includes("/dast")
       ? "DAST Results"
-      : pathname.match(/^\/projects\/\w+/)
-        ? "Project Details"
-        : null;
+      : pathname.includes("/iac")
+        ? "IaC Results"
+        : pathname.match(/^\/projects\/\w+/)
+          ? "Project Details"
+          : null;
 
   const links = [
     ["/dashboard", "Dashboard"],

@@ -7,32 +7,36 @@ import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
 import api from "../utils/api";
 
-const fallback = [
-  { severity: "CRITICAL", rule: "javascript:S2068", message: "Hardcoded password detected", file_path: "src/config/database.js", line_number: 12, status: "OPEN" },
-  { severity: "CRITICAL", rule: "javascript:S3649", message: "SQL Injection vulnerability", file_path: "src/routes/users.js", line_number: 45, status: "OPEN" },
-  { severity: "MAJOR", rule: "javascript:S5122", message: "CORS policy allows all origins", file_path: "src/server.js", line_number: 8, status: "OPEN" },
-];
+
 
 export default function SASTResults() {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [scanLoading, setScanLoading] = useState(false);
   const [data, setData] = useState({ summary: {}, vulnerabilities: [], sonarMetrics: null });
+  const [fetchError, setFetchError] = useState(null);
   const [search, setSearch] = useState("");
   const [severityTab, setSeverityTab] = useState("ALL");
   const [expanded, setExpanded] = useState(null);
 
   const load = async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const res = await api.get(`/sast/${id}`);
       setData(res.data);
-    } catch {
-      setData({
-        summary: { critical: 2, major: 3, minor: 2, info: 0, total: 7 },
-        vulnerabilities: fallback,
-        sonarMetrics: null,
+    } catch (err) {
+      const status = err.response?.status;
+      const serverMsg = err.response?.data?.error || err.response?.data?.message;
+      const message = serverMsg || err.message || "Unknown error";
+      console.error("[SASTResults] load() failed:", {
+        url: `/sast/${id}`,
+        status,
+        message,
+        axiosResponse: err.response,
+        fullError: err,
       });
+      setFetchError({ error: true, status, message });
     } finally {
       setLoading(false);
     }
@@ -138,6 +142,25 @@ export default function SASTResults() {
     ];
   }, [data.sonarMetrics]);
 
+  if (fetchError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="SAST Scan Results" subtitle="Error loading results" />
+        <div className="card p-6 border border-red-600/60 bg-red-950/20">
+          <p className="text-red-400 font-semibold text-lg mb-1">Failed to load scan results</p>
+          {fetchError.status && (
+            <p className="text-red-300 text-sm mb-1">
+              HTTP Status: <span className="font-mono">{fetchError.status}</span>
+            </p>
+          )}
+          <p className="text-red-300 text-sm font-mono break-all">{fetchError.message}</p>
+          <p className="text-[#64748b] text-xs mt-3">Check the browser DevTools Console and Network tab for the full error details.</p>
+          <button className="primary-btn mt-4" onClick={load}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -230,13 +253,45 @@ export default function SASTResults() {
                 </tr>
                 {expanded === i ? (
                   <tr className="border-b border-[#1e2d4a]">
-                    <td colSpan={7} className="p-4 bg-[#0a0e1a]">
-                      <p className="font-semibold mb-2">What is this vulnerability?</p>
-                      <p className="text-sm text-[#94a3b8] mb-3">This issue indicates insecure coding patterns that can be exploited by attackers.</p>
-                      <p className="font-semibold mb-2">How to fix it</p>
-                      <div className="grid md:grid-cols-2 gap-2 text-xs">
-                        <pre className="bg-[#111827] border border-[#1e2d4a] rounded p-2 overflow-auto">{`// Bad code example\nconst query = "SELECT * FROM users WHERE id=" + id;`}</pre>
-                        <pre className="bg-[#111827] border border-[#1e2d4a] rounded p-2 overflow-auto">{`// Good code example\nconst query = "SELECT * FROM users WHERE id = $1";`}</pre>
+                    <td colSpan={7} className="p-4 bg-[#0a0e1a] space-y-3">
+                      <div>
+                        <p className="text-xs text-[#64748b] uppercase tracking-wide mb-1">Finding Description</p>
+                        <p className="text-sm text-[#e2e8f0]">{v.message}</p>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-3 text-xs">
+                        <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
+                          <p className="text-[#64748b] mb-1">Rule ID</p>
+                          <p className="font-mono text-blue-400">{v.rule || "—"}</p>
+                        </div>
+                        <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
+                          <p className="text-[#64748b] mb-1">File</p>
+                          <p className="font-mono text-[#e2e8f0] break-all">{v.file_path || "—"}</p>
+                        </div>
+                        <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
+                          <p className="text-[#64748b] mb-1">Line Number</p>
+                          <p className="font-mono text-[#e2e8f0]">{v.line_number ?? "—"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className={`px-2 py-1 rounded font-semibold ${
+                          (v.severity || "").toUpperCase() === "CRITICAL" ? "bg-red-900/60 text-red-300" :
+                          (v.severity || "").toUpperCase() === "MAJOR" ? "bg-orange-900/60 text-orange-300" :
+                          (v.severity || "").toUpperCase() === "MINOR" ? "bg-yellow-900/60 text-yellow-300" :
+                          "bg-slate-700 text-slate-300"
+                        }`}>
+                          {v.severity || "INFO"}
+                        </span>
+                        <span className="text-[#64748b]">Status: <span className="text-[#e2e8f0]">{v.status || "OPEN"}</span></span>
+                        {v.rule && (
+                          <a
+                            href={`https://rules.sonarsource.com/${(v.rule || "").split(":")[0]?.toLowerCase()}/RSPEC-${(v.rule || "").match(/S(\d+)/)?.[1]}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="ml-auto text-blue-400 hover:text-blue-300 underline"
+                          >
+                            View SonarQube Rule Docs ↗
+                          </a>
+                        )}
                       </div>
                     </td>
                   </tr>

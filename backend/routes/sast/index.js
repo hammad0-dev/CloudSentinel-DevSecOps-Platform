@@ -187,7 +187,22 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       sonarAuthAxiosConfig()
     );
 
-    const issues = Array.isArray(sonarRes.data?.issues) ? sonarRes.data.issues : [];
+    const allIssues = Array.isArray(sonarRes.data?.issues) ? sonarRes.data.issues : [];
+
+    // Strict filter: only keep issues that belong to THIS project's SonarQube key.
+    // This prevents cross-project contamination when SonarQube reuses component keys
+    // across scans of different projects with the same repository.
+    const issues = allIssues.filter((issue) => {
+      const component = issue.component || issue.project || "";
+      return component.startsWith(projectKey);
+    });
+
+    if (allIssues.length !== issues.length) {
+      console.warn(
+        `[SAST project=${pid}] Filtered out ${allIssues.length - issues.length} issue(s) belonging to a different SonarQube project key (expected prefix: "${projectKey}")`
+      );
+    }
+
     await pool.query("DELETE FROM scan_results WHERE project_id = $1", [pid]);
 
     let insertIssueErrors = 0;
@@ -208,6 +223,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     if (insertIssueErrors > 0) {
       console.warn(`[SAST project=${pid}] ${insertIssueErrors} issue row(s) skipped during insert`);
     }
+
 
     const summary = persistedIssues.reduce(
       (acc, item) => {
