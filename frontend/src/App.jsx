@@ -12,6 +12,7 @@ import ProjectDetails from "./pages/ProjectDetails";
 import SASTResults from "./pages/SASTResults";
 import DASTResults from "./pages/DASTResults";
 import CICDPipeline from "./pages/CICDPipeline";
+import ExecutionReport from "./pages/ExecutionReport";
 import Dependencies from "./pages/Dependencies";
 import IaCSecurity from "./pages/IaCSecurity";
 import CloudDeployment from "./pages/CloudDeployment";
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/projects/:id/dast" element={<ProtectedRoute><DASTResults /></ProtectedRoute>} />
         <Route path="/projects/:id/iac" element={<ProtectedRoute><IaCSecurity /></ProtectedRoute>} />
         <Route path="/cicd" element={<ProtectedRoute><CICDPipeline /></ProtectedRoute>} />
+        <Route path="/projects/:projectId/executions/:executionId/report" element={<ProtectedRoute><ExecutionReport /></ProtectedRoute>} />
         <Route path="/dependencies" element={<ProtectedRoute><Dependencies /></ProtectedRoute>} />
         <Route path="/iac" element={<ProtectedRoute><IaCSecurity /></ProtectedRoute>} />
         <Route path="/cloud" element={<ProtectedRoute><CloudDeployment /></ProtectedRoute>} />

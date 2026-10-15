@@ -43,7 +43,7 @@ app.use(
 );
 app.use(express.json({
   verify: (req, res, buf) => {
-    req.rawBody = buf.toString("utf8");
+    req.rawBody = Buffer.from(buf);
   }
 }));
 
@@ -55,6 +55,8 @@ app.use("/api/iac", require("./routes/iac"));
 app.use("/api/dast", require("./routes/dast"));
 app.use("/api/webhooks", require("./routes/webhooks"));
 app.use("/api/deployment", require("./routes/deployment"));
+app.use("/api/reports", require("./routes/reports"));
+app.use("/api/kubernetes", require("./routes/kubernetes"));
 
 const healthPayload = { ok: true, service: "CloudSentinel API" };
 
@@ -74,6 +76,18 @@ app.get("/api/health", (req, res) => {
 });
 
 const boot = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS kubernetes_scans (
+      id SERIAL PRIMARY KEY,
+      namespaces_count INT DEFAULT 0,
+      pods_count INT DEFAULT 0,
+      issues_count INT DEFAULT 0,
+      compliance_score INT DEFAULT 100,
+      findings JSONB DEFAULT '[]',
+      scanned_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS password_resets (
       id SERIAL PRIMARY KEY,
@@ -153,7 +167,6 @@ const boot = async () => {
     );
   `);
 
-  // Safe migration: add target_url and webhook columns to projects if they don't exist yet
   await pool.query(`
     ALTER TABLE projects 
       ADD COLUMN IF NOT EXISTS target_url TEXT,
@@ -220,6 +233,8 @@ const boot = async () => {
       manifest_source VARCHAR(20),
       app_name VARCHAR(100),
       image_tag VARCHAR(200),
+      pipeline_execution_id INTEGER REFERENCES pipeline_executions(id) ON DELETE SET NULL,
+      deployment_attempt INTEGER,
       failure_reason TEXT
     );
   `);
@@ -253,7 +268,7 @@ const boot = async () => {
       );
       if (clearedSast.rowCount > 0 || clearedDep.rowCount > 0 || clearedIac.rowCount > 0 || clearedDast.rowCount > 0) {
         console.log(
-          `[boot] Stale scans → FAILED: SAST ${clearedSast.rowCount}, dependencies ${clearedDep.rowCount}, IaC ${clearedIac.rowCount}, DAST ${clearedDast.rowCount} (> ${orphanAfterMin} min). Set SAST_ORPHAN_RUN_MINUTES=0 to disable.`
+          `[boot] Stale scans ? FAILED: SAST ${clearedSast.rowCount}, dependencies ${clearedDep.rowCount}, IaC ${clearedIac.rowCount}, DAST ${clearedDast.rowCount} (> ${orphanAfterMin} min). Set SAST_ORPHAN_RUN_MINUTES=0 to disable.`
         );
       }
     } catch (e) {

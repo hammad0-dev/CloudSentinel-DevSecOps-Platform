@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "zap": {
+    "reference": "zaproxy/zap-stable@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+    "imageId": "sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+    "architecture": "amd64",
+    "os": "linux",
+    "capabilities": null
+  },
+  "fixture": null,
+  "containmentAdapterValidated": false
+}

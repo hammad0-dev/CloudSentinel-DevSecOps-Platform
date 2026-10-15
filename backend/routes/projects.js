@@ -6,6 +6,20 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
+// Never serialize credentials or webhook signing material outside the server.
+// Keep this allowlist close to the routes so future project fields are opt-in.
+const serializeProject = (project) => ({
+  id: project.id,
+  name: project.name,
+  repo_url: project.repo_url,
+  language: project.language,
+  framework: project.framework,
+  database_tech: project.database_tech,
+  is_private: project.is_private,
+  webhook_id: project.webhook_id,
+  target_url: project.target_url,
+  created_at: project.created_at,
+});
 const parseGithubUrl = (repoUrl) => {
   const match = repoUrl.match(/github\.com\/([^/]+)\/([^/.]+)(?:\.git)?$/i);
   if (!match) return null;
@@ -231,17 +245,18 @@ router.post("/", auth, async (req, res) => {
     }
 
     const insert = await pool.query(
-      "INSERT INTO projects (user_id, name, repo_url, language, framework, database_tech, github_token, is_private, webhook_id, webhook_secret) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *",
+      "INSERT INTO projects (user_id, name, repo_url, language, framework, database_tech, github_token, is_private, webhook_id, webhook_secret) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, name, repo_url, language, framework, database_tech, is_private, webhook_id, target_url, created_at",
       [req.user.id, name, repoUrl, language, framework, databaseTech, isUsableGithubToken(githubToken) ? githubToken.trim() : null, isPrivateRepo, webhookId, webhookSecret]
     );
 
+    const publicProject = serializeProject(insert.rows[0]);
     return res.status(201).json({
       success: true,
       project: {
-        ...insert.rows[0],
-        projectName: insert.rows[0].name,
-        repositoryUrl: insert.rows[0].repo_url,
-        stack: insert.rows[0].language,
+        ...publicProject,
+        projectName: publicProject.name,
+        repositoryUrl: publicProject.repo_url,
+        stack: publicProject.language,
         description,
       },
       stack: { language, framework, database: databaseTech },
@@ -254,12 +269,12 @@ router.post("/", auth, async (req, res) => {
 router.get("/", auth, async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT id, name, repo_url, language, framework, database_tech, target_url, webhook_secret, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC",
+      "SELECT id, name, repo_url, language, framework, database_tech, is_private, webhook_id, target_url, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC",
       [req.user.id]
     );
     const projects = await Promise.all(
       result.rows.map(async (project) => ({
-        ...project,
+        ...serializeProject(project),
         latestScan: await getLatestScanSummary(project.id),
       }))
     );
@@ -271,10 +286,10 @@ router.get("/", auth, async (req, res) => {
 
 router.get("/:id", auth, async (req, res) => {
   try {
-    const projectRes = await pool.query("SELECT * FROM projects WHERE id = $1 AND user_id = $2", [req.params.id, req.user.id]);
+    const projectRes = await pool.query("SELECT id, name, repo_url, language, framework, database_tech, is_private, webhook_id, target_url, created_at FROM projects WHERE id = $1 AND user_id = $2", [req.params.id, req.user.id]);
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
     const latestScan = await getLatestScanSummary(req.params.id);
-    return res.json({ project: projectRes.rows[0], latestScan });
+    return res.json({ project: serializeProject(projectRes.rows[0]), latestScan });
   } catch (error) {
     return res.status(500).json({ error: "Server error. Please try again." });
   }

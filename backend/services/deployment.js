@@ -13,9 +13,14 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const axios = require("axios");
 const { spawn } = require("child_process");
 const pool = require("../db");
-const { resolveCloneUrl, gitCloneAsync } = require("./gitHelper");
+const { redactGitCredentials, resolveCloneUrl, gitCloneAsync } = require("./gitHelper");
+const { assertDeploymentImage, renderManifestWithImage, validateDeploymentSecurity } = require("./kubernetesSecurity");
+const { ensureProjectNamespace, getProjectNamespace } = require("./kubernetesNamespace");
+const { createImageIdentity } = require("./imageIdentity");
+const { scanContainerImage } = require("./imageVulnerabilityScan");
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const DEPLOY_TIMEOUT_MS = 20 * 60 * 1000; // 20 min per stage
@@ -78,23 +83,28 @@ function generateDockerfileContent(stack, repoDir) {
       if (portMatch) port = parseInt(portMatch[1] || portMatch[2]);
     } catch {}
     return `FROM node:18-alpine
+RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
-COPY . .
+COPY --chown=10001:10001 . .
+ENV NODE_ENV=production PORT=${port}
 EXPOSE ${port}
-ENV NODE_ENV=production
-CMD ["node", "index.js"]
+USER 10001:10001
+CMD ["npm", "start"]
 `;
   }
 
   if (stack === "python") {
     return `FROM python:3.11-slim
+RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
+COPY --chown=10001:10001 . .
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 EXPOSE 8080
+USER 10001:10001
 CMD ["python", "app.py"]
 `;
   }
@@ -108,9 +118,11 @@ COPY src ./src
 RUN mvn package -DskipTests -q
 
 FROM eclipse-temurin:17-jre-alpine
+RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build --chown=10001:10001 /app/target/*.jar app.jar
 EXPOSE 8080
+USER 10001:10001
 CMD ["java", "-jar", "app.jar"]
 `;
   }
@@ -123,29 +135,47 @@ COPY src ./src
 RUN gradle bootJar --no-daemon -q
 
 FROM eclipse-temurin:17-jre-alpine
+RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
 WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build --chown=10001:10001 /app/build/libs/*.jar app.jar
 EXPOSE 8080
+USER 10001:10001
 CMD ["java", "-jar", "app.jar"]
 `;
   }
 
-  // Fallback — generic static server
-  return `FROM nginx:alpine
-COPY . /usr/share/nginx/html
-EXPOSE 80
+  // Fallback - non-root static server on an unprivileged port.
+  return `FROM nginx:1.30.5-alpine3.24@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
+RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app \
+    && sed -i -E "s/listen[[:space:]]+80;/listen 8080;/" /etc/nginx/conf.d/default.conf \
+    && chown -R 10001:10001 /usr/share/nginx/html /var/cache/nginx /var/run
+COPY --chown=10001:10001 . /usr/share/nginx/html
+EXPOSE 8080
+USER 10001:10001
 CMD ["nginx", "-g", "daemon off;"]
 `;
 }
 
 // ─── Kubernetes Manifest Templates ────────────────────────────────────────────
-function generateK8sManifests(projectName, imageTag, containerPort) {
+function generateK8sManifests(projectName, imageTag, containerPort, stack = "unknown", namespace) {
+  if (!/^cloudsentinel-p-[1-9]\d*$/.test(namespace || "")) throw new Error("A valid CloudSentinel project namespace is required");
   const safeAppName = projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-").slice(0, 50);
+  const nginxMounts = stack === "unknown" ? `
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run` : "";
+  const nginxVolumes = stack === "unknown" ? `
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}` : "";
 
   const deployment = `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${safeAppName}
+  namespace: ${namespace}
   labels:
     app: ${safeAppName}
     managed-by: cloudsentinel
@@ -159,10 +189,28 @@ spec:
       labels:
         app: ${safeAppName}
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: ${safeAppName}
           image: ${imageTag}
           imagePullPolicy: Never
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp${nginxMounts}
           ports:
             - containerPort: ${containerPort}
           resources:
@@ -179,12 +227,17 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 6
+      volumes:
+        - name: tmp
+          emptyDir: {}${nginxVolumes}
 `;
+
 
   const service = `apiVersion: v1
 kind: Service
 metadata:
   name: ${safeAppName}
+  namespace: ${namespace}
   labels:
     app: ${safeAppName}
     managed-by: cloudsentinel
@@ -214,7 +267,7 @@ function detectContainerPort(stack, repoDir) {
   }
   if (stack === "python") return 8080;
   if (stack.startsWith("java")) return 8080;
-  return 80;
+  return 8080;
 }
 
 // ─── Find existing K8s manifests ──────────────────────────────────────────────
@@ -237,27 +290,57 @@ function findExistingManifests(repoDir) {
 }
 
 // ─── Main deploy function ─────────────────────────────────────────────────────
-async function deployProject(projectId) {
+async function deployProject(projectId, userId, options = {}) {
+  const execute = options.runCmd || runCmd;
   let cloneDir = null;
   let generatedDir = null;
+  let authorizedProject = false;
+  const pipelineExecutionId = options.executionId === undefined ? null : options.executionId;
+  let pipelineContextValidated = pipelineExecutionId === null;
 
   try {
-    // 1. Load project from DB
+    if (!Number.isInteger(projectId) || !Number.isInteger(userId)) {
+      throw new Error("A valid project and authenticated user are required for deployment");
+    }
+
+    // 1. Load only a project owned by the trusted authenticated user context.
     const projRes = await pool.query(
-      "SELECT id, name, repo_url, github_token, is_private FROM projects WHERE id = $1",
-      [projectId]
+      "SELECT id, name, repo_url, github_token, is_private FROM projects WHERE id = $1 AND user_id = $2",
+      [projectId, userId]
     );
-    if (!projRes.rows.length) throw new Error(`Project ${projectId} not found`);
+    if (!projRes.rows.length) throw new Error(`Project ${projectId} not found or not accessible`);
     const project = projRes.rows[0];
+    authorizedProject = true;
+    if (pipelineExecutionId !== null) {
+      if (!Number.isInteger(pipelineExecutionId) || pipelineExecutionId <= 0) {
+        throw new Error("A valid pipeline execution ID is required for a pipeline deployment");
+      }
+      const executionRes = await pool.query(
+        "SELECT id FROM pipeline_executions WHERE id = $1 AND project_id = $2",
+        [pipelineExecutionId, projectId]
+      );
+      if (!executionRes.rows.length) throw new Error("Pipeline execution does not belong to this project");
+      pipelineContextValidated = true;
+    }
     const projectName = project.name || `project-${projectId}`;
+    const { namespace } = await ensureProjectNamespace(project.id, execute);
+    const imageIdentity = (options.imageIdentityFactory || createImageIdentity)(project.id, {
+      executionId: options.executionId,
+      attempt: options.attempt ?? 1,
+      now: options.now,
+      nonce: options.nonce,
+    });
+    const imageTag = imageIdentity.imageReference;
 
     // 2. Clone repo
     const cloneBase = CLONE_BASE;
     if (!fs.existsSync(cloneBase)) fs.mkdirSync(cloneBase, { recursive: true });
     cloneDir = fs.mkdtempSync(path.join(cloneBase, `${projectId}-deploy-`));
     const cloneUrl = resolveCloneUrl(project);
-    console.log(`[deploy] Cloning ${cloneUrl} into ${cloneDir}`);
+    console.log(`[deploy] Cloning ${redactGitCredentials(cloneUrl)} into ${cloneDir}`);
     await gitCloneAsync(cloneUrl, cloneDir);
+    const sourceCommit = await execute("git source commit", "git", ["rev-parse", "HEAD"], cloneDir, 30000);
+    if (!/^[a-f0-9]{40,64}$/i.test(sourceCommit)) throw new Error("Unable to determine the checked-out source commit");
 
     // 3. Detect stack
     const stack = detectStack(cloneDir);
@@ -279,8 +362,7 @@ async function deployProject(projectId) {
     let manifestDir = findExistingManifests(cloneDir);
     if (!manifestDir) {
       console.log(`[deploy] No K8s manifests found — auto-generating`);
-      const imageTag = `${projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-")}:latest`;
-      const { deployment, service, safeAppName } = generateK8sManifests(projectName, imageTag, containerPort);
+      const { deployment, service, safeAppName } = generateK8sManifests(projectName, imageTag, containerPort, stack, namespace);
       generatedDir = path.join(cloneDir, "k8s-generated");
       fs.mkdirSync(generatedDir, { recursive: true });
       fs.writeFileSync(path.join(generatedDir, "deployment.yaml"), deployment, "utf8");
@@ -301,91 +383,159 @@ async function deployProject(projectId) {
       safeAppName = projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-").slice(0, 50);
     }
 
-    const imageTag = `${safeAppName}:latest`;
-
     // 6. Docker build
     console.log(`[deploy] Building Docker image: ${imageTag}`);
-    await runCmd("docker build", "docker", ["build", "-t", imageTag, "."], cloneDir);
+    await execute("docker build", "docker", ["build", "-t", imageTag, "."], cloneDir);
+    const localImageId = await execute("docker image inspect", "docker", ["image", "inspect", "--format={{.Id}}", imageTag], cloneDir, 30000);
+    if (!/^sha256:[a-f0-9]{64}$/i.test(localImageId)) throw new Error("Docker did not return a valid local image ID");
+
+    // 7. Scan the newly built immutable image before it is available to Kubernetes.
+    // Scanner, parser, and persistence errors deliberately fail the deployment closed.
+    console.log("[deploy] Scanning container image for OS-package vulnerabilities");
+    const imageScan = await scanContainerImage({
+      pool, execute, cwd: cloneDir, projectId, pipelineExecutionId,
+      deploymentAttempt: imageIdentity.attempt, imageTag,
+    });
 
     // 7. Load image into Minikube
     console.log(`[deploy] Loading image into Minikube`);
-    await runCmd("minikube image load", "minikube", ["image", "load", imageTag], cloneDir, 10 * 60 * 1000);
+    await execute("minikube image load", "minikube", ["image", "load", imageTag], cloneDir, 10 * 60 * 1000);
 
-    // 8. Apply K8s manifests
-    console.log(`[deploy] Applying manifests from ${manifestDir}`);
-    await runCmd("kubectl apply", "kubectl", ["apply", "-f", manifestDir], cloneDir, 5 * 60 * 1000);
+    // 8. Validate the rendered resources structurally before applying anything.
+    const dryRunResources = await execute(
+      "kubectl security dry-run",
+      "kubectl",
+      ["create", "--dry-run=client", "--namespace", namespace, "-f", manifestDir, "-o", "json"],
+      cloneDir,
+      60000
+    );
+    const rendered = renderManifestWithImage(dryRunResources, safeAppName, namespace, imageTag);
+    const renderedManifestPath = path.join(cloneDir, ".cloudsentinel-rendered.json");
+    fs.writeFileSync(renderedManifestPath, rendered.renderedJson, "utf8");
+
+    console.log(`[deploy] Applying validated manifests in ${namespace}`);
+    await execute("kubectl apply", "kubectl", ["apply", "--namespace", namespace, "-f", renderedManifestPath], cloneDir, 5 * 60 * 1000);
+    await execute("kubectl rollout restart", "kubectl", ["rollout", "restart", `deployment/${safeAppName}`, "--namespace", namespace], cloneDir, 60000);
 
     // 9. Wait for rollout
     console.log(`[deploy] Waiting for rollout to complete`);
     try {
-      await runCmd(
+      await execute(
         "kubectl rollout status",
         "kubectl",
-        ["rollout", "status", `deployment/${safeAppName}`, "--timeout=5m"],
+        ["rollout", "status", `deployment/${safeAppName}`, "--namespace", namespace, "--timeout=5m"],
         cloneDir,
         6 * 60 * 1000
       );
     } catch (rolloutErr) {
-      console.warn(`[deploy] Rollout status warning (continuing): ${rolloutErr.message}`);
+      let diagnostic = "";
+      try {
+        const pods = JSON.parse(await execute("kubectl get pods", "kubectl", ["get", "pods", "--namespace", namespace, "-l", `app=${safeAppName}`, "-o", "json"], cloneDir, 30000));
+        const waiting = pods.items?.flatMap(p => p.status?.containerStatuses || []).map(c => c.state?.waiting).find(Boolean);
+        diagnostic = waiting?.reason ? `${waiting.reason}${waiting.message ? `: ${waiting.message}` : ""}` : "";
+      } catch {}
+      throw new Error(`Kubernetes rollout failed for deployment ${safeAppName}: ${diagnostic || rolloutErr.message}`);
     }
 
-    // 10. Get staging URL
-    console.log(`[deploy] Getting Minikube service URL`);
-    let stagingUrl;
-    try {
-      stagingUrl = await runCmd(
-        "minikube service url",
-        "minikube",
-        ["service", safeAppName, "--url"],
-        cloneDir,
-        60 * 1000
-      );
-      stagingUrl = stagingUrl.split("\n")[0].trim();
-    } catch {
-      // Fallback: get NodePort manually
-      try {
-        const nodePort = await runCmd(
-          "get nodeport",
-          "kubectl",
-          ["get", "service", safeAppName, "-o", "jsonpath={.spec.ports[0].nodePort}"],
-          cloneDir, 30000
-        );
-        const minikubeIp = await runCmd("minikube ip", "minikube", ["ip"], cloneDir, 30000);
-        stagingUrl = `http://${minikubeIp.trim()}:${nodePort.trim()}`;
-      } catch {
-        stagingUrl = "http://minikube-url-unavailable";
-      }
+    const deployment = JSON.parse(await execute("kubectl get deployment", "kubectl", ["get", "deployment", safeAppName, "--namespace", namespace, "-o", "json"], cloneDir, 30000));
+    validateDeploymentSecurity(deployment);
+    const applicationContainer = assertDeploymentImage(deployment, safeAppName, imageTag);
+    const desired = deployment.spec?.replicas ?? 1;
+    const status = deployment.status || {};
+    if (deployment.metadata?.name !== safeAppName || (status.observedGeneration ?? 0) < (deployment.metadata?.generation ?? 0) ||
+        (status.updatedReplicas ?? 0) < desired || (status.readyReplicas ?? 0) < desired ||
+        (status.availableReplicas ?? 0) < desired || (status.unavailableReplicas ?? 0) > 0) {
+      throw new Error(`Deployment ${safeAppName} is not ready (${status.readyReplicas ?? 0}/${desired} ready)`);
     }
+
+    const deployedPods = JSON.parse(await execute(
+      "kubectl get deployed pods",
+      "kubectl",
+      ["get", "pods", "--namespace", namespace, "-l", `app=${safeAppName}`, "-o", "json"],
+      cloneDir,
+      30000
+    ));
+    const runningPod = (deployedPods.items || []).find(pod =>
+      pod.status?.phase === "Running" &&
+      (pod.status?.containerStatuses || []).some(container => container.name === applicationContainer.name && container.ready)
+    );
+    if (!runningPod) throw new Error(`No ready pod is running the deployed application container ${applicationContainer.name}`);
+    const podContainer = (runningPod.spec?.containers || []).find(container => container.name === applicationContainer.name);
+    if (podContainer?.image !== imageTag) throw new Error(`Running pod does not reference expected image ${imageTag}`);
+    const podContainerStatus = (runningPod.status?.containerStatuses || []).find(container => container.name === applicationContainer.name);
+    const runningImageId = String(podContainerStatus?.imageID || "").trim();
+    if (!runningImageId) throw new Error(`Running pod did not report an image ID for ${applicationContainer.name}`);
+
+    const service = JSON.parse(await execute("kubectl get service", "kubectl", ["get", "service", safeAppName, "--namespace", namespace, "-o", "json"], cloneDir, 30000));
+    const nodePort = service.spec?.ports?.[0]?.nodePort;
+    if (service.metadata?.name !== safeAppName || service.metadata?.namespace !== namespace || service.spec?.type !== "NodePort" || !Number.isInteger(nodePort)) {
+      throw new Error(`Service ${safeAppName} is not a valid NodePort service`);
+    }
+
+    // 10. Discover the NodePort endpoint directly. Avoid minikube service --url,
+    // which can create a Docker-driver tunnel and block for up to a minute.
+    console.log("[deploy] Getting Minikube IP for NodePort service");
+    let minikubeIp;
+    try {
+      minikubeIp = String(await execute("minikube ip", "minikube", ["ip"], cloneDir, 10000)).trim();
+    } catch (ipError) {
+      throw new Error("Unable to discover Minikube IP for service " + safeAppName + ": " + ipError.message);
+    }
+    if (!minikubeIp || /\s/.test(minikubeIp)) throw new Error("Invalid Minikube IP for service " + safeAppName);
+    let stagingUrl = "http://" + minikubeIp + ":" + nodePort;
+    stagingUrl = String(stagingUrl || "").split("\n")[0].trim();
+    let parsedUrl;
+    try { parsedUrl = new URL(stagingUrl); } catch { throw new Error(`Invalid staging URL for service ${safeAppName}`); }
+    if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname || stagingUrl.includes("minikube-url-unavailable")) {
+      throw new Error(`Invalid staging URL for service ${safeAppName}`);
+    }
+    stagingUrl = parsedUrl.toString().replace(/\/$/, "");
+
+    let readinessError;
+    for (let attempt = 1; attempt <= 10; attempt++) {
+      try {
+        const response = await axios.get(stagingUrl, { timeout: 5000, validateStatus: code => code >= 200 && code < 400 });
+        if (response.status >= 200 && response.status < 400) { readinessError = null; break; }
+      } catch (err) { readinessError = err; }
+      if (attempt < 10) await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    if (readinessError) throw new Error(`Staging URL ${stagingUrl} did not become ready: ${readinessError.message}`);
 
     console.log(`[deploy] Staging URL: ${stagingUrl}`);
 
     // 11. Record deployment in DB
     await pool.query(
       `INSERT INTO deployment_history
-       (project_id, status, deployed_at, staging_url, dockerfile_source, manifest_source, app_name, image_tag)
-       VALUES ($1, 'SUCCESS', NOW(), $2, $3, $4, $5, $6)`,
-      [projectId, stagingUrl, dockerfileSource, manifestSource, safeAppName, imageTag]
+       (project_id, pipeline_execution_id, deployment_attempt, status, deployed_at, staging_url, dockerfile_source, manifest_source, app_name, image_tag)
+       VALUES ($1, $2, $3, 'SUCCESS', NOW(), $4, $5, $6, $7, $8)`,
+      [projectId, pipelineExecutionId, imageIdentity.attempt, stagingUrl, dockerfileSource, manifestSource, safeAppName, imageTag]
     );
 
     // 12. Update project's target_url for DAST
     await pool.query(
-      "UPDATE projects SET target_url = $1 WHERE id = $2",
-      [stagingUrl, projectId]
+      "UPDATE projects SET target_url = $1 WHERE id = $2 AND user_id = $3",
+      [stagingUrl, projectId, userId]
     );
 
-    return { stagingUrl, dockerfileSource, manifestSource, safeAppName };
+    return {
+      stagingUrl, dockerfileSource, manifestSource, safeAppName, namespace,
+      imageTag, sourceCommit, localImageId, runningImageId, imageScan,
+      executionId: imageIdentity.executionId, attempt: imageIdentity.attempt,
+    };
 
   } catch (err) {
     console.error(`[deploy] Deployment failed for project ${projectId}:`, err.message);
 
     // Record failure in DB
-    try {
-      await pool.query(
-        `INSERT INTO deployment_history (project_id, status, deployed_at, failure_reason)
-         VALUES ($1, 'FAILED', NOW(), $2)`,
-        [projectId, err.message || "Unknown error"]
-      );
-    } catch {}
+    if (authorizedProject && pipelineContextValidated) {
+      try {
+        await pool.query(
+          `INSERT INTO deployment_history (project_id, pipeline_execution_id, deployment_attempt, status, deployed_at, failure_reason)
+           VALUES ($1, $2, $3, 'FAILED', NOW(), $4)`,
+          [projectId, pipelineExecutionId, Number.isInteger(options.attempt) ? options.attempt : 1, err.message || "Unknown error"]
+        );
+      } catch {}
+    }
 
     throw err;
   } finally {
@@ -396,4 +546,4 @@ async function deployProject(projectId) {
   }
 }
 
-module.exports = { deployProject };
+module.exports = { deployProject, detectContainerPort, generateDockerfileContent, generateK8sManifests, getProjectNamespace };

@@ -49,7 +49,7 @@ function spawnWithTimeout(label, command, args, spawnOptions, timeoutMs) {
       if (settled) return;
       settled = true;
       finalize();
-      reject(err);
+      reject(label === "git clone" ? new Error(redactGitCredentials(err.message)) : err);
     });
 
     child.on("close", (code, signal) => {
@@ -60,7 +60,7 @@ function spawnWithTimeout(label, command, args, spawnOptions, timeoutMs) {
       else {
         const detail = ((stderr || "") + (stdout || "")).trim();
         reject(
-          new Error(detail || `${label || command}: exited with ${code}${signal ? ` (${signal})` : ""}`)
+          new Error((label === "git clone" ? redactGitCredentials(detail) : detail) || `${label || command}: exited with ${code}${signal ? ` (${signal})` : ""}`)
         );
       }
     });
@@ -75,6 +75,10 @@ function isUsableGithubToken(token) {
   if (t.startsWith("ghp_your_")) return false;
   return true;
 }
+function redactGitCredentials(value) {
+  return String(value || "").replace(/(https?:\/\/)[^/\s@]*@/gi, (_match, scheme) => scheme + "***@");
+}
+
 
 function githubHttpsCloneUrl(repoUrl, token) {
   if (!token) return repoUrl;

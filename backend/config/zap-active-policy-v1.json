@@ -1,0 +1,40 @@
+{
+  "name": "CloudSentinel ZAP Active fixture policy",
+  "version": "v1",
+  "allowedPathPrefixes": [
+    "/test/sqli",
+    "/test/xss"
+  ],
+  "excludedPathPatterns": [
+    "/logout",
+    "/delete",
+    "/remove",
+    "/destroy",
+    "/payment",
+    "/checkout",
+    "/order",
+    "/admin",
+    "/kubernetes",
+    "/deploy",
+    "/password",
+    "/reset"
+  ],
+  "enabledRuleFamilies": [
+    "SQLI",
+    "XSS"
+  ],
+  "maxMinutes": 10,
+  "maxSpiderMinutes": 2,
+  "maxChildren": 20,
+  "maxActiveScanners": 1,
+  "maxRequestsPerSecond": 2,
+  "approvedPluginIds": [
+    "40012",
+    "40014",
+    "40016",
+    "40017",
+    "40018",
+    "40019",
+    "40020"
+  ]
+}

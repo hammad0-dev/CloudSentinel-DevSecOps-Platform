@@ -1,0 +1,14 @@
+# Template only: the build is blocked until active-zap-image-manifest.json has
+# one dependency-resolved archive per add-on. This file must not be built yet.
+FROM zaproxy/zap-stable@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef
+USER root
+ARG ASCANRULES_SHA256
+ARG AUTOMATION_SHA256
+ARG NETWORK_SHA256
+ARG REPORTS_SHA256
+COPY selected-addons/*.zap /zap/plugin/
+RUN test "$(find /zap/plugin -maxdepth 1 -type f -name '*.zap' | wc -l)" = 4 \
+ && sha256sum /zap/plugin/*.zap \
+ && test -n "$ASCANRULES_SHA256" -a -n "$AUTOMATION_SHA256" -a -n "$NETWORK_SHA256" -a -n "$REPORTS_SHA256"
+USER zap
+WORKDIR /zap

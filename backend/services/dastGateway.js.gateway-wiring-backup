@@ -1,0 +1,48 @@
+"use strict";
+const crypto = require("crypto");
+const IMAGE = "ubuntu/squid:6.6-24.04_edge@sha256:94f844158e12b52f51b4ae996515e37e8fb3e8d85e1c86caba1a297376e4ec4f";
+const FIXTURE_IMAGE = "nginx:1.27.5-alpine@sha256:62223d644fa234c3a1cc785ee14242ec47a77364226f1c811d2f669f96dc2ac8";
+const SAFE_ID = /^[a-z0-9][a-z0-9_.-]{0,62}$/;
+const STATES = ["CREATED","PROVISIONING","VERIFYING","READY","FAILED","CLEANING","CLEANED"];
+const { stagePolicy, verifyStagedPolicy, cleanupPolicy } = require("./squidPolicy");
+const { OwnedDockerNetworks } = require("./ownedDockerNetworks");
+const { RuntimeObservation, runtimeReady } = require("./runtimeObservation");
+function error(message, code="GATEWAY_CONTAINMENT_FAILED"){const e=new Error(message);e.code=code;e.nonRetryable=true;return e;}
+function id(v){if(!SAFE_ID.test(String(v))||["host","bridge","none","minikube"].includes(String(v))) throw error("invalid resource identifier","GATEWAY_INVALID_ID");return String(v);}
+function names(project,execution,scan){const suffix=crypto.createHash("sha256").update(project+"|"+execution+"|"+scan).digest("hex").slice(0,12);return {prefix:"cs-eg-"+id(project)+"-"+id(execution)+"-"+id(scan)+"-"+suffix,scanner:"cs-eg-"+id(project)+"-"+id(execution)+"-"+id(scan)+"-"+suffix+"-net",gateway:"cs-eg-"+id(project)+"-"+id(execution)+"-"+id(scan)+"-"+suffix+"-gw"};}
+function policy({hostname,ip,port}){if(!/^[a-z0-9.-]+$/i.test(hostname)||!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(ip)||!Number.isInteger(port)||port<1||port>65535)throw error("invalid fixture destination","GATEWAY_INVALID_TARGET");return ["http_port 3128","acl allowed_host dstdomain "+hostname,"acl allowed_ip dst "+ip+"/32","acl allowed_port port "+port,"acl CONNECT method CONNECT","http_access deny CONNECT","http_access allow allowed_host allowed_ip allowed_port","http_access deny all","cache deny all"].join("\n")+"\n";}
+class DockerAdapter{constructor(exec,timeout=30000){if(typeof exec!=="function")throw error("docker executor required");this.exec=exec;this.timeout=timeout;} async run(args){if(!Array.isArray(args)||args.some(x=>typeof x!=="string"))throw error("docker arguments must be an array","GATEWAY_INVALID_ARGS");const r=await this.exec(args,this.timeout);if(!r||r.code!==0)throw error((r&&r.stderr)||"docker command failed","GATEWAY_DOCKER_FAILED");return r.stdout||"";}}
+function attestation({projectId,executionId,scanId,target,policyDigest,observations}){if(!observations||observations.ready!==true||observations.directRoute===true||observations.ipv6===true||observations.membershipValid!==true||observations.negativePassed!==true||observations.positivePassed!==true)throw error("runtime containment evidence incomplete");return {projectId,executionId,scanId,hostname:target.hostname,ip:target.ip,port:target.port,policyDigest,verified:false,verification:"MOCK_ONLY_NOT_VERIFIED"};}
+class GatewayLifecycle{constructor({adapter,probe}){this.adapter=adapter;this.probe=probe;this.owned=new Set();this.states=new Map();}
+async provision({projectId,executionId,scanId,target,fixtureNetwork}){const n=names(projectId,executionId,scanId);id(fixtureNetwork);if(this.states.has(scanId))throw error("duplicate scan identity","GATEWAY_DUPLICATE_SCAN");this.states.set(scanId,"PROVISIONING");let net,gw;try{const conf=policy(target);const digest=crypto.createHash("sha256").update(conf).digest("hex");await this.adapter.run(["network","inspect",n.scanner]).catch(()=>{});net=n.scanner;await this.adapter.run(["network","create","--internal","--ipv6=false","--label","cloudsentinel.owner="+n.prefix,net]);this.owned.add(net);gw=n.gateway;await this.adapter.run(["run","-d","--name",gw,"--network",net,"--label","cloudsentinel.owner="+n.prefix,"--cap-drop","ALL","--security-opt","no-new-privileges:true","--network-alias","gateway",IMAGE,"squid","-N","-f","/etc/squid/squid.conf"]);this.owned.add(gw);await this.adapter.run(["network","connect",fixtureNetwork,gw]);this.states.set(scanId,"VERIFYING");const obs=await this.probe({network:net,gateway:gw,target,policyDigest:digest,owner:n.prefix});const evidence=attestation({projectId,executionId,scanId,target,policyDigest:digest,observations:obs});this.states.set(scanId,"READY");return {names:n,policy:conf,policyDigest:digest,evidence};}catch(e){this.states.set(scanId,"FAILED");try{await this.cleanup(scanId);}catch(cleanupError){e.cleanupError=cleanupError.message;}throw e;}}
+async cleanup(scanId){const state=this.states.get(scanId);if(!state||state==="CLEANED")return {state:"CLEANED",residual:[]};this.states.set(scanId,"CLEANING");const residual=[];for(const resource of Array.from(this.owned).reverse()){try{await this.adapter.run(resource.endsWith("-net")?["network","rm",resource]:["rm","-f",resource]);this.owned.delete(resource);}catch(e){residual.push(resource);}}this.states.set(scanId,residual.length?"FAILED":"CLEANED");if(residual.length)throw error("cleanup left residual resources");return {state:"CLEANED",residual};}}
+class SecureGatewayLifecycle {
+  constructor({ adapter, networks, policyService = { stagePolicy, verifyStagedPolicy, cleanupPolicy }, observation } = {}) {
+    if (!adapter || typeof adapter.run !== "function") throw error("docker adapter required", "GATEWAY_INVALID_ADAPTER");
+    this.adapter = adapter; this.networks = networks || new OwnedDockerNetworks({ adapter });
+    this.policyService = policyService; this.observation = observation;
+    this.states = new Map(); this.resources = new Map();
+  }
+  async provision(input) {
+    const { projectId, executionId, scanId, target } = input || {}; const key = String(scanId);
+    if (this.states.has(key)) throw error("duplicate scan identity", "GATEWAY_DUPLICATE_SCAN");
+    this.states.set(key, "CREATED"); let staged;
+    try {
+      this.states.set(key, "PROVISIONING"); staged = await this.policyService.stagePolicy({ scanId, target });
+      const owned = await this.networks.create({ projectId, executionId, scanId });
+      const scanner = owned.networks.find(n => n.role === "scanner"); const fixture = owned.networks.find(n => n.role === "fixture");
+      if (!scanner || !fixture) throw error("owned scanner and fixture networks are required", "GATEWAY_NETWORK_INVALID");
+      await this.policyService.verifyStagedPolicy(staged);
+      const args = ["run", "-d", "--name", `cs-gateway-${scanId}`, "--network", scanner.name, "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true", "--read-only", "--mount", `type=bind,src=${staged.filePath},dst=${staged.containerPath},readonly`, IMAGE, "squid", "-N", "-f", staged.containerPath];
+      const run = await this.adapter.run(args); const gatewayId = run.objectId || String(run.stdout || "").trim();
+      if (!/^[a-f0-9]{12,64}$/i.test(gatewayId)) throw error("gateway identity is missing", "GATEWAY_ID_MISSING");
+      await this.adapter.run(["connect", fixture.name, gatewayId]); this.states.set(key, "VERIFYING");
+      if (!this.observation || typeof this.observation.collect !== "function") throw error("runtime observation is required", "GATEWAY_EVIDENCE_INVALID");
+      if (!input.scannerContainerId || !/^[a-f0-9]{12,64}$/i.test(String(input.scannerContainerId))) throw error("trusted scanner container identity is required", "GATEWAY_SCANNER_ID_REQUIRED");
+      const evidence = await this.observation.collect({ projectId, executionId, scanId, gatewayContainerId: gatewayId, scannerContainerId: input.scannerContainerId, scannerNetworkId: scanner.id, fixtureNetworkId: fixture.id, target, stagedPolicy: staged });
+      if (!runtimeReady(evidence)) throw error("runtime evidence is not independently verified", "GATEWAY_EVIDENCE_INVALID");
+      this.resources.set(key, { owned, staged, gatewayId }); this.states.set(key, "READY"); return { state: "READY", gateway: { id: gatewayId }, networks: owned, policyDigest: staged.policyDigest, evidence };
+    } catch (e) { this.states.set(key, "FAILED"); await this.cleanup(key).catch(x => { e.cleanupError = x.message; }); throw e; }
+  }
+  async cleanup(scanId) { const key = String(scanId); const r = this.resources.get(key); if (!r) { this.states.set(key, "CLEANED"); return { state: "CLEANED", residual: [] }; } this.states.set(key, "CLEANING"); const residual=[]; try { await this.adapter.run(["stop", r.gatewayId]); await this.adapter.run(["rm", r.gatewayId]); } catch (e) { residual.push({ type:"gateway", error:e.code||e.message }); } const n=await this.networks.cleanup(key); if(n.residual?.length) residual.push(...n.residual); try { await this.policyService.cleanupPolicy(r.staged); } catch(e) { residual.push({type:"policy",error:e.code||e.message}); } this.states.set(key,residual.length?"FAILED":"CLEANED"); if(!residual.length)this.resources.delete(key); return {state:this.states.get(key),residual}; }
+}module.exports={IMAGE,STATES,names,policy,DockerAdapter,GatewayLifecycle,SecureGatewayLifecycle,attestation};

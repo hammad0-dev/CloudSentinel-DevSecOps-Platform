@@ -26,6 +26,10 @@ function githubHttpsCloneUrl(repoUrl, token) {
   } catch { return repoUrl; }
 }
 
+function redactGitCredentials(value) {
+  return String(value || "").replace(/(https?:\/\/)[^/\s@]*@/gi, (_match, scheme) => scheme + "***@");
+}
+
 function resolveCloneUrl(project) {
   const raw = project.repo_url?.trim?.() || "";
   const token = isUsableGithubToken(project.github_token) ? project.github_token.trim()
@@ -62,9 +66,9 @@ function gitCloneAsync(repoUrl, targetDir) {
     proc.on("close", code => {
       clearTimeout(timer);
       if (code === 0) resolve();
-      else reject(new Error(stderr.trim() || "git clone failed"));
+      else reject(new Error(redactGitCredentials(stderr.trim() || "git clone failed")));
     });
   });
 }
 
-module.exports = { resolveCloneUrl, gitCloneAsync, gitCloneArgs, gitEnv, isUsableGithubToken };
+module.exports = { redactGitCredentials, resolveCloneUrl, gitCloneAsync, gitCloneArgs, gitEnv, isUsableGithubToken };

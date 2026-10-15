@@ -1,0 +1,10 @@
+{
+  "provenance": "Previously captured network-disabled image capability inspection; no network request",
+  "sourceArtifact": "/tmp/cs-c19b-tools-41d2bf3601b9.json",
+  "image": "nginx:1.27.5-alpine@sha256:62223d644fa234c3a1cc785ee14242ec47a77364226f1c811d2f669f96dc2ac8",
+  "imageId": "sha256:62223d644fa234c3a1cc785ee14242ec47a77364226f1c811d2f669f96dc2ac8",
+  "command": "docker exec 65f59fb7f22bd8be78db1843cac4776d1a3ede5d1d4262558ed6443b34d8333f nc -h",
+  "exitCode": 1,
+  "stdout": "",
+  "stderr": "nc: unrecognized option: h\nBusyBox v1.37.0 (2025-01-17 18:12:01 UTC) multi-call binary.\n\nUsage: nc [OPTIONS] HOST PORT  - connect\nnc [OPTIONS] -l -p PORT [HOST] [PORT]  - listen\n\n\t-e PROG\tRun PROG after connect (must be last)\n\t-l\tListen mode, for inbound connects\n\t-lk\tWith -e, provides persistent server\n\t-p PORT\tLocal port\n\t-s ADDR\tLocal address\n\t-w SEC\tTimeout for connects and final net reads\n\t-i SEC\tDelay interval for lines sent\n\t-n\tDon't do DNS resolution\n\t-u\tUDP mode\n\t-b\tAllow broadcasts\n\t-v\tVerbose\n\t-o FILE\tHex dump traffic\n\t-z\tZero-I/O mode (scanning)\n"
+}
