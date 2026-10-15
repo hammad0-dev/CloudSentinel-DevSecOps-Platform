@@ -1,0 +1,6 @@
+{
+  "source": "Modeled curl verbose Squid rejection contract; NOT a capture of the real C1.9B run",
+  "exitCode": 56,
+  "stdout": "000 403 172.30.25.3",
+  "stderr": "> CONNECT fixture.test:8080 HTTP/1.1\r\n> Host: fixture.test:8080\r\n> Proxy-Connection: Keep-Alive\r\n> \r\n< HTTP/1.1 403 Forbidden\r\n< Server: squid/6.14\r\n< X-Squid-Error: ERR_ACCESS_DENIED 0\r\n< Content-Length: 0\r\n< \r\ncurl: (56) CONNECT tunnel failed, response 403\n"
+}

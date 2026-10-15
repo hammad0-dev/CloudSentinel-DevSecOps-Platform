@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "networkMode": "dedicated-egress",
+  "ipv6": "disabled",
+  "defaultPolicy": "deny",
+  "gatewayRequired": true,
+  "directRoutes": false,
+  "dnsMode": "pinned",
+  "blockedCidrs": [
+    "0.0.0.0/0",
+    "::/0"
+  ],
+  "allowlist": "verified-fixture-ip-port"
+}

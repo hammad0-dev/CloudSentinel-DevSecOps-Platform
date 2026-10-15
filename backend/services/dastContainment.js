@@ -1,0 +1,5 @@
+"use strict";
+const SPEC=require("../config/dast-containment-v1.json");
+function fail(message){const e=new Error(message);e.code="DAST_CONTAINMENT_UNVERIFIED";e.nonRetryable=true;return e;}
+function assertContainmentEvidence(evidence,target){if(!evidence||evidence.networkMode!==SPEC.networkMode)throw fail("Dedicated egress network is not verified");if(evidence.ipv6!=="disabled"||evidence.defaultPolicy!=="deny"||evidence.gatewayRequired!==true||evidence.directRoutes!==false||evidence.dnsMode!=="pinned")throw fail("Egress containment evidence is incomplete");const url=new URL(target);const allowed=evidence.allowlist;if(!allowed||allowed.ip!==url.hostname||Number(allowed.port)!==Number(url.port||(url.protocol==="https:"?443:80)))throw fail("Containment allowlist does not match the verified target");if(!Array.isArray(evidence.blockedDestinations)||evidence.blockedDestinations.some(item=>item.allowed===true))throw fail("Containment blocked-destination evidence is invalid");return {verified:true,version:SPEC.version,target:allowed.ip+":"+allowed.port};}
+module.exports={SPEC,assertContainmentEvidence};

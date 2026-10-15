@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "status": "DEPENDENCY_CLOSURE_VERIFIED_RUNTIME_UNVERIFIED",
+  "base": {
+    "reference": "zaproxy/zap-stable@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+    "imageId": "sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+    "architecture": "amd64",
+    "os": "linux",
+    "zapVersion": "2.17.0"
+  },
+  "archives": [
+    {
+      "name": "ascanrules",
+      "version": "78",
+      "status": "release",
+      "path": "/zap/plugin/ascanrules-release-78.zap",
+      "sha256": "764a9f803304b6aa266d13f4c39f23b013e206c9e831435cd405871919a021fe"
+    },
+    {
+      "name": "ascanrules",
+      "version": "83",
+      "status": "release",
+      "path": "/zap/plugin/ascanrules-release-83.zap",
+      "sha256": "9c1b64c2fceda629f7c0ab0c21b5901035494f78da51d584972eaf85e94e91cc"
+    },
+    {
+      "name": "automation",
+      "version": "0.58.0",
+      "status": "beta",
+      "path": "/zap/plugin/automation-beta-0.58.0.zap",
+      "sha256": "34958cd9b94264296cdd05bab585bcc72af7b0610d9b91cd4b8e280cb9915c6c"
+    },
+    {
+      "name": "automation",
+      "version": "0.60.0",
+      "status": "beta",
+      "path": "/zap/plugin/automation-beta-0.60.0.zap",
+      "sha256": "e02c90abea15cb5802be1aa1adb959e5f76c4c517494087388732d71345e4ea9"
+    },
+    {
+      "name": "network",
+      "version": "0.25.0",
+      "status": "beta",
+      "path": "/zap/plugin/network-beta-0.25.0.zap",
+      "sha256": "bf32c4d2c40c76171efa29da1987375a312cc09595ece29d67018e7ae54d6cf3"
+    },
+    {
+      "name": "network",
+      "version": "0.29.0",
+      "status": "beta",
+      "path": "/zap/plugin/network-beta-0.29.0.zap",
+      "sha256": "082367cca24029ed0dce69ad6c4464897c63c9a2f0d5ec7ae42860e728414853"
+    },
+    {
+      "name": "reports",
+      "version": "0.43.0",
+      "status": "release",
+      "path": "/zap/plugin/reports-release-0.43.0.zap",
+      "sha256": "af27617b76a5f89594fe25109c3f811a431dda01e3b58d814f1589b698fad8ee"
+    },
+    {
+      "name": "reports",
+      "version": "0.46.0",
+      "status": "release",
+      "path": "/zap/plugin/reports-release-0.46.0.zap",
+      "sha256": "2e8d42a48e23aefa8a6174b52aa0a8a6b90aca2da0a8bf94ac61f4aaa070bc2c"
+    }
+  ],
+  "selection": {
+    "ascanrules": {
+      "version": "83",
+      "sha256": "9c1b64c2fceda629f7c0ab0c21b5901035494f78da51d584972eaf85e94e91cc"
+    },
+    "automation": {
+      "version": "0.60.0",
+      "sha256": "e02c90abea15cb5802be1aa1adb959e5f76c4c517494087388732d71345e4ea9"
+    },
+    "network": {
+      "version": "0.29.0",
+      "sha256": "082367cca24029ed0dce69ad6c4464897c63c9a2f0d5ec7ae42860e728414853"
+    },
+        "reports": {
+      "version": "0.46.0",
+      "sha256": "2e8d42a48e23aefa8a6174b52aa0a8a6b90aca2da0a8bf94ac61f4aaa070bc2c"
+    }
+  },
+  "dependencyResolution": {
+    "verified": true,
+    "reason": "Exact ZapAddOn.xml manifests extracted from SHA-256-verified local image archives; selected closure satisfies ZAP 2.17.0 and all declared transitive constraints.",
+    "officialMetadataSources": [
+      "https://github.com/zaproxy/zap-admin/blob/master/ZapVersions-2.17.xml",
+      "https://github.com/zaproxy/zap-extensions/blob/main/docs/ZapAddOn.xml",
+      "https://github.com/zaproxy/zap-extensions/wiki/AddOnStructure",
+      "https://www.zaproxy.org/addons/",
+      "https://www.zaproxy.org/docs/addons/automation/changelog/"
+    ],
+    "confirmedMetadata": {
+      "automation": {
+        "0.58.0": {
+          "minimumZapVersion": "2.17.0",
+          "source": "https://www.zaproxy.org/docs/addons/automation/changelog/"
+        },
+        "0.60.0": {
+          "published": "2026-05-08",
+          "source": "https://www.zaproxy.org/docs/addons/automation/changelog/"
+        }
+      },
+      "marketplaceVersions": {
+        "ascanrules": "83",
+        "automation": "0.60.0",
+        "network": "0.29.0",
+        "reports": "0.46.0",
+        "source": "https://www.zaproxy.org/addons/"
+      }
+    },
+    "unresolved": [],
+    "extractedArchiveManifests": {
+      "ascanrules:78": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {
+          "commonlib": ">= 1.38.0 & < 2.0.0",
+          "network": ">= 0.3.0",
+          "oast": ">= 0.7.0"
+        }
+      },
+      "ascanrules:83": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {
+          "commonlib": ">= 1.40.0 & < 2.0.0",
+          "network": ">= 0.3.0",
+          "oast": ">= 0.7.0"
+        }
+      },
+      "automation:0.58.0": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {
+          "commonlib": ">= 1.38.0 & < 2.0.0",
+          "network": ">= 0.15.0 & < 1.0.0"
+        }
+      },
+      "automation:0.60.0": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {
+          "commonlib": ">= 1.38.0 & < 2.0.0",
+          "network": ">= 0.15.0 & < 1.0.0"
+        }
+      },
+      "network:0.25.0": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {}
+      },
+      "network:0.29.0": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {}
+      },
+      "reports:0.43.0": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {
+          "commonlib": ">= 1.17.0 & < 2.0.0"
+        }
+      },
+      "reports:0.46.0": {
+        "minimumZapVersion": "2.17.0",
+        "dependencies": {
+          "commonlib": ">= 1.17.0 & < 2.0.0"
+        }
+      }
+    },
+    "transitiveEvidence": {
+      "commonlib": {
+        "version": "1.43.0",
+        "sha256": "f1c46d6c65434a2a54307065b558a87121eaa5b9b6bc6cfb10bf230b6335d1f5",
+        "dependencies": {}
+      },
+      "oast": {
+        "version": "0.24.0",
+        "sha256": "f06ecea02e2c1df4a164e737dd632afba4430225b2fdc2feb6042bdb1e976b3d",
+        "dependencies": {
+          "database": ">= 0.6.0",
+          "network": ">= 0.1.0"
+        }
+      },
+      "database": {
+        "version": "0.9.0",
+        "sha256": "4c58ca142288d9ddc6ae3fd8fe6815e3894462bae67eb0776e540a2d9ddaf87d",
+        "dependencies": {}
+      }
+    }
+  },
+  "requiredPluginIds": [
+    "40012",
+    "40014",
+    "40016",
+    "40017",
+    "40018",
+    "40019",
+    "40020"
+  ],
+  "loadingEvidence": {
+    "directory": "/zap/plugin",
+    "mechanism": "bundled archive presence only",
+    "loadedVersionsVerified": false
+  },
+  "runtimeRequirements": [
+    "loaded required rule IDs",
+    "policy configuration",
+    "rate/concurrency controls",
+    "completion/cancellation",
+    "traditional-json export"
+  ]
+}

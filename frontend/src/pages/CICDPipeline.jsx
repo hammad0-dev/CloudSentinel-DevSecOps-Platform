@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import PageHeader from "../components/PageHeader";
 import api from "../lib/api";
 import { ChevronDown, AlertTriangle, CheckCircle, Clock, XCircle, Play, ArrowRight, Server } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const PIPELINE_STAGES = ["SAST", "Dependency", "IaC", "Deploy", "DAST"];
+const PIPELINE_STAGES = ["SAST", "Dependency", "IaC", "Deploy", "DAST", "Active DAST"];
 
 export default function CICDPipeline() {
   const [projects, setProjects] = useState([]);
@@ -47,7 +48,6 @@ export default function CICDPipeline() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const selectedProject = projects.find(p => p.id.toString() === selectedProjectId);
   const latestPipeline = pipelines[0];
   const latestDeployment = deployments[0];
 
@@ -113,7 +113,7 @@ export default function CICDPipeline() {
     });
 
     // Find deployment info for the Deploy node
-    const deployInfo = latestDeployment;
+    const deployInfo = deployments.find(deployment => deployment.pipeline_execution_id === latestPipeline.id) || latestDeployment;
 
     return (
       <div className="card p-6 overflow-x-auto mb-6">
@@ -162,6 +162,9 @@ export default function CICDPipeline() {
                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${deployInfo.manifest_source === "generated" ? "bg-purple-500/20 text-purple-300" : "bg-gray-500/20 text-gray-400"}`}>
                       K8s: {deployInfo.manifest_source}
                     </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-400">
+                      Pipeline: {deployInfo.pipeline_execution_id ? "#" + deployInfo.pipeline_execution_id : "Manual"}
+                    </span>
                   </div>
                 )}
               </div>
@@ -201,11 +204,6 @@ export default function CICDPipeline() {
       <div className="card p-5 overflow-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold">Recent Executions</h3>
-          {selectedProject?.webhook_secret && (
-            <span className="text-xs text-gray-400">
-              Webhook Secret: <code className="bg-[#111827] px-1 py-0.5 rounded">{selectedProject.webhook_secret}</code>
-            </span>
-          )}
         </div>
 
         {error && <div className="text-red-400 mb-4">{error}</div>}
@@ -223,6 +221,7 @@ export default function CICDPipeline() {
                 <th className="pb-2 font-medium">Trigger</th>
                 <th className="pb-2 font-medium">Stages Completed</th>
                 <th className="pb-2 font-medium">Started At</th>
+                <th className="pb-2 font-medium text-right">Report</th>
               </tr>
             </thead>
             <tbody>
@@ -253,6 +252,7 @@ export default function CICDPipeline() {
                     )}
                   </td>
                   <td className="py-3 text-gray-400">{new Date(p.started_at).toLocaleString()}</td>
+                  <td className="py-3 text-right"><Link className="secondary-btn text-xs inline-flex items-center gap-1" to={`/projects/${selectedProjectId}/executions/${p.id}/report`}>View report</Link></td>
                 </tr>
               ))}
             </tbody>

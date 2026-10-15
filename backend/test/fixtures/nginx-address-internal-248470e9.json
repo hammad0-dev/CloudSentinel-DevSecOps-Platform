@@ -1,0 +1,28 @@
+{
+  "source": "Genuine approved internal-network inspection; no containment probes",
+  "image": "nginx:1.27.5-alpine@sha256:62223d644fa234c3a1cc785ee14242ec47a77364226f1c811d2f669f96dc2ac8",
+  "network": {
+    "internal": true,
+    "ipv6": false,
+    "subnet": "172.30.250.0/28"
+  },
+  "command": [
+    "ip",
+    "address",
+    "show"
+  ],
+  "exitCode": 0,
+  "stdout": "1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000\n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n       valid_lft forever preferred_lft forever\n2: eth0@if28: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue state UP \n    link/ether 56:f2:65:38:29:5d brd ff:ff:ff:ff:ff:ff\n    inet 172.30.250.2/28 brd 172.30.250.15 scope global eth0\n       valid_lft forever preferred_lft forever\n",
+  "stderr": "",
+  "sanitization": "Only disposable private subnet, ephemeral interface indices/MAC and loopback; exact stdout retained. No host or unrelated network data.",
+  "parser": {
+    "pass": false,
+    "code": "MALFORMED_ROUTES",
+    "validationRule": "UNRECOGNIZED_OR_INCOMPLETE_NATIVE_ADDRESS_FORMAT",
+    "message": "unrecognized or incomplete native address format",
+    "rejected": {
+      "lineNumber": 5,
+      "line": "2: eth0@if28: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue state UP "
+    }
+  }
+}

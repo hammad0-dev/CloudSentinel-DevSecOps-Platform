@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const pool = require("../../db");
 const auth = require("../../middleware/auth");
+const { resolvePipelineExecutionId } = require("../../services/pipelineExecutionContext");
 const {
   severityOrder,
   sonarBaseUrl,
@@ -38,8 +39,26 @@ const {
   mergeDependencyIntoCompliance,
 } = require("./compliance");
 const { fetchSonarMetrics } = require("./metrics");
+const { persistSastEvidence } = require("../../services/sastEvidence");
 
 const router = express.Router();
+const latestCompletedSastResultsQuery = (columns) => `
+  WITH latest AS (
+    SELECT id, sast_details_linked
+    FROM scan_history
+    WHERE project_id = $1 AND scan_type = 'SAST' AND status = 'COMPLETED'
+    ORDER BY completed_at DESC NULLS LAST, id DESC
+    LIMIT 1
+  )
+  SELECT ${columns}
+  FROM scan_results sr
+  JOIN latest latest_scan ON true
+  WHERE sr.project_id = $1
+    AND (
+      (latest_scan.sast_details_linked = TRUE AND sr.scan_history_id = latest_scan.id)
+      OR (latest_scan.sast_details_linked = FALSE AND sr.scan_history_id IS NULL)
+    )
+`;
 const hasUsableProjectToken = (token) =>
   typeof token === "string" &&
   token.trim() &&
@@ -59,6 +78,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
   try {
     const projectRes = await pool.query("SELECT * FROM projects WHERE id = $1 AND user_id = $2", [pid, req.user.id]);
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
+
+    const pipelineExecutionId = await resolvePipelineExecutionId(pool, req.user, pid);
 
     const [runningSastRes, runningDepRes] = await Promise.all([
       pool.query(
@@ -92,8 +113,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     }
 
     const runRow = await pool.query(
-      "INSERT INTO scan_history (project_id, scan_type, status, started_at) VALUES ($1, 'SAST', 'RUNNING', NOW()) RETURNING id",
-      [pid]
+      "INSERT INTO scan_history (project_id, pipeline_execution_id, scan_type, status, started_at) VALUES ($1, $2, 'SAST', 'RUNNING', NOW()) RETURNING id",
+      [pid, pipelineExecutionId]
     );
     scanHistoryId = runRow.rows[0]?.id;
 
@@ -203,53 +224,13 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       );
     }
 
-    await pool.query("DELETE FROM scan_results WHERE project_id = $1", [pid]);
-
-    let insertIssueErrors = 0;
-    const persistedIssues = [];
-    for (const issue of issues) {
-      try {
-        const row = coerceIssueRow(issue, pid);
-        await pool.query(
-          "INSERT INTO scan_results (project_id, rule, severity, message, file_path, line_number, status) VALUES ($1,$2,$3,$4,$5,$6,'OPEN')",
-          row
-        );
-        persistedIssues.push(issue);
-      } catch (insErr) {
-        insertIssueErrors += 1;
-        console.warn("[SAST] skipped malformed issue row:", insErr?.message || insErr);
-      }
-    }
-    if (insertIssueErrors > 0) {
-      console.warn(`[SAST project=${pid}] ${insertIssueErrors} issue row(s) skipped during insert`);
-    }
-
-
-    const summary = persistedIssues.reduce(
-      (acc, item) => {
-        const sev = (item.severity || "INFO").toUpperCase();
-        if (sev === "CRITICAL") acc.critical += 1;
-        else if (sev === "MAJOR" || sev === "HIGH") acc.high += 1;
-        else if (sev === "MINOR" || sev === "MEDIUM" || sev === "LOW") acc.medium += 1;
-        else acc.low += 1;
-        acc.total += 1;
-        return acc;
-      },
-      { critical: 0, high: 0, medium: 0, low: 0, total: 0 }
-    );
-
-    await pool.query(
-      `UPDATE scan_history SET
-        status = 'COMPLETED',
-        total_issues = $1,
-        critical = $2,
-        high = $3,
-        medium = $4,
-        low = $5,
-        completed_at = NOW()
-      WHERE id = $6`,
-      [summary.total, summary.critical, summary.high, summary.medium, summary.low, scanHistoryId]
-    );
+    // Details and completion are atomic: partial persistence is failed, never marked completed.
+    const summary = await persistSastEvidence(pool, {
+      projectId: pid,
+      scanHistoryId,
+      issues,
+      coerceIssueRow,
+    });
 
     if (!shouldKeepClone() && fs.existsSync(cloneTarget)) {
       fs.rmSync(cloneTarget, { recursive: true, force: true });
@@ -291,7 +272,7 @@ router.get("/compliance/:projectId", auth, async (req, res) => {
 
     const [issuesRes, depRes] = await Promise.all([
       pool.query(
-        "SELECT rule, severity, message, file_path, line_number, status FROM scan_results WHERE project_id = $1 ORDER BY created_at DESC",
+        latestCompletedSastResultsQuery("rule, severity, message, file_path, line_number, status") + " ORDER BY sr.created_at DESC",
         [projectId]
       ),
       pool.query(
@@ -343,7 +324,7 @@ router.get("/report/:projectId", auth, async (req, res) => {
 
     const [issuesRes, scanRes, depRes] = await Promise.all([
       pool.query(
-        "SELECT rule, severity, message, file_path, line_number, status, created_at FROM scan_results WHERE project_id = $1 ORDER BY created_at DESC",
+        latestCompletedSastResultsQuery("rule, severity, message, file_path, line_number, status, created_at") + " ORDER BY sr.created_at DESC",
         [projectId]
       ),
       pool.query(
@@ -463,7 +444,7 @@ router.get("/:projectId", auth, async (req, res) => {
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
 
     const rows = await pool.query(
-      "SELECT * FROM scan_results WHERE project_id = $1 ORDER BY created_at DESC",
+      latestCompletedSastResultsQuery("sr.*") + " ORDER BY sr.created_at DESC",
       [projectId]
     );
     const lastScanRes = await pool.query(

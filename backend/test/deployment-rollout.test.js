@@ -1,0 +1,167 @@
+const assert = require("node:assert/strict");
+const test = require("node:test");
+const fs = require("fs");
+const path = require("path");
+const dbPath = require.resolve("../db");
+const gitPath = require.resolve("../services/gitHelper");
+const deploymentPath = require.resolve("../services/deployment");
+const axiosPath = require.resolve("axios");
+function mock(p, exports) { require.cache[p] = { id:p, filename:p, loaded:true, exports, children:[], paths:[] }; }
+test.afterEach(() => { for (const p of [dbPath, gitPath, deploymentPath, axiosPath]) delete require.cache[p]; });
+function setup(overrides = {}) {
+  const queries = [];
+  mock(dbPath, { query: async (sql, params) => { queries.push({sql,params}); if (sql.includes("INSERT INTO image_scans")) return {rows:[{id:701}],rowCount:1}; if (sql.includes("SELECT id, name")) return { rows:[{id:4,name:"Demo",repo_url:"https://example.invalid/repo.git",is_private:false}] }; return {rows:[],rowCount:1}; }});
+  mock(gitPath, {
+    resolveCloneUrl: overrides.cloneUrl || (()=>"https://example.invalid/repo.git"),
+    redactGitCredentials: overrides.redactGitCredentials || (value => String(value || "").replace(/(https?:\/\/)[^/\s@]*@/gi, (_match, scheme) => scheme + "***@")),
+    gitCloneAsync: overrides.gitClone || (async(_u,d)=>fs.writeFileSync(path.join(d,"index.html"),"ok"))
+  });
+  mock(axiosPath, { get: overrides.httpGet || (async()=>({status:200})) });
+  const { deployProject: rawDeployProject } = require(deploymentPath);
+  const deployProject = (projectId, userId, options = {}) => rawDeployProject(projectId, userId, { now:1700000000000, nonce:"abcdef123456", ...options });
+  const podSpec = {automountServiceAccountToken:false,securityContext:{runAsNonRoot:true,runAsUser:10001,runAsGroup:10001,seccompProfile:{type:"RuntimeDefault"}},containers:[{name:"demo",image:"cloudsentinel-p4:manual-attempt-1-loyw3v28-abcdef123456",securityContext:{privileged:false,allowPrivilegeEscalation:false,readOnlyRootFilesystem:true,capabilities:{drop:["ALL"]}}}]};
+  const deploymentObject = {kind:"Deployment",metadata:{name:"demo",namespace:"cloudsentinel-p-4",generation:2},spec:{replicas:1,template:{spec:podSpec}},status:{observedGeneration:2,updatedReplicas:1,readyReplicas:1,availableReplicas:1,unavailableReplicas:0}};
+  const healthy = JSON.stringify(deploymentObject);
+  const service = JSON.stringify({metadata:{name:"demo",namespace:"cloudsentinel-p-4"},spec:{type:"NodePort",ports:[{nodePort:30123}]}});
+  const namespaceObject = JSON.stringify({metadata:{name:"cloudsentinel-p-4",labels:{"app.kubernetes.io/managed-by":"cloudsentinel","cloudsentinel.io/project-id":"4"}}});
+  const baseRunCmd = async label => label === "git source commit" ? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" : label === "docker image inspect" ? "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" : label === "trivy image scan" ? JSON.stringify({Results:[]}) : label === "kubectl get deployed pods" ? JSON.stringify({items:[{spec:{containers:[{name:"demo",image:"cloudsentinel-p4:manual-attempt-1-loyw3v28-abcdef123456"}]},status:{phase:"Running",containerStatuses:[{name:"demo",ready:true,imageID:"docker://sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]}}]}) : label === "kubectl get namespace" ? namespaceObject : label === "kubectl security dry-run" ? JSON.stringify({kind:"List",items:[deploymentObject]}) : label === "kubectl get deployment" ? healthy : label === "kubectl get service" ? service : label === "minikube ip" ? "192.168.49.2" : "ok";
+  const runCmd = async (...args) => { if (overrides.runCmd) { const value = await overrides.runCmd(...args); if (value !== undefined) return value; } return baseRunCmd(...args); };
+  return {deployProject,queries,runCmd,deploymentObject};
+}
+const history = (queries,status) => queries.filter(q=>q.sql.includes("deployment_history") && q.sql.includes(`'${status}'`));
+test("healthy current rollout and reachable URL records success", async()=>{ const c=setup(); const r=await c.deployProject(4,9,{runCmd:c.runCmd}); assert.equal(r.stagingUrl,"http://192.168.49.2:30123"); assert.equal(history(c.queries,"SUCCESS").length,1); });
+test("rollout timeout with ImagePullBackOff records only failure", async()=>{ const c=setup({runCmd:async label=>{if(label==="kubectl rollout status")throw Error("timed out");if(label==="kubectl get pods")return JSON.stringify({items:[{status:{containerStatuses:[{state:{waiting:{reason:"ImagePullBackOff"}}}]}}]});return undefined;}}); await assert.rejects(c.deployProject(4,9,{runCmd:c.runCmd}),/ImagePullBackOff/); assert.equal(history(c.queries,"FAILED").length,1); assert.equal(history(c.queries,"SUCCESS").length,0); });
+test("rollout success without ready replicas fails", async()=>{ const c=setup(); const runCmd=async label=>label==="kubectl get deployment"?JSON.stringify({...c.deploymentObject,status:{observedGeneration:2,updatedReplicas:1,readyReplicas:0,availableReplicas:0,unavailableReplicas:1}}):c.runCmd(label); await assert.rejects(c.deployProject(4,9,{runCmd}),/not ready/); assert.equal(history(c.queries,"FAILED").length,1); });
+test("placeholder URL cannot become successful", async()=>{ const c=setup(); const runCmd=async label=>label==="minikube ip"?"http://minikube-url-unavailable":c.runCmd(label); await assert.rejects(c.deployProject(4,9,{runCmd}),/Invalid staging URL/); assert.equal(history(c.queries,"SUCCESS").length,0); });
+test("unreachable endpoint preserves old target", async()=>{ const c=setup({httpGet:async()=>{throw Error("connection refused");}}); await assert.rejects(c.deployProject(4,9,{runCmd:c.runCmd}),/did not become ready/); assert.equal(c.queries.some(q=>q.sql.includes("UPDATE projects SET target_url")),false); assert.equal(history(c.queries,"FAILED").length,1); });
+
+test("Docker build failure records FAILED and stops before Kubernetes", async () => {
+  const labels = [];
+  const c = setup({ runCmd: async label => { labels.push(label); if (label === "docker build") throw new Error("docker build failed"); return undefined; } });
+  await assert.rejects(c.deployProject(4, 9, { runCmd: c.runCmd }), /docker build failed/);
+  assert.equal(history(c.queries, "FAILED").length, 1);
+  assert.equal(history(c.queries, "SUCCESS").length, 0);
+  assert.equal(labels.includes("kubectl apply"), false);
+});
+
+test("kubectl apply failure records FAILED and never checks rollout", async () => {
+  const labels = [];
+  const c = setup({ runCmd: async label => { labels.push(label); if (label === "kubectl apply") throw new Error("apply rejected"); return undefined; } });
+  await assert.rejects(c.deployProject(4, 9, { runCmd: c.runCmd }), /apply rejected/);
+  assert.equal(history(c.queries, "FAILED").length, 1);
+  assert.equal(history(c.queries, "SUCCESS").length, 0);
+  assert.equal(labels.includes("kubectl rollout restart"), false);
+});
+
+test("CrashLoopBackOff is included in rollout failure history", async () => {
+  const c = setup({ runCmd: async label => {
+    if (label === "kubectl rollout status") throw new Error("rollout timed out");
+    if (label === "kubectl get pods") return JSON.stringify({items:[{status:{containerStatuses:[{state:{waiting:{reason:"CrashLoopBackOff",message:"container repeatedly exited"}}}]}}]});
+    return undefined;
+  }});
+  await assert.rejects(c.deployProject(4, 9, { runCmd: c.runCmd }), /CrashLoopBackOff/);
+  const failed = history(c.queries, "FAILED");
+  assert.equal(failed.length, 1);
+  assert.match(failed[0].params[3], /CrashLoopBackOff/);
+  assert.equal(history(c.queries, "SUCCESS").length, 0);
+});
+
+test("all namespaced deployment commands target the trusted project namespace", async () => {
+  const calls = [];
+  const c = setup({ runCmd: async (label, command, args) => { calls.push({label,command,args}); return undefined; } });
+  const result = await c.deployProject(4, 9, { runCmd: c.runCmd });
+  assert.equal(result.namespace, "cloudsentinel-p-4");
+  const requiredLabels = ["kubectl security dry-run","kubectl apply","kubectl rollout restart","kubectl rollout status","kubectl get deployment","kubectl get service"];
+  for (const label of requiredLabels) {
+    const call = calls.find(entry => entry.label === label);
+    assert.ok(call, `missing ${label}`);
+    assert.ok(call.args.includes("--namespace"), `${label} missing explicit namespace`);
+    assert.ok(call.args.includes("cloudsentinel-p-4"), `${label} targets wrong namespace`);
+  }
+});
+
+test("namespace lookup failure records deployment failure before clone or apply", async () => {
+  let cloneCalled = false;
+  const c = setup({ gitClone:async()=>{ cloneCalled=true; }, runCmd: async label => { if (label === "kubectl get namespace") throw new Error("API server unavailable"); return undefined; } });
+  await assert.rejects(c.deployProject(4, 9, { runCmd:c.runCmd }), /API server unavailable/);
+  assert.equal(cloneCalled, false);
+  assert.equal(history(c.queries,"FAILED").length,1);
+  assert.equal(history(c.queries,"SUCCESS").length,0);
+});
+
+test("rollout pod diagnostics stay inside the trusted project namespace", async () => {
+  let podArgs;
+  const c = setup({ runCmd: async (label, _command, args) => {
+    if (label === "kubectl rollout status") throw new Error("timed out");
+    if (label === "kubectl get pods") { podArgs = args; return JSON.stringify({items:[]}); }
+    return undefined;
+  }});
+  await assert.rejects(c.deployProject(4, 9, {runCmd:c.runCmd}), /timed out/);
+  assert.ok(podArgs.includes("--namespace"));
+  assert.ok(podArgs.includes("cloudsentinel-p-4"));
+});
+
+test("direct NodePort discovery uses Minikube IP and never invokes minikube service", async () => {
+  const calls = [];
+  const c = setup({ runCmd: async (label, command, args) => { calls.push({label, command, args}); return undefined; } });
+  const result = await c.deployProject(4, 9, { runCmd: c.runCmd });
+  assert.equal(result.stagingUrl, "http://192.168.49.2:30123");
+  assert.ok(calls.some(call => call.label === "minikube ip" && call.args.length === 1 && call.args[0] === "ip"));
+  assert.equal(calls.some(call => call.label === "minikube service url"), false);
+});
+
+test("service from another namespace cannot create a staging URL", async () => {
+  const c = setup({ runCmd: async label => label === "kubectl get service"
+    ? JSON.stringify({metadata:{name:"demo",namespace:"cloudsentinel-p-25"},spec:{type:"NodePort",ports:[{nodePort:30123}]}})
+    : undefined });
+  await assert.rejects(c.deployProject(4, 9, {runCmd:c.runCmd}), /not a valid NodePort service/);
+  assert.equal(history(c.queries, "SUCCESS").length, 0);
+});
+
+test("invalid NodePort stops discovery before Minikube IP lookup", async () => {
+  const labels = [];
+  const c = setup({ runCmd: async label => {
+    labels.push(label);
+    if (label === "kubectl get service") return JSON.stringify({metadata:{name:"demo",namespace:"cloudsentinel-p-4"},spec:{type:"NodePort",ports:[{}]}});
+    return undefined;
+  }});
+  await assert.rejects(c.deployProject(4, 9, {runCmd:c.runCmd}), /not a valid NodePort service/);
+  assert.equal(labels.includes("minikube ip"), false);
+});
+
+test("Minikube IP command failure records FAILED and no SUCCESS", async () => {
+  const c = setup({ runCmd: async label => {
+    if (label === "minikube ip") throw new Error("profile unavailable");
+    return undefined;
+  }});
+  await assert.rejects(c.deployProject(4, 9, {runCmd:c.runCmd}), /Unable to discover Minikube IP/);
+  assert.equal(history(c.queries, "FAILED").length, 1);
+  assert.equal(history(c.queries, "SUCCESS").length, 0);
+});
+
+test("deployment logging redacts authenticated clone URLs", async () => {
+  const fakeToken = "ghp_FAKE_TOKEN_FOR_REGRESSION_ONLY";
+  const cloneUrl = `https://x-access-token:${fakeToken}@github.com/example/private-repo.git`;
+  const c = setup({ cloneUrl: () => cloneUrl });
+  const originalLog = console.log;
+  const logs = [];
+  console.log = (...args) => logs.push(args.join(" "));
+  try {
+    await c.deployProject(4, 9, { runCmd: c.runCmd });
+  } finally {
+    console.log = originalLog;
+  }
+  const output = logs.join("\n");
+  assert.equal(output.includes(fakeToken), false);
+  assert.match(output, /Cloning https:\/\/\*\*\*@github\.com\/example\/private-repo\.git/);
+});
+
+test("generated HTML Dockerfile pins patched nginx Alpine while retaining non-root port 8080 hardening", () => {
+  const { generateDockerfileContent } = require(deploymentPath);
+  const dockerfile = generateDockerfileContent("unknown", "/tmp/project");
+  assert.match(dockerfile, /^FROM nginx:1.30.5-alpine3.24@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94/m);
+  assert.match(dockerfile, /adduser -D -u 10001/);
+  assert.match(dockerfile, /EXPOSE 8080/);
+  assert.match(dockerfile, /USER 10001:10001/);
+  assert.match(dockerfile, /listen 8080/);
+});

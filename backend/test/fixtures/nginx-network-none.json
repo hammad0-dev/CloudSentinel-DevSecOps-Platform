@@ -1,0 +1,39 @@
+{
+  "source": "genuine pinned-image compatibility inspection; NOT containment acceptance",
+  "image": "nginx:1.27.5-alpine@sha256:62223d644fa234c3a1cc785ee14242ec47a77364226f1c811d2f669f96dc2ac8",
+  "networkMode": "none",
+  "commands": {
+    "ipv4": {
+      "argv": [
+        "ip",
+        "route",
+        "list"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "ipv6": {
+      "argv": [
+        "ip",
+        "-f",
+        "inet6",
+        "route",
+        "list"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "addresses": {
+      "argv": [
+        "ip",
+        "address",
+        "show"
+      ],
+      "exitCode": 0,
+      "stdout": "1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000\n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n       valid_lft forever preferred_lft forever\n    inet6 ::1/128 scope host \n       valid_lft forever preferred_lft forever\n",
+      "stderr": ""
+    }
+  }
+}

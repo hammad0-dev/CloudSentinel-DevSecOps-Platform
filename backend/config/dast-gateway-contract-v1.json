@@ -1,0 +1,510 @@
+{
+  "version": "v1",
+  "adapter": {
+    "allowedOperations": [
+      "inspect",
+      "create",
+      "run",
+      "exec",
+      "connect",
+      "stop",
+      "rm"
+    ],
+    "result": {
+      "exitCode": "integer",
+      "stdout": "string",
+      "stderr": "string",
+      "timedOut": "boolean",
+      "objectId": "string|null",
+      "operationId": "string"
+    },
+    "errors": [
+      "MISSING_RESOURCE",
+      "PERMISSION_DENIED",
+      "DAEMON_UNAVAILABLE",
+      "TIMEOUT",
+      "MALFORMED_OUTPUT"
+    ]
+  },
+  "fixtureNetwork": {
+    "mode": "lifecycle-owned-disposable",
+    "reserved": [
+      "minikube",
+      "bridge",
+      "host",
+      "none"
+    ],
+    "requiredLabels": [
+      "cloudsentinel.owner",
+      "cloudsentinel.scan"
+    ],
+    "ipv6": false,
+    "reference": {
+      "required": [
+        "id",
+        "name",
+        "ownerLabels",
+        "subnet",
+        "gateway",
+        "ipv6",
+        "internal",
+        "scanIdentity",
+        "createdAt",
+        "provenance"
+      ],
+      "types": {
+        "id": "docker-id",
+        "name": "validated-name",
+        "ownerLabels": "object",
+        "subnet": "cidr-v4",
+        "gateway": "ipv4",
+        "ipv6": "boolean",
+        "internal": "boolean",
+        "scanIdentity": "object",
+        "createdAt": "timestamp",
+        "provenance": "trusted-docker-inspect"
+      },
+      "mustBeOwned": true
+    }
+  },
+  "observation": {
+    "required": [
+      "projectId",
+      "executionId",
+      "scanId",
+      "gatewayContainerId",
+      "scannerContainerId",
+      "scannerNetworkId",
+      "fixtureNetworkId",
+      "memberships",
+      "routes",
+      "ipv4",
+      "ipv6",
+      "defaultGateway",
+      "squidPolicyDigest",
+      "target",
+      "positiveConnectivity",
+      "negativeConnectivity",
+      "directTcpBypass",
+      "observedAt",
+      "provenance",
+      "complete"
+    ],
+    "provenance": [
+      "docker-inspect",
+      "docker-exec",
+      "gateway-inspection",
+      "connectivity-probe"
+    ],
+    "runtimeReadyRequires": [
+      "complete",
+      "independent",
+      "positiveConnectivity",
+      "negativeConnectivity",
+      "directTcpBypass",
+      "policyDigestMatch"
+    ],
+    "mockStatus": "MOCK_ONLY_NOT_VERIFIED"
+  },
+  "policy": {
+    "privateDirectoryMode": "0700",
+    "mount": "read-only",
+    "digest": "sha256",
+    "explicitConfigPath": true,
+    "readinessRequired": true
+  },
+  "states": [
+    "CREATED",
+    "PROVISIONING",
+    "VERIFYING",
+    "READY",
+    "FAILED",
+    "CLEANING",
+    "CLEANED"
+  ],
+  "transitions": {
+    "CREATED": [
+      "PROVISIONING",
+      "FAILED"
+    ],
+    "PROVISIONING": [
+      "VERIFYING",
+      "FAILED"
+    ],
+    "VERIFYING": [
+      "READY",
+      "FAILED"
+    ],
+    "READY": [
+      "CLEANING",
+      "FAILED"
+    ],
+    "FAILED": [
+      "CLEANING"
+    ],
+    "CLEANING": [
+      "CLEANED",
+      "FAILED"
+    ],
+    "CLEANED": []
+  },
+  "schemaVersion": "1.1",
+  "lifecycleMethods": {
+    "createOwnedFixtureNetwork": "createOwnedFixtureNetwork(scanIdentity, networkSpec)",
+    "verifyOwnedFixtureNetwork": "verifyOwnedFixtureNetwork(reference, freshObservation)",
+    "provision": "provision({projectId, executionId, scanId, target, fixtureNetworkReference})",
+    "cleanup": "cleanup(scanId)"
+  },
+  "dockerInspection": {
+    "container": [
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .}}",
+      "<trusted-id>"
+    ],
+    "network": [
+      "docker",
+      "network",
+      "inspect",
+      "--format",
+      "{{json .}}",
+      "<trusted-id>"
+    ],
+    "nativeRequired": [
+      "Id",
+      "Name",
+      "Config.Labels",
+      "NetworkSettings.Networks"
+    ],
+    "networkNativeRequired": [
+      "Id",
+      "Name",
+      "Labels",
+      "IPAM.Config",
+      "Options",
+      "Containers"
+    ],
+    "normalized": {
+      "source": "docker-inspect",
+      "schemaVersion": "1.1",
+      "timestamp": "timestamp",
+      "complete": "boolean",
+      "objectId": "docker-id",
+      "ownerLabels": "object",
+      "memberships": "array",
+      "isolation": "object"
+    },
+    "errors": [
+      "MALFORMED_JSON",
+      "MISSING_FIELD",
+      "ID_MISMATCH",
+      "OWNERSHIP_MISMATCH"
+    ]
+  },
+  "routes": {
+    "ipv4": [
+      "ip",
+      "route",
+      "list"
+    ],
+    "ipv6": [
+      "ip",
+      "-f",
+      "inet6",
+      "route",
+      "list"
+    ],
+    "addresses": [
+      "ip",
+      "address",
+      "show"
+    ],
+    "required": [
+      "source",
+      "timestamp",
+      "complete",
+      "routes",
+      "addresses",
+      "defaultGateway"
+    ],
+    "reject": [
+      "malformed",
+      "default-route",
+      "unexpected-interface",
+      "unapproved-path",
+      "ipv6-exposed"
+    ]
+  },
+  "squid": {
+    "canonicalBytes": "UTF-8 exact bytes",
+    "digest": "sha256(canonicalBytes)",
+    "inspect": [
+      "docker",
+      "exec",
+      "<gateway-id>",
+      "squidclient",
+      "-h",
+      "127.0.0.1",
+      "-p",
+      "3128",
+      "mgr:config"
+    ],
+    "process": [
+      "docker",
+      "exec",
+      "<gateway-id>",
+      "sh",
+      "-c",
+      "ps -o pid,args"
+    ],
+    "policyFile": [
+      "docker",
+      "exec",
+      "<gateway-id>",
+      "sha256sum",
+      "<config-path>"
+    ],
+    "readiness": "foreground Squid PID 1, config digest and independently observed fixture HTTP response",
+    "readyRequires": [
+      "process-running",
+      "active-config-path",
+      "policy-digest-match"
+    ]
+  },
+  "connectivityProbe": {
+    "required": [
+      "probeId",
+      "sourceContainerId",
+      "destination",
+      "protocol",
+      "method",
+      "expected",
+      "actual",
+      "exitCode",
+      "responseStatus",
+      "networkEvidence",
+      "timestamp",
+      "provenance"
+    ],
+    "destination": [
+      "hostname",
+      "ip",
+      "port"
+    ],
+    "expected": [
+      "ALLOW",
+      "DENY"
+    ],
+    "actual": [
+      "ALLOW",
+      "DENY",
+      "ERROR",
+      "INCONCLUSIVE"
+    ],
+    "mandatory": [
+      "positive-fixture",
+      "negative-proxy",
+      "negative-connect",
+      "negative-direct-bypass",
+      "negative-redirect",
+      "negative-alternate-host",
+      "negative-port"
+    ]
+  },
+  "cleanup": {
+    "reinspect": [
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .}}",
+      "<exact-id>"
+    ],
+    "ownership": [
+      "cloudsentinel.owner",
+      "cloudsentinel.scan"
+    ],
+    "results": {
+      "exitCode": "integer",
+      "notFound": "boolean",
+      "removed": "boolean",
+      "residual": "boolean",
+      "error": "string|null"
+    },
+    "refuse": [
+      "foreign-id",
+      "missing-label",
+      "type-mismatch",
+      "substitution"
+    ]
+  },
+  "networkSpec": {
+    "schemaVersion": "1.0",
+    "type": "lifecycle-owned-disposable",
+    "callerFields": [],
+    "generated": [
+      "name",
+      "labels",
+      "subnet",
+      "gateway",
+      "lifecycleUuid"
+    ],
+    "ipam": {
+      "pool": "administrator-approved-private-v4-pool",
+      "callerSelect": false,
+      "overlapCheck": [
+        "docker-networks",
+        "host-routes"
+      ],
+      "ipv6": false,
+      "internal": true,
+      "race": "create-and-verify-or-fail"
+    },
+    "unknownFields": "reject"
+  },
+  "labels": {
+    "required": [
+      "cloudsentinel.project",
+      "cloudsentinel.execution",
+      "cloudsentinel.scan",
+      "cloudsentinel.lifecycle",
+      "cloudsentinel.role",
+      "cloudsentinel.contract"
+    ],
+    "canonicalEncoding": "strict-lowercase-id",
+    "deletion": "immutable-id-plus-exact-label-match"
+  },
+  "normalizedSchemas": {
+    "container": {
+      "required": [
+        "id",
+        "name",
+        "labels",
+        "state",
+        "imageDigest",
+        "mounts",
+        "networks",
+        "security"
+      ],
+      "optional": [
+        "exitCode",
+        "startedAt"
+      ],
+      "unknown": "reject"
+    },
+    "network": {
+      "required": [
+        "id",
+        "name",
+        "labels",
+        "driver",
+        "internal",
+        "ipv6",
+        "subnet",
+        "gateway",
+        "containerIds"
+      ],
+      "unknown": "reject"
+    },
+    "interface": {
+      "required": [
+        "name",
+        "index",
+        "ipv4",
+        "ipv6"
+      ],
+      "address": {
+        "ip": "string",
+        "prefixLength": "integer"
+      }
+    },
+    "route": {
+      "required": [
+        "destination",
+        "gateway",
+        "device",
+        "protocol",
+        "family",
+        "defaultRoute"
+      ],
+      "scanner": {
+        "defaultRoute": false,
+        "ipv6": false
+      },
+      "gateway": {
+        "fixtureRouteAllowed": true
+      }
+    }
+  },
+  "adapterEnvelope": {
+    "required": [
+      "operationId",
+      "operation",
+      "args",
+      "exitCode",
+      "stdout",
+      "stderr",
+      "durationMs",
+      "timedOut",
+      "parseError",
+      "schemaError"
+    ],
+    "uncertain": [
+      "daemon-unavailable",
+      "timeout-after-send",
+      "partial-success"
+    ],
+    "unknown": "reject"
+  },
+  "methodSchemas": {
+    "createOwnedFixtureNetwork": {
+      "input": [
+        "scanIdentity"
+      ],
+      "output": [
+        "reference",
+        "operationId"
+      ]
+    },
+    "verifyOwnedFixtureNetwork": {
+      "input": [
+        "reference",
+        "freshObservation"
+      ],
+      "output": [
+        "verified",
+        "reasons"
+      ]
+    },
+    "provision": {
+      "input": [
+        "projectId",
+        "executionId",
+        "scanId",
+        "target",
+        "fixtureNetworkReference"
+      ],
+      "output": [
+        "state",
+        "gateway",
+        "scanner",
+        "evidence"
+      ]
+    },
+    "cleanup": {
+      "input": [
+        "scanId"
+      ],
+      "output": [
+        "state",
+        "removed",
+        "residual",
+        "failures"
+      ]
+    }
+  },
+  "implementabilityAudit": {
+    "remainingBlockers": [],
+    "runtimeRequired": true
+  }
+}

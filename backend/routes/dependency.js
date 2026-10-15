@@ -4,6 +4,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 const pool = require("../db");
 const auth = require("../middleware/auth");
+const { resolvePipelineExecutionId } = require("../services/pipelineExecutionContext");
 
 const router = express.Router();
 
@@ -275,6 +276,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     );
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
 
+    const pipelineExecutionId = await resolvePipelineExecutionId(pool, req.user, projectId);
+
     const [runningSastRes, runningDepRes] = await Promise.all([
       pool.query(
         "SELECT id FROM scan_history WHERE project_id = $1 AND scan_type = 'SAST' AND status = 'RUNNING' LIMIT 1",
@@ -303,8 +306,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     }
 
     const runRow = await pool.query(
-      "INSERT INTO dependency_scans (project_id, status, target_type, started_at) VALUES ($1, 'RUNNING', 'fs', NOW()) RETURNING id",
-      [projectId]
+      "INSERT INTO dependency_scans (project_id, pipeline_execution_id, status, target_type, started_at) VALUES ($1, $2, 'RUNNING', 'fs', NOW()) RETURNING id",
+      [projectId, pipelineExecutionId]
     );
     scanId = runRow.rows[0].id;
 

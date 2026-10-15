@@ -1,0 +1,6 @@
+{
+  "source": "cs-zap-import-hz3v5mq2/daemon-logs.json",
+  "qualification": "Sanitized excerpts from the retained genuine diagnostic log; no policy XML file was retained.",
+  "installationFailure": "3924 [ZAP-daemon] ERROR org.zaproxy.zap.control.AddOnInstaller - Failed to install a file from add-on [id=hud, version=0.19.0]: /home/zap/.ZAP/hudtutorial/en_GB/Warning.html\njava.io.IOException: No space left on device",
+  "policyFailure": "11839 [ZAP-IO-Server-1-1] ERROR org.zaproxy.zap.extension.ascan.PolicyManager - Error parsing file:/home/zap/.ZAP/policies/Default%20Policy.policy\nCaused by: org.xml.sax.SAXParseException: Premature end of file."
+}
