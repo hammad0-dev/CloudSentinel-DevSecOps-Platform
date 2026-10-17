@@ -1,8 +1,10 @@
+import { executionResultsApi } from "../utils/executionScan";
+import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ShieldAlert, TriangleAlert, FileCode2, ScanSearch } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
-import api from "../lib/api";
+import liveApi from "../lib/api";
 
 const SEV_ORDER = { CRITICAL: 1, HIGH: 2, MEDIUM: 3, LOW: 4, UNKNOWN: 5 };
 
@@ -14,6 +16,11 @@ const SEV_COLORS = {
 };
 
 export default function IaCSecurity() {
+  const [searchParams] = useSearchParams();
+  const executionId = searchParams.get("executionId");
+  const reportProjectId = searchParams.get("projectId");
+  const api = executionResultsApi(liveApi, reportProjectId, executionId);
+
   const [projects, setProjects]   = useState([]);
   const [selected, setSelected]   = useState("");
   const [data, setData]           = useState(null);
@@ -29,7 +36,7 @@ export default function IaCSecurity() {
       .then((r) => {
         const list = r.data.projects || [];
         setProjects(list);
-        if (list.length) setSelected(String(list[0].id));
+        if (list.length) setSelected(reportProjectId || String(list[0].id));
       })
       .catch(() => setProjects([]));
   }, []);
@@ -43,7 +50,7 @@ export default function IaCSecurity() {
       .then((r) => setData(r.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [selected]);
+  }, [selected, executionId]);
 
   // Poll while scan is RUNNING
   useEffect(() => {
@@ -98,7 +105,7 @@ export default function IaCSecurity() {
           <div className="flex items-center gap-3">
             <select
               className="input"
-              value={selected}
+              value={selected} disabled={Boolean(executionId)}
               onChange={(e) => { setSelected(e.target.value); setExpanded(null); setSeverityTab("ALL"); }}
             >
               {projects.map((p) => (
@@ -108,7 +115,7 @@ export default function IaCSecurity() {
             <button
               className="primary-btn inline-flex items-center gap-2"
               onClick={runScan}
-              disabled={scanning || scanStatus === "RUNNING"}
+              disabled={Boolean(executionId) || scanning || scanStatus === "RUNNING"}
             >
               <ScanSearch size={14} />
               {scanning || scanStatus === "RUNNING" ? "Scanning…" : "Run IaC Scan"}

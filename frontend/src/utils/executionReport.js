@@ -9,7 +9,7 @@ export function normalizeSeverity(value) {
 
 export function getDetailedFindingGroups(report) {
   const findings = report?.findings || {};
-  return [["SAST", findings.sast || []], ["Dependency / SBOM", findings.dependency || []], ["IaC", findings.iac || []], ["Container image", findings.image || []], ["DAST", findings.dast || []], ["Active DAST", findings.activeDast || []]];
+  return [["SAST", findings.sast || []], ["Dependency / SBOM", findings.dependency || []], ["IaC", findings.iac || []], ["Container image", findings.image || []], ["DAST", findings.dast || []]];
 }
 
 export function getDetailedFindingCount(report) {
