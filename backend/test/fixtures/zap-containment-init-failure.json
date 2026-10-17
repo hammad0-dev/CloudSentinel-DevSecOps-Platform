@@ -1,0 +1,23 @@
+{
+  "source": "retained zpd-fast-20261016-a1 inspection and report",
+  "historicalStatus": "BLOCKED",
+  "historicalReason": "DIAGNOSTIC_INITIALIZATION_FAILED",
+  "historicalStage": "DAEMON_INITIALIZATION",
+  "container": {
+    "running": true,
+    "exitCode": 0
+  },
+  "tmpfs": {
+    "/home/zap/.ZAP": "rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
+    "/home/zap/.mozilla/firefox/1337hack.zap-client-profile": "rw,noexec,nosuid,nodev,size=4m,uid=1000,gid=1000,mode=0700",
+    "/tmp": "rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=1777"
+  },
+  "mounts": [
+    {
+      "Type": "bind",
+      "Destination": "/zap/wrk",
+      "RW": false
+    }
+  ],
+  "startupLogRetained": false
+}

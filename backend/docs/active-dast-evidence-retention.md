@@ -1,0 +1,9 @@
+Active DAST evidence retention
+
+The Active runtime finalizes an execution-correlated cs-active-evidence-pPROJECT-eEXECUTION-* directory (0700) before helper, scanner, gateway or network removal. Each artifact and manifest is written through an exclusive 0600 temporary file, fsynced, then atomically renamed. Capture failure does not suppress ownership-safe cleanup or the original failure.
+
+Schema 1 stores sanitized Automation streams/exit status, sanitized original JSON report structure, parsed alerts, scanner/gateway/fixture/image/network identities, approved plugin IDs, known lease/grant identifiers and timings. Hashes distinguish original bytes from sanitized stored bytes. Sensitive headers, bodies, attacks, query values and configured secrets are redacted. Missing, malformed and oversized artifacts mark INCOMPLETE rather than silently truncating into success. Durable evidence paths are linked in cleanup.evidence and the persisted execution result.
+
+Squid currently logs completion timestamps, shared scanner namespace IP, method, URL, status and hierarchy result. Retained request records omit query values/bodies/headers. Correlation only establishes the namespace and exact approved origin/path. It cannot distinguish ZAP from a helper sharing that namespace and includes baseline/verification traffic. Completion-window counts (1000 ms) and bursts are observations only, not dispatch rates or rate violations.
+
+Rate enforcement and ZAP-only attribution remain UNVERIFIED. A completed scan with incomplete evidence or unverified rate is recorded BLOCKED (ACTIVE_EVIDENCE_OR_RATE_UNVERIFIED), never accepted. Further acceptance requires trustworthy ZAP dispatch/enforcement timestamps, source attribution and enforcement interval evidence, without weakening policy or expanding target scope. No new scan or runtime configuration activation is performed by this source change.

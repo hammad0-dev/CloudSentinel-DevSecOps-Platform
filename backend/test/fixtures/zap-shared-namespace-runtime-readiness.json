@@ -1,0 +1,419 @@
+{
+  "source": "Genuine saved ZAP 2.17.0 capability diagnostic API views; this is not shared-namespace containment evidence.",
+  "historicalReportStatus": "FAIL",
+  "version": {
+    "version": "2.17.0"
+  },
+  "addons": {
+    "installedAddons": [
+      {
+        "id": "pscan",
+        "version": "0.6.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "zest",
+        "version": "48.14.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "onlineMenu",
+        "version": "15.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "reports",
+        "version": "0.46.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "soap",
+        "version": "31.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "retest",
+        "version": "0.11.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "authhelper",
+        "version": "0.41.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "formhandler",
+        "version": "6.8.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "diff",
+        "version": "18.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "directorylistv1",
+        "version": "9.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "gettingStarted",
+        "version": "20.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "sequence",
+        "version": "10.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "network",
+        "version": "0.29.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "graaljs",
+        "version": "0.14.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "exim",
+        "version": "0.21.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "oast",
+        "version": "0.24.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "postman",
+        "version": "0.9.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "invoke",
+        "version": "17.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "fuzz",
+        "version": "13.17.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "ascanrules",
+        "version": "83.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "scripts",
+        "version": "45.20.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "client",
+        "version": "0.30.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "callhome",
+        "version": "0.23.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "spider",
+        "version": "0.20.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "websocket",
+        "version": "38.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "hud",
+        "version": "0.19.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "webdriverlinux",
+        "version": "215.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "pscanrules",
+        "version": "75.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "spiderAjax",
+        "version": "23.32.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "scanpolicies",
+        "version": "0.8.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "automation",
+        "version": "0.60.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "tips",
+        "version": "16.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "help",
+        "version": "22.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "selenium",
+        "version": "15.53.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "commonlib",
+        "version": "1.43.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "graphql",
+        "version": "0.33.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "replacer",
+        "version": "22.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "reveal",
+        "version": "10.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "alertFilters",
+        "version": "27.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "openapi",
+        "version": "57.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "database",
+        "version": "0.9.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "bruteforce",
+        "version": "21.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "insights",
+        "version": "0.5.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "requester",
+        "version": "7.10.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "quickstart",
+        "version": "59.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "retire",
+        "version": "0.63.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "domxss",
+        "version": "24.0.0",
+        "installationStatus": "INSTALLED"
+      },
+      {
+        "id": "encoder",
+        "version": "1.9.0",
+        "installationStatus": "INSTALLED"
+      }
+    ]
+  },
+  "rules": {
+    "scanners": [
+      {
+        "id": "6"
+      },
+      {
+        "id": "7"
+      },
+      {
+        "id": "10045"
+      },
+      {
+        "id": "10048"
+      },
+      {
+        "id": "20015"
+      },
+      {
+        "id": "20017"
+      },
+      {
+        "id": "20018"
+      },
+      {
+        "id": "20019"
+      },
+      {
+        "id": "40009"
+      },
+      {
+        "id": "40012"
+      },
+      {
+        "id": "40014"
+      },
+      {
+        "id": "40018"
+      },
+      {
+        "id": "40019"
+      },
+      {
+        "id": "40020"
+      },
+      {
+        "id": "40021"
+      },
+      {
+        "id": "40022"
+      },
+      {
+        "id": "40026"
+      },
+      {
+        "id": "40027"
+      },
+      {
+        "id": "40043"
+      },
+      {
+        "id": "40045"
+      },
+      {
+        "id": "40048"
+      },
+      {
+        "id": "90019"
+      },
+      {
+        "id": "90020"
+      },
+      {
+        "id": "90021"
+      },
+      {
+        "id": "90023"
+      },
+      {
+        "id": "90024"
+      },
+      {
+        "id": "90034"
+      },
+      {
+        "id": "90035"
+      },
+      {
+        "id": "90036"
+      },
+      {
+        "id": "90037"
+      },
+      {
+        "id": "0"
+      },
+      {
+        "id": "10106"
+      },
+      {
+        "id": "30001"
+      },
+      {
+        "id": "30002"
+      },
+      {
+        "id": "40003"
+      },
+      {
+        "id": "40008"
+      },
+      {
+        "id": "40028"
+      },
+      {
+        "id": "40029"
+      },
+      {
+        "id": "40032"
+      },
+      {
+        "id": "40034"
+      },
+      {
+        "id": "40035"
+      },
+      {
+        "id": "40042"
+      },
+      {
+        "id": "40044"
+      },
+      {
+        "id": "90017"
+      },
+      {
+        "id": "10047"
+      },
+      {
+        "id": "10058"
+      },
+      {
+        "id": "10104"
+      },
+      {
+        "id": "40016"
+      },
+      {
+        "id": "40017"
+      },
+      {
+        "id": "50000"
+      },
+      {
+        "id": "90026"
+      },
+      {
+        "id": "90029"
+      },
+      {
+        "id": "100043"
+      }
+    ]
+  },
+  "sourceSha256": {
+    "installed-addons": "64f5e7861ac2295fb624f0e7bb58e2dcc0f264beab6be45dd0f46e38efacb219",
+    "scanner-inventory": "08b129bf15782e7bbf9573e139a77fb696a823b902573f0e0d07f69076a043fa",
+    "auth-health-version": "5b026f69b398daaee02e7b30660d99b0a4063f25ee417d2f9da782774185e23b"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "baseReference": "zaproxy/zap-stable@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+  "profilePath": "/home/zap/.mozilla/firefox/1337hack.zap-client-profile",
+  "profileMiB": 4,
+  "profileSeed": {
+    "name": "firefox-extension-preferences.json",
+    "bytes": 101,
+    "sha256": "c06f1d12e7cfb8f12158d6ac4d5541c01664b9d62892d1b0382ea30df2c73f54",
+    "base64": "eyJicm93c2VyLWV4dGVuc2lvblYzQHphcHJveHkub3JnIjp7InBlcm1pc3Npb25zIjpbIjxhbGxfdXJscz4iXSwib3JpZ2lucyI6WyI8YWxsX3VybHM+IiwiKjovLyovKiJdfX0="
+  },
+  "javaPreferencesRoot": "/home/zap/.ZAP",
+  "jvmPropertiesName": ".ZAP_JVM.properties",
+  "javaPreferencesEffectivePath": "/home/zap/.ZAP/.java/.userPrefs",
+  "java17PreferencesClassSha256": "928e31e0f738d8e9ce7ab5cead839a2bdc147a02102c578eba636202a281b479",
+  "callbackBinding": "oast.callback.localaddr=127.0.0.1",
+  "runtimeValidated": false
+}

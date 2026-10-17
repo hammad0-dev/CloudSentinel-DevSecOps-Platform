@@ -61,3 +61,18 @@ test("never treats staged files as runtime activation", () => {
   assert.equal(runtimeVerificationContract({ staged, observedConfigPath: CONTAINER_CONFIG_PATH, observedDigest: staged.policyDigest, processReady: true }).verified, true);
   assert.equal(runtimeVerificationContract({ staged, observedConfigPath: "/etc/squid/squid.conf", observedDigest: staged.policyDigest, processReady: true }).verified, false);
 });
+
+
+test("only synthetic Active policy preserves query terms for strict transaction correlation",async()=>{
+ const policy=require('../services/squidPolicy');
+ const activeTarget={hostname:'fixture.test',ip:'172.30.19.146',port:18080};
+ const generated=policy.activePolicy(activeTarget);
+ assert.match(generated,/^strip_query_terms off$/m);
+ assert.match(generated,/^logformat cs_active %ts\.%03tu %>a %rm %ru %>Hs %Ss\/%Sh$/m);
+ assert.match(generated,/^http_access deny connect$/m);
+ assert.match(generated,/^http_access allow host destination port protocol methods paths$/m);
+ assert.match(generated,/^http_access deny all$/m);
+ assert.doesNotMatch(policy.canonicalPolicy(target),/strip_query_terms/);
+ const staged=await policy.stagePolicy({scanId:'query-correlation',target:activeTarget,profile:'active'});
+ try{assert.equal((await policy.verifyStagedPolicy(staged)).verified,true);assert.equal(staged.policyDigest,policy.digest(generated));}finally{assert.deepEqual((await policy.cleanupPolicy(staged)).residual,[]);}
+});

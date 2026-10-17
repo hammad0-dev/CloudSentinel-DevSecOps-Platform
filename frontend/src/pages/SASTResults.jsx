@@ -187,7 +187,7 @@ export default function SASTResults() {
           <div className="card p-4">Coverage: {data.sonarMetrics.coverage.toFixed(1)}%</div>
           <div className="card p-4">Duplications: {data.sonarMetrics.duplications.toFixed(1)}%</div>
           <div className="card p-4">Lines of Code: {data.sonarMetrics.ncloc}</div>
-          <div className="card p-4">Quality Gate: {data.sonarMetrics.vulnerabilities === 0 && data.sonarMetrics.bugs === 0 ? "Passed" : "Needs review"}</div>
+          <div className="card p-4">Quality Gate: {"See SonarQube for verified status"}</div>
         </div>
       ) : null}
       {data.sonarMetrics ? (
@@ -232,7 +232,7 @@ export default function SASTResults() {
         {["ALL", "CRITICAL", "MAJOR", "MINOR", "INFO"].map((s) => (
           <button key={s} onClick={() => setSeverityTab(s)} className={`px-3 py-1.5 rounded-lg text-sm border ${severityTab === s ? "bg-blue-600 border-blue-500" : "border-[#1e2d4a]"}`}>{s}</button>
         ))}
-        <input className="input w-full md:w-96 ml-auto" placeholder="Search vulnerabilities..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="input w-full md:w-96 ml-auto" placeholder="Search findings..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
@@ -244,7 +244,7 @@ export default function SASTResults() {
               <Fragment key={`grp-${i}`}>
                 <tr className="border-b border-[#1e2d4a]">
                   <td className="p-3"><SeverityBadge severity={v.severity} /></td>
-                  <td className="font-mono text-xs">{v.rule}</td>
+                  <td className="font-mono text-xs">{v.rule}<div>{({CODE_SMELL:"Maintainability",BUG:"Reliability",VULNERABILITY:"Security vulnerability",SECURITY_HOTSPOT:"Security hotspot"})[v.issue_type] || "Unclassified"}{v.issue_type === "SECURITY_HOTSPOT" ? ` (${v.hotspot_review || "TO_REVIEW"})` : ""}</div></td>
                   <td>{v.message}</td>
                   <td className="text-blue-400">{v.file_path?.split("/").pop()}</td>
                   <td>{v.line_number || "-"}</td>
@@ -261,7 +261,7 @@ export default function SASTResults() {
                       <div className="grid md:grid-cols-3 gap-3 text-xs">
                         <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
                           <p className="text-[#64748b] mb-1">Rule ID</p>
-                          <p className="font-mono text-blue-400">{v.rule || "—"}</p>
+                          <p className="font-mono text-blue-400">{v.rule || "—"}</p><p>{({CODE_SMELL:"Maintainability",BUG:"Reliability",VULNERABILITY:"Security vulnerability",SECURITY_HOTSPOT:"Security hotspot — review status: " + (v.hotspot_review || "TO_REVIEW")})[v.issue_type] || "Unclassified"}</p>
                         </div>
                         <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
                           <p className="text-[#64748b] mb-1">File</p>

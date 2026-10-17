@@ -1,0 +1,7 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),os=require('os'),path=require('path');
+const d=require('../services/staticStageFailure');
+test('retains real route error instead of generic Axios HTTP 500',()=>assert.equal(d.responseError({message:'Request failed with status code 500',response:{data:{error:'Cannot reach Sonar (ECONNREFUSED)'}}}),'Cannot reach Sonar (ECONNREFUSED)'));
+test('malformed response falls back to bounded transport error',()=>{assert.equal(d.responseError({message:'timeout',response:{data:{error:{}}}}),'timeout');assert.equal(d.responseError({message:'x'.repeat(5000)}).length,4000);});
+test('redacts secrets before truncation',()=>{const x=d.sanitize('https://user:pw@host token=abc Bearer xyz MYSECRET',{JWT_SECRET:'MYSECRET'});assert.ok(!x.includes('user:pw'));assert.ok(!x.includes('abc'));assert.ok(!x.includes('xyz'));assert.ok(!x.includes('MYSECRET'));});
+test('private failure evidence persists with scan and execution identity',()=>{const root=fs.mkdtempSync(path.join(os.tmpdir(),'failure-test-'));try{const file=d.save({projectId:11,scanId:57,executionId:31,message:'ECONNREFUSED'},{baseDir:root});assert.equal(fs.statSync(path.dirname(file)).mode&511,448);assert.equal(fs.statSync(file).mode&511,384);assert.equal(JSON.parse(fs.readFileSync(file)).executionId,31);}finally{fs.rmSync(root,{recursive:true});}});
+test('persistence failure does not disguise original failure',()=>assert.throws(()=>d.save({message:'ECONNREFUSED'},{baseDir:'/nonexistent/offline-test'}),/ENOENT/));

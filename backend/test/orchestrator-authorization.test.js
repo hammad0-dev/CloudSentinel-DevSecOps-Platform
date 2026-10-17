@@ -32,7 +32,7 @@ test("pipeline forwards its trusted user identity to deployment", async () => {
   installMock(dbPath, {
     query: async (sql, params) => {
       databaseCalls.push({ sql, params });
-      if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 };
+      if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, security_critical:0,security_high:0,hotspots_pending:0,unknown_types:0,persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 };
       if (sql.includes("SELECT critical")) {
         return { rows: [{ critical: 0 }], rowCount: 1 };
       }
@@ -72,7 +72,7 @@ test("failed deployment cannot use stale target URL, trigger DAST, or complete p
   installMock(dbPath, {
     query: async (sql, params) => {
       databaseCalls.push({ sql, params });
-      if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 }; if (sql.includes("SELECT critical")) return { rows: [{ critical: 0 }], rowCount: 1 };
+      if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, security_critical:0,security_high:0,hotspots_pending:0,unknown_types:0,persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 }; if (sql.includes("SELECT critical")) return { rows: [{ critical: 0 }], rowCount: 1 };
       if (sql.includes("SELECT target_url")) return { rows: [{ target_url: "http://stale-previous-deployment.invalid" }], rowCount: 1 };
       return { rows: [], rowCount: 1 };
     },
@@ -108,7 +108,7 @@ test("critical image-security rejection is not retried and suppresses DAST", asy
   process.env.JWT_SECRET = process.env.JWT_SECRET || "authorization-test-secret";
   installMock(dbPath, { query: async (sql, params) => {
     databaseCalls.push({ sql, params });
-    if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 }; if (sql.includes("SELECT critical")) return { rows: [{ critical: 0 }], rowCount: 1 };
+    if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, security_critical:0,security_high:0,hotspots_pending:0,unknown_types:0,persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 }; if (sql.includes("SELECT critical")) return { rows: [{ critical: 0 }], rowCount: 1 };
     return { rows: [], rowCount: 1 };
   }});
   installMock(deploymentPath, { deployProject: async () => {
@@ -133,7 +133,7 @@ test("orchestrated scan requests carry the trusted execution claim while pipelin
   process.env.JWT_SECRET = "execution-linkage-test-secret";
   installMock(dbPath, {
     query: async (sql) => {
-      if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 }; if (sql.includes("SELECT critical")) return { rows: [{ critical: 0 }], rowCount: 1 };
+      if (sql.includes("FROM scan_history sh")) return { rows: [{ total_issues: 0, critical: 0, high: 0, medium: 0, low: 0, persisted_total: 0, distinct_total: 0, security_critical:0,security_high:0,hotspots_pending:0,unknown_types:0,persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0 }], rowCount: 1 }; if (sql.includes("SELECT critical")) return { rows: [{ critical: 0 }], rowCount: 1 };
       return { rows: [], rowCount: 1 };
     },
   });

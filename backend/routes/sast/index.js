@@ -71,8 +71,11 @@ router.post("/scan/:projectId", auth, async (req, res) => {
   if (pid == null) return res.status(400).json({ error: "Invalid project id" });
 
   const cloneRoot = path.resolve(process.env.CLONE_DIR || "/tmp/cloudsentinel-scans");
-  const cloneTarget = path.join(cloneRoot, String(pid));
+  let cloneTarget = path.join(cloneRoot, String(pid));
+  let commissioningCheckout = null;
+  let commissioning = req.user?.commissioningStaticStage === true;
   let scanHistoryId = null;
+  let failureExecutionId = null;
   const continueAfterCompileFailure = continueOnBuildFailure();
 
   try {
@@ -80,6 +83,9 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
 
     const pipelineExecutionId = await resolvePipelineExecutionId(pool, req.user, pid);
+    failureExecutionId = pipelineExecutionId;
+    const commissioningContext = {projectId:pid,executionId:pipelineExecutionId,userId:req.user.id};
+    commissioning = require("../../services/commissioningCheckout").required(req.user,commissioningContext);
 
     const [runningSastRes, runningDepRes] = await Promise.all([
       pool.query(
@@ -118,8 +124,13 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     );
     scanHistoryId = runRow.rows[0]?.id;
 
-    if (!fs.existsSync(cloneRoot)) fs.mkdirSync(cloneRoot, { recursive: true });
-    if (fs.existsSync(cloneTarget)) fs.rmSync(cloneTarget, { recursive: true, force: true });
+    if (commissioning) {
+      commissioningCheckout = require("../../services/commissioningCheckout").create(cloneRoot,commissioningContext);
+      cloneTarget = commissioningCheckout.target;
+    } else {
+      if (!fs.existsSync(cloneRoot)) fs.mkdirSync(cloneRoot, { recursive: true });
+      if (fs.existsSync(cloneTarget)) fs.rmSync(cloneTarget, { recursive: true, force: true });
+    }
 
     await assertSonarReachable();
 
@@ -203,25 +214,19 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       );
     }
 
-    const sonarRes = await axios.get(
-      `${sonarHost}/api/issues/search?projectKeys=${encodeURIComponent(projectKey)}&ps=500`,
-      sonarAuthAxiosConfig()
-    );
-
-    const allIssues = Array.isArray(sonarRes.data?.issues) ? sonarRes.data.issues : [];
-
-    // Strict filter: only keep issues that belong to THIS project's SonarQube key.
-    // This prevents cross-project contamination when SonarQube reuses component keys
-    // across scans of different projects with the same repository.
-    const issues = allIssues.filter((issue) => {
-      const component = issue.component || issue.project || "";
-      return component.startsWith(projectKey);
+    // Supported project filter plus complete, bounded inventory. Foreign rows
+    // are rejected rather than discarded after a global search.
+    const issues = await require('../../services/sonarIssueEvidence').collect({
+      get:axios.get.bind(axios),host:sonarHost,projectKey,options:sonarAuthAxiosConfig(),
     });
 
-    if (allIssues.length !== issues.length) {
-      console.warn(
-        `[SAST project=${pid}] Filtered out ${allIssues.length - issues.length} issue(s) belonging to a different SonarQube project key (expected prefix: "${projectKey}")`
-      );
+    const quality = await axios.get(`${sonarHost}/api/qualitygates/project_status?projectKey=${encodeURIComponent(projectKey)}`,sonarAuthAxiosConfig());
+    require('../../services/sastClassification').qualityGate(quality.data);
+    const hotspots = await axios.get(`${sonarHost}/api/hotspots/search?projectKey=${encodeURIComponent(projectKey)}&ps=500`,sonarAuthAxiosConfig());
+    if(!Array.isArray(hotspots.data?.hotspots)||!Number.isSafeInteger(hotspots.data?.paging?.total)||hotspots.data.paging.total!==hotspots.data.hotspots.length)throw Error('SAST_HOTSPOT_EVIDENCE_INCOMPLETE');
+    for(const hotspot of hotspots.data.hotspots){
+      if(typeof hotspot.component!=='string'||!hotspot.component.startsWith(projectKey+':'))throw Error('SAST_HOTSPOT_SCOPE_INVALID');
+      issues.push({...hotspot,type:'SECURITY_HOTSPOT',severity:'INFO',rule:hotspot.ruleKey||'unknown'});
     }
 
     // Details and completion are atomic: partial persistence is failed, never marked completed.
@@ -232,12 +237,19 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       coerceIssueRow,
     });
 
-    if (!shouldKeepClone() && fs.existsSync(cloneTarget)) {
+    if (commissioningCheckout) {
+      commissioningCheckout.cleanup();
+    } else if (!commissioning && !shouldKeepClone() && fs.existsSync(cloneTarget)) {
       fs.rmSync(cloneTarget, { recursive: true, force: true });
     }
     return res.json({ success: true, total: summary.total, summary });
   } catch (error) {
-    const message = sanitizeScanError(error);
+    const diagnostics = require("../../services/staticStageFailure");
+    const message = diagnostics.sanitize(sanitizeScanError(error));
+    try {
+      const evidencePath = diagnostics.save({projectId:pid,scanId:scanHistoryId,executionId:failureExecutionId,message});
+      console.error("[SAST] Failed:", message, "Evidence:", evidencePath);
+    } catch (_) { console.error("[SAST] Failure evidence persistence failed:", message); }
     if (scanHistoryId != null) {
       try {
         await pool.query(
@@ -249,11 +261,14 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       }
     }
     try {
-      if (!shouldKeepClone() && fs.existsSync(cloneTarget)) {
+      if (commissioningCheckout) {
+        commissioningCheckout.cleanup();
+      } else if (!commissioning && !shouldKeepClone() && fs.existsSync(cloneTarget)) {
         fs.rmSync(cloneTarget, { recursive: true, force: true });
       }
     } catch (rmErr) {
-      console.warn("[SAST] clone cleanup failed:", rmErr?.message || rmErr);
+      console.warn("[SAST] clone cleanup failed:", rmErr?.code || "CLEANUP_FAILED");
+      if (commissioningCheckout && !res.headersSent) return res.status(500).json({error:"COMMISSIONING_CHECKOUT_CLEANUP_FAILED"});
     }
     if (!res.headersSent) {
       return res.status(500).json({ error: message });
@@ -272,7 +287,7 @@ router.get("/compliance/:projectId", auth, async (req, res) => {
 
     const [issuesRes, depRes] = await Promise.all([
       pool.query(
-        latestCompletedSastResultsQuery("rule, severity, message, file_path, line_number, status") + " ORDER BY sr.created_at DESC",
+        latestCompletedSastResultsQuery("rule, severity, issue_type, hotspot_review, message, file_path, line_number, status") + " ORDER BY sr.created_at DESC",
         [projectId]
       ),
       pool.query(
@@ -324,7 +339,7 @@ router.get("/report/:projectId", auth, async (req, res) => {
 
     const [issuesRes, scanRes, depRes] = await Promise.all([
       pool.query(
-        latestCompletedSastResultsQuery("rule, severity, message, file_path, line_number, status, created_at") + " ORDER BY sr.created_at DESC",
+        latestCompletedSastResultsQuery("rule, severity, issue_type, hotspot_review, message, file_path, line_number, status, created_at") + " ORDER BY sr.created_at DESC",
         [projectId]
       ),
       pool.query(

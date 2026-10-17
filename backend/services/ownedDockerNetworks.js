@@ -99,7 +99,8 @@ class OwnedDockerNetworks {
     if (!adapter || typeof adapter.run !== "function") fail("INVALID_ADAPTER", "Docker adapter is required");
     this.adapter = adapter; this.observe = observe; this.active = new Map();
   }
-  async create(scanIdentity, { roles = ["scanner", "fixture"] } = {}) {
+  async create(scanIdentity, { roles = ["scanner", "fixture"], beforeCreate } = {}) {
+    if(beforeCreate!==undefined&&typeof beforeCreate!=='function')fail('INVALID_IDENTITY','invalid provisioning guard');
     const i = identity(scanIdentity);
     if (!Array.isArray(roles) || !roles.length || new Set(roles).size !== roles.length) fail('INVALID_ROLE','duplicate or missing roles');
     const plannedNames = roles.map(role=>names(i,role));
@@ -114,6 +115,7 @@ class OwnedDockerNetworks {
       if (plannedNames.some(name=>env.existingNames?.includes(name))) fail('NAME_CONFLICT','network name already exists');
       const allocated = [];
       for (const role of roles) {
+        beforeCreate?.();
         if (!["scanner", "fixture"].includes(role)) fail("INVALID_ROLE", "unsupported network role");
         const roleIdentity = { hash: crypto.createHash("sha256").update(i.hash + "|" + role).digest("hex") };
         const { subnet, gateway } = subnetFor(roleIdentity, env.usedSubnets.concat(env.hostRoutes, allocated));

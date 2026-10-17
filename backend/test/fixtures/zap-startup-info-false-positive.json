@@ -1,0 +1,7 @@
+{
+  "source": "retained sanitized-report.json from zpd-fast-20261016-a2",
+  "historicalStatus": "BLOCKED",
+  "historicalClassification": "ZAP_INITIALIZATION_FAILED",
+  "excerpt": "Oct 15, 2026 8:34:50 PM java.util.prefs.FileSystemPreferences$1 run\nINFO: Created user preferences directory.\n34974 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Application Error Disclosure\n34978 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Information Disclosure - Debug Error Messages\nOct 15, 2026 8:34:50 PM java.util.prefs.FileSystemPreferences$1 run\nINFO: Created user preferences directory.\n34974 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Application Error Disclosure\n34978 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Information Disclosure - Debug Error Messages",
+  "completeStartupLog": false
+}

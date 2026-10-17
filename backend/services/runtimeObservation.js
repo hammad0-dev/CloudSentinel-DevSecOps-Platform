@@ -5,6 +5,7 @@ const { inspectOwnedNetwork, verifyMemberships } = require("./ownedDockerNetwork
 const { isRuntimeAdapter } = require("./dockerAdapter");
 const { verifyNetworkText } = require("./runtimeNetworkText");
 const { createHash } = require("crypto");
+const { isIP } = require('net');
 const { saveConnectDiagnostic } = require('./connectDiagnostic');
 const issuedEvidence = new WeakSet();
 const ID = /^[a-f0-9]{12,64}$/i;
@@ -52,14 +53,27 @@ class RuntimeObservation {
     this.acceptanceClient = { client, resource };
   }
   clearAcceptanceClient() { this.acceptanceClient = null; }
-  async collect({ projectId, executionId, scanId, gatewayContainerId, scannerContainerId, scannerNetworkId, fixtureNetworkId, target, stagedPolicy, networkReferences, mode, nativeConnect }) {
+  async collectActiveFixture(input) {
+    // This verifies the owned acceptance client against Python's exact paths.
+    // It is not evidence of the future ZAP container's namespace or scan jobs.
+    if(input.projectId===17 || !Number.isSafeInteger(input.projectId)||input.projectId<1||!Number.isSafeInteger(input.executionId)||input.executionId<1)fail('ACTIVE_SCOPE_BLOCKED','disposable execution required');
+    if (input.mode && input.mode!=='full') fail('INVALID_MODE','Active fixture requires complete path/isolation checks');
+    return this.collect({...input,profile:'active'});
+  }
+  async collect({ projectId, executionId, scanId, gatewayContainerId, scannerContainerId, scannerNetworkId, fixtureNetworkId, target, stagedPolicy, networkReferences, mode, nativeConnect, beforeProbe, profile='containment' }) {
+    if(beforeProbe!==undefined&&typeof beforeProbe!=='function')fail('INVALID_MODE','invalid probe guard');
+    beforeProbe?.();
+    if(!['containment','active'].includes(profile)) fail('INVALID_MODE','unknown containment profile');
+    if(profile==='active' && stagedPolicy?.policy!==require('./squidPolicy').activePolicy(target)) fail('POLICY_NOT_ACTIVE','exact Active path policy required');
     if (nativeConnect !== undefined && typeof nativeConnect !== 'boolean') fail('INVALID_MODE','invalid native opt-in');
     if (mode !== undefined && !['full','connect-diagnostic','tcp-diagnostic'].includes(mode)) fail('INVALID_MODE', 'unsupported acceptance mode');
     if (![projectId, executionId, scanId].every(v => /^[a-z0-9_.-]+$/i.test(String(v)))) fail("INVALID_IDENTITY", "scan identity is invalid");
     if (!stagedPolicy?.policyDigest) fail("MISSING_POLICY", "staged policy digest is required");
     const [gateway, scanner] = await Promise.all([inspect(this.adapter, gatewayContainerId, "gateway"), inspect(this.adapter, scannerContainerId, "scanner")]);
     if (!this.acceptanceClient || this.acceptanceClient.resource.id !== scannerContainerId) fail("INVALID_CLIENT", "bound lifecycle client must be the scanner");
-    await clientService.verifyClient(this.adapter, this.acceptanceClient.resource);
+    const verifiedClient=await clientService.verifyClient(this.adapter, this.acceptanceClient.resource);
+    const namespace=verifiedClient.namespaceEvidence;
+    if(namespace)scanner.NetworkSettings={...scanner.NetworkSettings,Networks:verifiedClient.networks};
     if (!Array.isArray(networkReferences) || networkReferences.length !== 2) fail("INVALID_IDENTITY", "owned network references required");
     const networks = await Promise.all(networkReferences.map(ref => inspectOwnedNetwork(this.adapter, ref)));
     const scannerNetwork = networks.find(n => n.id === scannerNetworkId);
@@ -69,7 +83,21 @@ class RuntimeObservation {
     const gatewayMemberships = verifyMemberships({ networks: gateway.NetworkSettings?.Networks }, networks);
     if (gateway.Id !== gatewayContainerId || scanner.Id !== scannerContainerId || gateway.Config?.Labels?.["cloudsentinel.owner"] !== `cloudsentinel-${scanId}` || gateway.Config?.Labels?.["cloudsentinel.role"] !== "gateway") fail("OWNERSHIP_MISMATCH", "gateway identity mismatch");
     const gatewayIp = gateway.NetworkSettings.Networks[scannerNetwork.name].IPAddress;
-    if (target.proxy !== `http://${gatewayIp}:3128`) fail("INVALID_PROBE", "proxy does not match inspected gateway");
+    // Never rebind an expected proxy to a changed inspection. Retain only safe
+    // endpoint/state predicates, without copying arbitrary URL credentials.
+    const proxyMatch=/^http:\/\/(\d{1,3}(?:\.\d{1,3}){3}):3128$/.exec(target.proxy || '');
+    const gatewayDiagnostic={gatewayContainerId,scannerNetworkId,
+      gatewayRunning:gateway.State?.Running===true,
+      gatewayExitCode:Number.isInteger(gateway.State?.ExitCode)?gateway.State.ExitCode:null,
+      gatewayOOMKilled:gateway.State?.OOMKilled===true,
+      expectedProxyIp:proxyMatch&&isIP(proxyMatch[1])===4?proxyMatch[1]:null,
+      inspectedGatewayIp:typeof gatewayIp==='string'&&isIP(gatewayIp)===4?gatewayIp:null,
+      proxyEndpointWellFormed:!!proxyMatch&&isIP(proxyMatch[1])===4,
+      inspectedEndpointPresent:typeof gatewayIp==='string'&&isIP(gatewayIp)===4,
+      proxyMatches:target.proxy===`http://${gatewayIp}:3128`};
+    if(!gatewayDiagnostic.gatewayRunning)fail('GATEWAY_NOT_RUNNING','inspected gateway is not running',{gatewayDiagnostic});
+    if(!gatewayDiagnostic.inspectedEndpointPresent)fail('GATEWAY_ENDPOINT_INVALID','inspected gateway IPv4 is missing or malformed',{gatewayDiagnostic});
+    if (!gatewayDiagnostic.proxyEndpointWellFormed || !gatewayDiagnostic.proxyMatches) fail("INVALID_PROBE", "proxy does not match inspected gateway",{gatewayDiagnostic});
     if (scanner.HostConfig?.Privileged === true || scanner.HostConfig?.NetworkMode === "host" || gateway.HostConfig?.Privileged === true || gateway.HostConfig?.NetworkMode === "host") fail("UNSAFE_CONTAINER", "privileged or host networking detected");
     for (const c of [scanner, gateway]) {
       if ((c.HostConfig?.CapAdd || []).length || (c.Mounts || []).some(x => String(x.Source || "").includes("docker.sock"))) fail("UNSAFE_CONTAINER", "added capabilities or Docker socket detected");
@@ -118,7 +146,19 @@ class RuntimeObservation {
         clientImplementation: nativeConnect ? 'native' : 'curl', nativeEvidence:probe.nativeEvidence,
         actual: probe.actual, complete: probe.complete, exitCode: probe.exitCode, httpStatus: probe.httpStatus, connectStatus: probe.connectStatus, connectEvidence: probe.connectEvidence };
     }
-    const specs = [
+    const specs = profile==='active' ? [
+      ['positive-sqli','http',target,{path:'/test/sqli'},'ALLOW'],
+      ['positive-xss','http',target,{path:'/test/xss'},'ALLOW'],
+      ['negative-proxy','proxy',{...target,hostname:'unauthorized.test'},{path:'/test/sqli',strictPolicy:true},'DENY'],
+      ['negative-connect','connect',target,{},'DENY'],
+      ['negative-direct-bypass','tcp',target,{},'DENY'],
+      ['negative-path','proxy',target,{path:'/health',strictPolicy:true},'DENY'],
+      ['negative-redirect-path','proxy',target,{path:'/redirect/host',strictPolicy:true},'DENY'],
+      ['negative-alternate-host','proxy',{...target,hostname:target.ip},{path:'/test/sqli',strictPolicy:true},'DENY'],
+      ['negative-port','proxy',{...target,port:18081},{path:'/test/sqli',strictPolicy:true},'DENY'],
+      ['negative-public','proxy',{...target,hostname:'198.51.100.9',port:80},{strictPolicy:true},'DENY'],
+      ['negative-metadata','proxy',{...target,hostname:'169.254.169.254',port:80},{strictPolicy:true},'DENY'],
+    ] : [
       ["positive-fixture", "http", target, { path: "/health" }, "ALLOW"],
       ["negative-proxy", "proxy", { ...target, hostname: "unauthorized.test" }, {}, "DENY"],
       ["negative-connect", "connect", target, {}, "DENY"],
@@ -132,11 +172,13 @@ class RuntimeObservation {
     ];
     const probes = [];
     for (const [name, kind, destination, options, expected] of specs) {
+      beforeProbe?.();
       const result = nativeConnect && kind === 'connect'
         ? await require('./sameSocketConnect').observeSameSocketConnect(this.adapter, this.acceptanceClient.resource, { gatewayId: gatewayContainerId, networkReferences, target: destination })
         : await clientService.probe(this.adapter, this.acceptanceClient.resource, kind, destination, { ...options, expected, gatewayContainerId, proxy: target.proxy, routeEvidence: routeData });
       const probe = Object.assign(result, { name, expected });
       probes.push(probe);
+      beforeProbe?.();
       if(kind==='tcp' && (!probe.complete || probe.actual !== expected)) {
         let diagnosticFile;
         try {diagnosticFile=await require('./tcpDiagnostic').save(result,String(scanId));}
@@ -153,8 +195,12 @@ class RuntimeObservation {
     if (!Array.isArray(probes) || probes.length < required.length) fail("INCOMPLETE_PROBES", "mandatory connectivity probes are missing");
     if (new Set(probes.map(p=>p.name)).size !== required.length || required.some(name=>!probes.some(p=>p.name===name))) fail('INCOMPLETE_PROBES','mandatory named probe missing or duplicated');
     for (const p of probes) if (!p || p.complete !== true || !Number.isInteger(p.exitCode) || p.sourceId !== scannerContainerId || !["ALLOW", "DENY"].includes(p.actual) || p.expected !== p.actual) fail("CONNECTIVITY_FAILED", "connectivity result contradicts expectation");
-    const complete = true;
-    const evidence = Object.freeze({ schemaVersion: "1.1", projectId, executionId, scanId, gatewayContainerId, scannerContainerId, scannerNetworkId, fixtureNetworkId, memberships: { scanner: scannerMemberships, gateway: gatewayMemberships }, routes: routeData, ipv4: true, ipv6: false, defaultGateway: null, squidPolicyDigest: stagedPolicy.policyDigest, target, positiveConnectivity: true, negativeConnectivity: true, directTcpBypass: false, observedAt: new Date().toISOString(), provenance: ["docker-inspect", "docker-exec", "gateway-inspection", "connectivity-probe"], complete, independent: true, verification: isRuntimeAdapter(this.adapter) ? "RUNTIME_OBSERVED" : "MOCK_ONLY_NOT_VERIFIED", probes });
+    if(namespace) {
+      const after=(await clientService.verifyClient(this.adapter,this.acceptanceClient.resource)).namespaceEvidence;
+      if(!after || JSON.stringify(after)!==JSON.stringify(namespace))fail('NAMESPACE_UNVERIFIED','namespace identity changed during observations');
+    }
+    beforeProbe?.();const complete = true;
+    const evidence = Object.freeze({ schemaVersion: "1.1", profile, namespaceScope:namespace?'ZAP_SHARED_NETWORK_NAMESPACE':'ACCEPTANCE_CLIENT_ONLY', ...(namespace?{namespaceEvidence:namespace}:{}), projectId, executionId, scanId, gatewayContainerId, scannerContainerId, scannerNetworkId, fixtureNetworkId, memberships: { scanner: scannerMemberships, gateway: gatewayMemberships }, routes: routeData, ipv4: true, ipv6: false, defaultGateway: null, squidPolicyDigest: stagedPolicy.policyDigest, target, positiveConnectivity: true, negativeConnectivity: true, directTcpBypass: false, observedAt: new Date().toISOString(), provenance: ["docker-inspect", "docker-exec", "gateway-inspection", "connectivity-probe"], complete, independent: true, verification: isRuntimeAdapter(this.adapter) ? "RUNTIME_OBSERVED" : "MOCK_ONLY_NOT_VERIFIED", probes });
     if (isRuntimeAdapter(this.adapter)) issuedEvidence.add(evidence);
     return evidence;
   }

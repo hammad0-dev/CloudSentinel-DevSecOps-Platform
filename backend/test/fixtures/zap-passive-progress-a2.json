@@ -1,0 +1,73 @@
+{
+  "provenance": "Genuine pa-p11-1016-a2 native unknown-record SHA-256 and byte lengths; every identified line matched exactly offline. No historical result rewritten.",
+  "historicalRunnerStatus": "BLOCKED",
+  "historicalRunnerExitCode": 1,
+  "nativeProcessExitCode": 0,
+  "lines": [
+    {
+      "text": "Job requestor set url = http://pa-p11-1016-a2.test:18080/test/sqli?id=1",
+      "sha256": "d6c66049350b69cb1a7e464b6068af231cdab59357dfbf5f26c8ce1ac6847afe",
+      "bytes": 71
+    },
+    {
+      "text": "Job requestor set method = GET",
+      "sha256": "bc24e398f27e6f1e00732128cea98f23c2fa3657d8c9d49da5f0917924e508d1",
+      "bytes": 30
+    },
+    {
+      "text": "Job requestor set responseCode = 200",
+      "sha256": "dfe55af9c5578546caaf1622db73b80ee0970a7c95d374084633a8093aef2901",
+      "bytes": 36
+    },
+    {
+      "text": "Job requestor set url = http://pa-p11-1016-a2.test:18080/test/xss?q=hello",
+      "sha256": "49ab7a61b6e153347050634bbe0e1d1b708ced972e83b660a2376f4ca6a47995",
+      "bytes": 73
+    },
+    {
+      "text": "Job requestor set method = GET",
+      "sha256": "bc24e398f27e6f1e00732128cea98f23c2fa3657d8c9d49da5f0917924e508d1",
+      "bytes": 30
+    },
+    {
+      "text": "Job requestor set responseCode = 200",
+      "sha256": "dfe55af9c5578546caaf1622db73b80ee0970a7c95d374084633a8093aef2901",
+      "bytes": 36
+    },
+    {
+      "text": "Job passiveScan-wait set maxDuration = 1",
+      "sha256": "173a7fa15340a2d894c31578e6a8e99c696673a3dd178006c511bf091520d372",
+      "bytes": 40
+    },
+    {
+      "text": "Job report set template = traditional-json",
+      "sha256": "c8726e3f60b1dd4fba84e2caf6eff18a65f7392519b007c6dd45266569d0d98d",
+      "bytes": 42
+    },
+    {
+      "text": "Job report set reportDir = /tmp",
+      "sha256": "e8cbc3977a4106aa8adcdd52066be2f49e7da723c37362a100396703a76c4257",
+      "bytes": 31
+    },
+    {
+      "text": "Job report set reportFile = report-0.json",
+      "sha256": "5c8dcb0cf32a500815f19657aaeb3ddbce66189f721d3545ad87d04bfbe2bde3",
+      "bytes": 41
+    },
+    {
+      "text": "Job requestor requesting URL http://pa-p11-1016-a2.test:18080/test/sqli?id=1",
+      "sha256": "059271898a0dda610dbc7c9704c74b09df79df107489784bcc5afdfba6a1f682",
+      "bytes": 76
+    },
+    {
+      "text": "Job requestor requesting URL http://pa-p11-1016-a2.test:18080/test/xss?q=hello",
+      "sha256": "d0e6099fcbd9089f0db5c5e1584a3fc1a920d8b56a781e203c37ef201a90a86a",
+      "bytes": 78
+    },
+    {
+      "text": "Job report generated report /tmp/report-0.json",
+      "sha256": "5b676ab6b0b3b042a59d82874a50358f3a1a0947cd610ab39aa2b732ac63a878",
+      "bytes": 46
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "source": "cs-zap-init-712c7658-wtf4wb6r/container-inspection.json",
+  "sourceSha256": "3acabef9fad6e6b14c00ce6bcb6b3828003d293d4d97c270e9476aaef5a2f92c",
+  "qualification": "Genuine saved native inspection; unrelated configuration and command/environment fields omitted. Retained values are unchanged.",
+  "inspection": {
+    "Id": "da7f5dff6673ef6852c79ca39b81d53cbf35501d0d611eb19f6497f653a96ae5",
+    "Name": "/cs-zap-init-712c7658",
+    "Image": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+    "Mounts": [],
+    "Config": {
+      "User": "1000:1000",
+      "Hostname": "cs-zap-init-712c7658",
+      "Labels": {
+        "cloudsentinel.owner": "cs-zap-init-712c7658",
+        "maintainer": "psiinon@gmail.com",
+        "run.crashoverride.author": "Simon Bennetts <psiinon@gmail.com>",
+        "run.crashoverride.branch": "main",
+        "run.crashoverride.commit-id": "2665d972f6d587ba4773a95053ac39af3fdf8df9",
+        "run.crashoverride.committer": "GitHub <noreply@github.com>",
+        "run.crashoverride.date-authored": "2026-08-06T09:30:53.000+01:00",
+        "run.crashoverride.date-committed": "2026-08-06T09:30:53.000+01:00",
+        "run.crashoverride.origin-uri": "https://github.com/zaproxy/zaproxy"
+      }
+    },
+    "State": {
+      "Running": true,
+      "Restarting": false,
+      "Health": {
+        "Status": "starting",
+        "FailingStreak": 0,
+        "Log": []
+      }
+    },
+    "HostConfig": {
+      "NetworkMode": "none",
+      "ReadonlyRootfs": true,
+      "Privileged": false,
+      "Binds": null,
+      "VolumesFrom": null,
+      "PortBindings": {},
+      "PublishAllPorts": false,
+      "CapAdd": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "SecurityOpt": [
+        "no-new-privileges:true"
+      ],
+      "Memory": 1610612736,
+      "NanoCpus": 1000000000,
+      "PidsLimit": 128,
+      "Tmpfs": {
+        "/home/zap/.ZAP": "rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
+        "/tmp": "rw,noexec,nosuid,nodev,size=64m,uid=1000,gid=1000,mode=1777",
+        "/zap/wrk": "rw,noexec,nosuid,nodev,size=64m,uid=1000,gid=1000,mode=0700"
+      },
+      "ExtraHosts": [
+        "cs-zap-init-712c7658:127.0.0.1"
+      ]
+    },
+    "NetworkSettings": {
+      "Ports": {},
+      "Networks": {
+        "none": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "7f0b3c637435d350b1a76d7f715df545e36e3f120bd98db4192caf9977b380c6",
+          "EndpointID": "9d1f7da18cad08ea5e5e115ba59b4252b088cef3f0ae737d682e955d9d17111d",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    }
+  }
+}

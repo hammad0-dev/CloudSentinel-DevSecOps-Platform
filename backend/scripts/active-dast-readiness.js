@@ -1,0 +1,6 @@
+'use strict';
+// Local read-only preflight. No migration, enrollment, grant or scan action.
+function parse(args){const fields={'--project':'projectId','--execution':'executionId','--operator':'userId'},context={};for(let i=0;i<args.length;i++){const key=fields[args[i]],value=args[++i];if(!key||Object.hasOwn(context,key)||!/^[1-9][0-9]*$/.test(value||''))throw Error('INVALID_READINESS_CONTEXT');context[key]=Number(value);}if(!args.length)return undefined;require('../services/activeDastPrerequisites').context(context);return context;}
+async function main(args){const context=parse(args);if(process.env.DAST_ACTIVE_ENABLED!=='false')throw Error('ACTIVE_MUST_REMAIN_DISABLED');require('dotenv').config({path:require('path').join(__dirname,'../.env'),quiet:true});const pool=require('../db');try{return await require('../services/activeDastReadiness').inspect({pool,adapter:new(require('../services/dockerAdapter').DockerAdapter)(),context});}finally{await pool.end();}}
+if(require.main===module)main(process.argv.slice(2)).then(r=>{process.stdout.write(JSON.stringify(r,null,2)+'\n');process.exitCode=r.status==='PASS'?0:1;}).catch(()=>{process.stderr.write(JSON.stringify({status:'BLOCKED',reason:'READINESS_CHECK_FAILED',scanStarted:false})+'\n');process.exitCode=1;});
+module.exports={parse,main};

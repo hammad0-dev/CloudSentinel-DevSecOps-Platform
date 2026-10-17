@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "scope": "NON_SCANNING_CONTAINMENT_ONLY",
+  "imageId": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+  "architecture": "amd64",
+  "os": "linux",
+  "config": {
+    "User": "zap",
+    "Env": [
+      "PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:/zap/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64",
+      "ZAP_PATH=/zap/zap.sh",
+      "ZAP_PORT=8080",
+      "IS_CONTAINERIZED=true",
+      "HOME=/home/zap/",
+      "LC_ALL=C.UTF-8",
+      "LANG=C.UTF-8"
+    ],
+    "Cmd": [
+      "bash"
+    ],
+    "WorkingDir": "/zap",
+    "Labels": {
+      "maintainer": "psiinon@gmail.com",
+      "run.crashoverride.author": "Simon Bennetts <psiinon@gmail.com>",
+      "run.crashoverride.branch": "main",
+      "run.crashoverride.commit-id": "2665d972f6d587ba4773a95053ac39af3fdf8df9",
+      "run.crashoverride.committer": "GitHub <noreply@github.com>",
+      "run.crashoverride.date-authored": "2026-08-06T09:30:53.000+01:00",
+      "run.crashoverride.date-committed": "2026-08-06T09:30:53.000+01:00",
+      "run.crashoverride.origin-uri": "https://github.com/zaproxy/zaproxy"
+    },
+    "Healthcheck": {
+      "Test": [
+        "CMD-SHELL",
+        "curl --silent --output /dev/null --fail http://localhost:$ZAP_PORT/ || exit 1"
+      ]
+    }
+  },
+  "layers": [
+    "sha256:66462cc862fe2053b9863fefa3866e07bb5dfb06f6b3ce3177cc096e4021aabe",
+    "sha256:5bc5025d406e110f09df4be1a0a3bf33d26cb09930a632d379efc6b59414b35b",
+    "sha256:fe8089058c94f258d01622d874af7230097c5f461e77528c2370064a911f0387",
+    "sha256:f805cd11ec202e59f10847286c03c66d2d3dd422c429ce2c1eeafeb9de3797df",
+    "sha256:1bc8afe96b01e8ffabf9181e902c85c9d9d9f1069844666686d508ca31cda7f5",
+    "sha256:4bc13aaf2851f2fb571123a070ee19c8e17ee59ee2684871efbd7f5a65607aa9",
+    "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+    "sha256:98a80e7989feee3b5627a2cd8ff540a47e93998194f95a460c746603247bfe69",
+    "sha256:9204caafeef8d11d4d3f33f4d8011a7ee63405c8bf8d2fba764a08c1dd5accc1",
+    "sha256:4bc3103ed06a7cd48d18cca2adab792a5cbcb44a1f444e27878af911da55cd7a",
+    "sha256:ad5206cdaf5cf267a0c7dda5a8e372096ec100ced3acb64d129ecbfe439f9e75",
+    "sha256:4c9c9901512ede5d22c37d57215e23f22dcda91b6a9d92468ed63aa28d47bbb3",
+    "sha256:b5484b50331ead49baf00e66b6e555279df533cf4a334f421ba0c4700f0f44d6",
+    "sha256:e1860ee3ef1e4c424196b8651bbf7d9b5fd8c1605acef31eb1875ffa896e6d4c",
+    "sha256:0465997d731650442647422badbb1e016fb34e98b023709e14d3f71a924d50b3",
+    "sha256:1914ba4149fca86a337ca4de4aae9daaa4a758ac5914e684ee27df17b21a6ae9",
+    "sha256:2128195dab6c9bdbc304bc1182e5c7c5c49b8ae756f5a0aa7c0e68f590ed5c35",
+    "sha256:2f00e47b70ef647dbdbe8df72649e185ac912ca4f6ec2c393b76e49bae98115c",
+    "sha256:654a5aeebb11096cc7fdd49e84a5a2a8488fc8a5c3212359953f9d584bffe3e4",
+    "sha256:5931495998f4941ccd8ea551f588dfcb2b2136290f7f37f3992860a646729ce5",
+    "sha256:7575709f2b0261fc1d521c1f2bb6092cf1dd2ab2087e57218199fa98568ec04d"
+  ],
+  "archiveSha256": "3e3604f70c39e65b2637e179b1fc2835c7165e3ff7cc53636f07c3fb01e125f8",
+  "configDigest": "sha256:ae2d7369cc2a3aac99e3a078c903bbe50fde6433e2cc134706dcdfbbd2a042e0",
+  "selectedAddons": {
+    "ascanrules": {
+      "version": "83",
+      "sha256": "9c1b64c2fceda629f7c0ab0c21b5901035494f78da51d584972eaf85e94e91cc"
+    },
+    "automation": {
+      "version": "0.60.0",
+      "sha256": "e02c90abea15cb5802be1aa1adb959e5f76c4c517494087388732d71345e4ea9"
+    },
+    "network": {
+      "version": "0.29.0",
+      "sha256": "082367cca24029ed0dce69ad6c4464897c63c9a2f0d5ec7ae42860e728414853"
+    },
+    "reports": {
+      "version": "0.46.0",
+      "sha256": "2e8d42a48e23aefa8a6174b52aa0a8a6b90aca2da0a8bf94ac61f4aaa070bc2c"
+    },
+    "commonlib": {
+      "version": "1.43.0",
+      "sha256": "f1c46d6c65434a2a54307065b558a87121eaa5b9b6bc6cfb10bf230b6335d1f5",
+      "dependencies": {}
+    },
+    "oast": {
+      "version": "0.24.0",
+      "sha256": "f06ecea02e2c1df4a164e737dd632afba4430225b2fdc2feb6042bdb1e976b3d",
+      "dependencies": {
+        "database": ">= 0.6.0",
+        "network": ">= 0.1.0"
+      }
+    },
+    "database": {
+      "version": "0.9.0",
+      "sha256": "4c58ca142288d9ddc6ae3fd8fe6815e3894462bae67eb0776e540a2d9ddaf87d",
+      "dependencies": {}
+    }
+  },
+  "evidenceSha256": "823e988ab77308da80655806ea791c106d03f6fd3603565d6a785ac6a2618614",
+  "availability": "MUST_INSPECT_LOCAL_IMAGE",
+  "productionReady": false
+}

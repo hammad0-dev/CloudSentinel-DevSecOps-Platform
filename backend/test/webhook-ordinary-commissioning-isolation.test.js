@@ -1,0 +1,11 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm'),{createRequire}=require('module');
+test('ordinary webhook pipeline runs static gates, ordinary staging and passive DAST with commissioning globally available',async t=>{
+ const keys=['DAST_ACTIVE_COMMISSIONING_ENABLED','DAST_ACTIVE_COMMISSIONING_CONTEXT'];const old=keys.map(k=>process.env[k]);t.after(()=>keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];}));process.env.DAST_ACTIVE_COMMISSIONING_ENABLED='true';delete process.env.DAST_ACTIVE_COMMISSIONING_CONTEXT;
+ const filename=require.resolve('../services/orchestrator'),local=createRequire(filename),calls=[],queries=[];
+ const pool={async query(sql,args){queries.push({sql,args});if(sql.includes('FROM scan_history sh'))return {rows:[{critical:0,high:0,medium:0,low:0,total_issues:0,persisted_total:0,distinct_total:0,security_critical:0,security_high:0,hotspots_pending:0,unknown_types:0,persisted_critical:0,persisted_high:0,persisted_medium:0,persisted_low:0}]};if(sql.startsWith('SELECT critical'))return {rows:[{critical:0}]};return {rows:[],rowCount:1};}};
+ const stubs={'../db':pool,'axios':{async post(url){calls.push(url.split('/api/')[1].split('/')[0]);return {data:{}};}},'jsonwebtoken':{sign(claim){assert.equal(claim.commissioningStaticStage,undefined);return 'test-token';}},'./deployment':{async deployProject(){calls.push('deploy');return {stagingUrl:'http://staging.test'};}},'./commissioningFixtureStage':{has(){return false;},prepare(){throw Error('Commissioning forbidden');}},'./activeRuntimeRegistry':{cancelPending(){throw Error('Ordinary pipeline cannot clean commissioning resources');}}};
+ const module={exports:{}};vm.runInNewContext(fs.readFileSync(filename,'utf8'),{module,exports:module.exports,require:id=>Object.hasOwn(stubs,id)?stubs[id]:local(id),process:{env:{DAST_ACTIVE_ENABLED:'false',DAST_COMMISSIONING_SETUP_ENABLED:'true',JWT_SECRET:'test'}},console:{log(){},warn(){},error(){}},setTimeout});
+ await module.exports.runPipeline(333,11,3);
+ assert.deepEqual(calls,['sast','dependencies','iac','deploy','dast']);assert(queries.some(x=>x.sql.includes("status = 'COMPLETED'")));assert(!queries.some(x=>/active_dast_executions/.test(x.sql)));
+});

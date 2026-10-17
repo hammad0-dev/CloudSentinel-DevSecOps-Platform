@@ -1,0 +1,112 @@
+{
+  "source": "Genuine expected offline assembly configuration and native Docker imported-image response from cs-fixture-build-56dqhix6; no fixture container was created",
+  "expectedConfig": {
+    "Env": [
+      "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+      "HOME=/tmp",
+      "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "PYTHONUNBUFFERED=1",
+      "PYTHON_SHA256=f4b1bfb3c79b5bb11b8d228a12504163b4c0dab4d679828d8f5f26b6cb6ab35d",
+      "PYTHON_VERSION=3.13.16",
+      "TMPDIR=/tmp"
+    ],
+    "Cmd": null,
+    "User": "10001:10001",
+    "WorkingDir": "/app",
+    "Entrypoint": [
+      "python3",
+      "/app/app.py"
+    ],
+    "Healthcheck": {
+      "Test": [
+        "CMD",
+        "python3",
+        "-c",
+        "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:18080/health',timeout=1).read()==b'fixture-ready'"
+      ],
+      "Interval": 5000000000,
+      "Timeout": 2000000000,
+      "Retries": 3
+    },
+    "Labels": {
+      "cloudsentinel.build.owner": "cs-fixture-bd9b22ada784",
+      "cloudsentinel.fixture.kind": "cloudsentinel-vulnerable-v1",
+      "cloudsentinel.fixture.source.sha256": "7262673f553626678dd1648dccf778ff34a4698be54b89d9007167961298a09f",
+      "cloudsentinel.fixture.base": "docker.io/library/python@sha256:f040863673aea2570c3ff6a5c3fb4c673a016cbc5375005ad145915922b6b78a"
+    }
+  },
+  "expectedLayers": [
+    "sha256:e58989146fcec76699871403b9897b5c014af1ccd85f5a9300a215e7975525d7",
+    "sha256:ba0f973ad05d82f20d8dd8dc79a9d1b71e9d90ab48380d8c0912fad39dda5ced",
+    "sha256:8664c9b18215e1141ccc8fa3cbc7483f4cd16fb5230b570fa7c744da58251da3",
+    "sha256:c167899be569aee196241ae0905aeed34708881d5a8784be3de0ed9bf9db7200",
+    "sha256:58d46babcfc896779fb3ef70d75a762864ccc42ad3730730879fabde04d90065"
+  ],
+  "appSha256": "7262673f553626678dd1648dccf778ff34a4698be54b89d9007167961298a09f",
+  "owner": "cs-fixture-bd9b22ada784",
+  "historicalStatus": "FAIL",
+  "historicalError": "IMPORTED_CONFIG_MISMATCH",
+  "observedImage": {
+    "Id": "sha256:9acab1933fee1f7b28076a79780c3d4d240672104c1b5f2533bf9648f158ce98",
+    "Architecture": "amd64",
+    "Os": "linux",
+    "Config": {
+      "User": "10001:10001",
+      "Env": [
+        "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+        "HOME=/tmp",
+        "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "PYTHONUNBUFFERED=1",
+        "PYTHON_SHA256=f4b1bfb3c79b5bb11b8d228a12504163b4c0dab4d679828d8f5f26b6cb6ab35d",
+        "PYTHON_VERSION=3.13.16",
+        "TMPDIR=/tmp"
+      ],
+      "Entrypoint": [
+        "python3",
+        "/app/app.py"
+      ],
+      "WorkingDir": "/app",
+      "Labels": {
+        "cloudsentinel.build.owner": "cs-fixture-bd9b22ada784",
+        "cloudsentinel.fixture.base": "docker.io/library/python@sha256:f040863673aea2570c3ff6a5c3fb4c673a016cbc5375005ad145915922b6b78a",
+        "cloudsentinel.fixture.kind": "cloudsentinel-vulnerable-v1",
+        "cloudsentinel.fixture.source.sha256": "7262673f553626678dd1648dccf778ff34a4698be54b89d9007167961298a09f"
+      },
+      "Healthcheck": {
+        "Test": [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:18080/health',timeout=1).read()==b'fixture-ready'"
+        ],
+        "Interval": 5000000000,
+        "Timeout": 2000000000,
+        "Retries": 3
+      }
+    },
+    "RootFS": {
+      "Type": "layers",
+      "Layers": [
+        "sha256:e58989146fcec76699871403b9897b5c014af1ccd85f5a9300a215e7975525d7",
+        "sha256:ba0f973ad05d82f20d8dd8dc79a9d1b71e9d90ab48380d8c0912fad39dda5ced",
+        "sha256:8664c9b18215e1141ccc8fa3cbc7483f4cd16fb5230b570fa7c744da58251da3",
+        "sha256:c167899be569aee196241ae0905aeed34708881d5a8784be3de0ed9bf9db7200",
+        "sha256:58d46babcfc896779fb3ef70d75a762864ccc42ad3730730879fabde04d90065"
+      ]
+    },
+    "RepoTags": [
+      "cloudsentinel/fixture-build:cs-fixture-bd9b22ada784-1"
+    ],
+    "Descriptor": {
+      "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+      "digest": "sha256:9acab1933fee1f7b28076a79780c3d4d240672104c1b5f2533bf9648f158ce98",
+      "size": 1075,
+      "annotations": {
+        "io.containerd.image.name": "docker.io/cloudsentinel/fixture-build:cs-fixture-bd9b22ada784-1",
+        "org.opencontainers.image.ref.name": "cs-fixture-bd9b22ada784-1"
+      }
+    }
+  }
+}

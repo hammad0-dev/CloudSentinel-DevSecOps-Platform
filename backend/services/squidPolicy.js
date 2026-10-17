@@ -60,6 +60,12 @@ function activePolicy(target) {
   const t=validateTarget(target);
   if(!/^[a-z0-9-]+\.test$/.test(t.hostname)||!/^172\.30\./.test(t.ip)||t.port!==18080)reject('ACTIVE_SCOPE_BLOCKED','invalid disposable Active origin');
   return ['# CloudSentinel Active route policy v1','http_port 3128',
+    // Correlation requires the exact nonce-bearing query. Squid's default strips
+    // it before logging; this policy is restricted to the synthetic fixture.
+    'strip_query_terms off',
+    'logformat cs_active %ts.%03tu %>a %rm %ru %>Hs %Ss/%Sh',
+    'access_log stdio:/tmp/cloudsentinel-active-access.log cs_active',
+    'buffered_logs off','logfile_rotate 0',
     'acl connect method CONNECT',`acl host dstdomain ${t.hostname}`,`acl destination dst ${t.ip}/32`,`acl port port ${t.port}`,
     'acl protocol proto HTTP','acl methods method GET POST',
     'acl paths urlpath_regex ^/test/(sqli|xss)([?][^#]*)?$',

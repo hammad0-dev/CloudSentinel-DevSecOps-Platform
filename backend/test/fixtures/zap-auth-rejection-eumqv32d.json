@@ -1,0 +1,38 @@
+{
+  "missing": {
+    "errorType": "RemoteDisconnected",
+    "processExitCode": 1,
+    "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+    "parameters": {
+      "Integer": "1"
+    }
+  },
+  "wrong": {
+    "errorType": "RemoteDisconnected",
+    "processExitCode": 1,
+    "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+    "parameters": {
+      "Integer": "1"
+    }
+  },
+  "valid": {
+    "httpStatus": 200,
+    "body": "{\"Result\":\"OK\"}",
+    "truncated": false,
+    "processExitCode": 0,
+    "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+    "parameters": {
+      "Integer": "1"
+    },
+    "json": {
+      "Result": "OK"
+    }
+  },
+  "logs": {
+    "exitCode": 0,
+    "stdout": "17522 [ZAP-IO-Server-1-1] WARN  org.zaproxy.zap.extension.api.API - API key incorrect or not supplied: null in request from 127.0.0.1\n17617 [ZAP-IO-Server-1-1] WARN  org.zaproxy.zap.extension.api.API - API key incorrect or not supplied: invalid-diagnostic-key in request from 127.0.0.1\n",
+    "stderr": "",
+    "truncated": false
+  },
+  "source": "/tmp/cs-zap-complete-eumqv32d; native API outcomes retained verbatim; log lines selected without reconstruction"
+}
