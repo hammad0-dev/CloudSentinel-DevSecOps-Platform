@@ -1,3 +1,5 @@
+import { executionResultsApi } from "../utils/executionScan";
+import { useSearchParams } from "react-router-dom";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -5,12 +7,17 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Download } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
-import api from "../utils/api";
+import liveApi from "../utils/api";
 
 
 
 export default function SASTResults() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const executionId = searchParams.get("executionId");
+  const reportProjectId = searchParams.get("projectId");
+  const api = executionResultsApi(liveApi, reportProjectId || id, executionId);
+
   const [loading, setLoading] = useState(true);
   const [scanLoading, setScanLoading] = useState(false);
   const [data, setData] = useState({ summary: {}, vulnerabilities: [], sonarMetrics: null });
@@ -41,7 +48,7 @@ export default function SASTResults() {
       setLoading(false);
     }
   };
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => { load(); }, [id, executionId]);
 
   const runScan = async () => {
     setScanLoading(true);
@@ -168,11 +175,11 @@ export default function SASTResults() {
         subtitle={`Last scanned: ${data.lastScan || "Not scanned"}`}
         actions={
           <div className="flex items-center gap-2">
-            <button className="secondary-btn inline-flex items-center gap-2" onClick={exportReport}>
+            <button className="secondary-btn inline-flex items-center gap-2" onClick={exportReport} disabled={Boolean(executionId)}>
               <Download size={14} />
               Export Report
             </button>
-            <button className="primary-btn" onClick={runScan} disabled={scanLoading}>
+            <button className="primary-btn" onClick={runScan} disabled={Boolean(executionId) || scanLoading}>
               {scanLoading ? "Scanning... Please wait" : "Run SAST Scan"}
             </button>
           </div>
@@ -187,7 +194,7 @@ export default function SASTResults() {
           <div className="card p-4">Coverage: {data.sonarMetrics.coverage.toFixed(1)}%</div>
           <div className="card p-4">Duplications: {data.sonarMetrics.duplications.toFixed(1)}%</div>
           <div className="card p-4">Lines of Code: {data.sonarMetrics.ncloc}</div>
-          <div className="card p-4">Quality Gate: {"See SonarQube for verified status"}</div>
+          <div className="card p-4">Quality Gate: {data.sonarMetrics.vulnerabilities === 0 && data.sonarMetrics.bugs === 0 ? "Passed" : "Needs review"}</div>
         </div>
       ) : null}
       {data.sonarMetrics ? (
@@ -232,7 +239,7 @@ export default function SASTResults() {
         {["ALL", "CRITICAL", "MAJOR", "MINOR", "INFO"].map((s) => (
           <button key={s} onClick={() => setSeverityTab(s)} className={`px-3 py-1.5 rounded-lg text-sm border ${severityTab === s ? "bg-blue-600 border-blue-500" : "border-[#1e2d4a]"}`}>{s}</button>
         ))}
-        <input className="input w-full md:w-96 ml-auto" placeholder="Search findings..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="input w-full md:w-96 ml-auto" placeholder="Search vulnerabilities..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
@@ -244,7 +251,7 @@ export default function SASTResults() {
               <Fragment key={`grp-${i}`}>
                 <tr className="border-b border-[#1e2d4a]">
                   <td className="p-3"><SeverityBadge severity={v.severity} /></td>
-                  <td className="font-mono text-xs">{v.rule}<div>{({CODE_SMELL:"Maintainability",BUG:"Reliability",VULNERABILITY:"Security vulnerability",SECURITY_HOTSPOT:"Security hotspot"})[v.issue_type] || "Unclassified"}{v.issue_type === "SECURITY_HOTSPOT" ? ` (${v.hotspot_review || "TO_REVIEW"})` : ""}</div></td>
+                  <td className="font-mono text-xs">{v.rule}</td>
                   <td>{v.message}</td>
                   <td className="text-blue-400">{v.file_path?.split("/").pop()}</td>
                   <td>{v.line_number || "-"}</td>
@@ -261,7 +268,7 @@ export default function SASTResults() {
                       <div className="grid md:grid-cols-3 gap-3 text-xs">
                         <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
                           <p className="text-[#64748b] mb-1">Rule ID</p>
-                          <p className="font-mono text-blue-400">{v.rule || "—"}</p><p>{({CODE_SMELL:"Maintainability",BUG:"Reliability",VULNERABILITY:"Security vulnerability",SECURITY_HOTSPOT:"Security hotspot — review status: " + (v.hotspot_review || "TO_REVIEW")})[v.issue_type] || "Unclassified"}</p>
+                          <p className="font-mono text-blue-400">{v.rule || "—"}</p>
                         </div>
                         <div className="bg-[#111827] border border-[#1e2d4a] rounded p-3">
                           <p className="text-[#64748b] mb-1">File</p>

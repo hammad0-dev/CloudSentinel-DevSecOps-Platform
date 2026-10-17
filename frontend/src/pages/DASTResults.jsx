@@ -1,9 +1,11 @@
+import { executionResultsApi } from "../utils/executionScan";
+import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShieldAlert, ScanSearch, TriangleAlert, Link2, Save } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
-import api from "../lib/api";
+import liveApi from "../lib/api";
 
 const SEV_COLORS = {
   HIGH:          "border-red-600/40 bg-red-950/20",
@@ -14,6 +16,11 @@ const SEV_COLORS = {
 
 export default function DASTResults() {
   const { id } = useParams();                        // project id from URL
+  const [searchParams] = useSearchParams();
+  const executionId = searchParams.get("executionId");
+  const reportProjectId = searchParams.get("projectId");
+  const api = executionResultsApi(liveApi, reportProjectId || id, executionId);
+
   const [data, setData]           = useState(null);
   const [loading, setLoading]     = useState(true);
   const [scanning, setScanning]   = useState(false);
@@ -41,7 +48,7 @@ export default function DASTResults() {
     }
   };
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => { load(); }, [id, executionId]);
 
   // Poll while scan is RUNNING
   useEffect(() => {
@@ -114,7 +121,7 @@ export default function DASTResults() {
           <button
             className="primary-btn inline-flex items-center gap-2"
             onClick={runScan}
-            disabled={scanning || scanStatus === "RUNNING" || !data?.target_url}
+            disabled={Boolean(executionId) || scanning || scanStatus === "RUNNING" || !data?.target_url}
             title={!data?.target_url ? "Set a target URL below first" : ""}
           >
             <ScanSearch size={14} />
@@ -138,7 +145,7 @@ export default function DASTResults() {
           <button
             className="secondary-btn inline-flex items-center gap-1"
             onClick={saveTargetUrl}
-            disabled={savingUrl || !targetUrl.trim()}
+            disabled={Boolean(executionId) || savingUrl || !targetUrl.trim()}
           >
             <Save size={13} />
             {savingUrl ? "Saving…" : "Save"}

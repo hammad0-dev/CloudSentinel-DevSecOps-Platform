@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Bell, Search, Settings, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { isCICDPath } from "./CICDNavigation";
 
 const titles = {
   "/dashboard": "Security Overview",
@@ -21,8 +22,11 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { logout } = useAuth();
   const rootPath = `/${pathname.split("/").filter(Boolean)[0] || "dashboard"}`;
-  const crumb = titles[rootPath] || "CloudSentinel";
-  const leaf = pathname.includes("/sast")
+  const inCICD = isCICDPath(pathname);
+  const crumb = inCICD ? "CI/CD" : titles[rootPath] || "CloudSentinel";
+  const leaf = pathname === "/dependencies" ? "Dependencies"
+    : pathname === "/iac" ? "IaC Security"
+    : pathname.includes("/sast")
     ? "SAST Results"
     : pathname.includes("/dast")
       ? "DAST Results"
@@ -36,8 +40,6 @@ export default function Navbar() {
     ["/dashboard", "Dashboard"],
     ["/projects", "Projects"],
     ["/cicd", "CI/CD"],
-    ["/dependencies", "Dependencies"],
-    ["/iac", "IaC"],
     ["/cloud", "Cloud"],
     ["/kubernetes", "Kubernetes"],
     ["/compliance", "Compliance"],
@@ -153,9 +155,10 @@ export default function Navbar() {
             <NavLink
               key={to}
               to={to}
+              aria-current={to === "/cicd" && inCICD ? "page" : undefined}
               className={({ isActive }) =>
                 `px-3 py-1.5 rounded-md text-sm border transition-all ${
-                  isActive
+                  (to === "/cicd" ? inCICD : to === "/projects" ? isActive && !inCICD : isActive)
                     ? "border-[var(--accent-green)] text-[var(--accent-green)] bg-[rgba(47,111,79,0.10)]"
                     : "border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
                 }`
