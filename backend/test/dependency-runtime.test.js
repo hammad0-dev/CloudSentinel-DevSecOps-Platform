@@ -1,0 +1,6 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),os=require('os'),path=require('path');
+const {configuration,coverage}=require('../services/dependencyRuntime');
+test('Snap uses verified offline cache and accessible checkout paths',()=>{const c=configuration({TRIVY_CMD:'/snap/bin/trivy'});assert.match(c.checkoutRoot,/snap\/trivy\/common/);assert.match(c.env.TRIVY_CACHE_DIR,/cs-db-verified/);for(const k of ['TRIVY_SKIP_DB_UPDATE','TRIVY_SKIP_JAVA_DB_UPDATE','TRIVY_SKIP_CHECK_UPDATE','TRIVY_OFFLINE_SCAN'])assert.equal(c.env[k],'true');});
+test('Snap rejects inaccessible overrides',()=>assert.throws(()=>configuration({TRIVY_CMD:'/snap/bin/trivy',DEP_CLONE_DIR:'/tmp/checkout'}),/Snap/));
+test('ordinary non-Snap settings preserved',()=>assert.equal(configuration({CLONE_DIR:'/tmp/custom'}).checkoutRoot,'/tmp/custom'));
+test('coverage distinguishes missing manifests from missed inventory',()=>{const r=fs.mkdtempSync(path.join(os.tmpdir(),'dep-coverage-'));try{assert.equal(coverage(r,{Results:[]}).status,'NO_SUPPORTED_MANIFESTS_OBSERVED');fs.writeFileSync(path.join(r,'package-lock.json'),'{}');assert.equal(coverage(r,{Results:[]}).status,'MANIFESTS_WITHOUT_INVENTORY');assert.equal(coverage(r,{Results:[{Packages:[{Name:'test'}]}]}).status,'INVENTORY_PRESENT');}finally{fs.rmSync(r,{recursive:true});}});

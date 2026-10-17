@@ -4,7 +4,7 @@ function summarizeIssues(issues) {
   return issues.reduce(
     (acc, item) => {
       const severity = (item.severity || "INFO").toUpperCase();
-      if (severity === "CRITICAL") acc.critical += 1;
+      if (["CRITICAL","BLOCKER"].includes(severity)) acc.critical += 1;
       else if (severity === "MAJOR" || severity === "HIGH") acc.high += 1;
       else if (severity === "MINOR" || severity === "MEDIUM" || severity === "LOW") acc.medium += 1;
       else acc.low += 1;
@@ -28,17 +28,17 @@ async function persistSastEvidence(pool, { projectId, scanHistoryId, issues, coe
     for (const issue of issues) {
       const row = coerceIssueRow(issue, projectId);
       await client.query(
-        "INSERT INTO scan_results (project_id, scan_history_id, rule, severity, message, file_path, line_number, status) VALUES ($1,$2,$3,$4,$5,$6,$7,'OPEN')",
-        [projectId, scanHistoryId, ...row.slice(1)]
+        "INSERT INTO scan_results (project_id, scan_history_id, rule, severity, message, file_path, line_number, status, issue_type, hotspot_review) VALUES ($1,$2,$3,$4,$5,$6,$7,'OPEN',$8,$9)",
+        [projectId, scanHistoryId, ...row.slice(1), require("./sastClassification").classify(issue).type, require("./sastClassification").classify(issue).review]
       );
     }
     const verification = await client.query(
       `SELECT COUNT(*)::int AS total,
         COUNT(DISTINCT (rule, severity, message, file_path, line_number))::int AS distinct_total,
-        COUNT(*) FILTER (WHERE UPPER(severity) = 'CRITICAL')::int AS critical,
+        COUNT(*) FILTER (WHERE UPPER(severity) IN ('CRITICAL','BLOCKER'))::int AS critical,
         COUNT(*) FILTER (WHERE UPPER(severity) IN ('MAJOR', 'HIGH'))::int AS high,
         COUNT(*) FILTER (WHERE UPPER(severity) IN ('MINOR', 'MEDIUM', 'LOW'))::int AS medium,
-        COUNT(*) FILTER (WHERE UPPER(severity) NOT IN ('CRITICAL', 'MAJOR', 'HIGH', 'MINOR', 'MEDIUM', 'LOW'))::int AS low
+        COUNT(*) FILTER (WHERE UPPER(severity) NOT IN ('CRITICAL', 'BLOCKER', 'MAJOR', 'HIGH', 'MINOR', 'MEDIUM', 'LOW'))::int AS low
        FROM scan_results WHERE project_id = $1 AND scan_history_id = $2`,
       [projectId, scanHistoryId]
     );

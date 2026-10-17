@@ -78,3 +78,9 @@ test("accepts a verified zero-finding SAST scan", async () => {
   assert.ok(calls.find(({ sql }) => sql.startsWith("UPDATE scan_history")));
   assert.ok(calls.some(({ sql }) => sql === "COMMIT"));
 });
+test('persists independent SonarQube type and hotspot review without changing severity',async()=>{
+ const {pool,calls}=evidencePool({verification:{total:2,distinct_total:2,critical:0,high:1,medium:0,low:1}});
+ await persistSastEvidence(pool,{projectId:4,scanHistoryId:9,issues:[{...issue('MAJOR','css'),type:'CODE_SMELL'},{...issue('INFO','hotspot'),type:'SECURITY_HOTSPOT',status:'REVIEWED',resolution:'SAFE'}],coerceIssueRow:coerce});
+ const rows=calls.filter(c=>c.sql.startsWith('INSERT INTO scan_results')).map(c=>c.params);
+ assert.equal(rows[0][3],'MAJOR');assert.deepEqual(rows[0].slice(-2),['CODE_SMELL','NOT_APPLICABLE']);assert.deepEqual(rows[1].slice(-2),['SECURITY_HOTSPOT','SAFE']);
+});

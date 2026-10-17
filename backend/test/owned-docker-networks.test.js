@@ -144,3 +144,10 @@ test("inspect rejects the reported gateway paired with a different /28 block", (
   raw.IPAM.Config = [{ Subnet: "172.30.25.0/28", Gateway: "172.30.25.1" }];
   assert.equal(parseNetwork(raw).gateway, "172.30.25.1");
 });
+test('expired diagnostic guard stops further network creation and cleans the owned partial allocation',async()=>{
+  const adapter=fakeAdapter(),service=new OwnedDockerNetworks({adapter});let count=0;
+  await assert.rejects(service.create(scan,{beforeCreate(){if(++count===2)throw Object.assign(Error('expired'),{code:'DIAGNOSTIC_EXPIRED'});}}),{code:'DIAGNOSTIC_EXPIRED'});
+  assert.equal(adapter.calls.filter(a=>a[0]==='network'&&a[1]==='create').length,1);
+  assert.equal(adapter.calls.filter(a=>a[0]==='network'&&a[1]==='rm').length,1);
+  assert.equal(service.active.size,0);
+});

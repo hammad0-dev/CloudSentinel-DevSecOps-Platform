@@ -1,0 +1,540 @@
+{
+  "source": "Genuine cs-zap-complete-eumqv32d observations; fields omitted, not reconstructed",
+  "inspection": {
+    "Id": "9765e41ed28f2f26f88a440bf7e002562994b10daa006d3648c8dac064b10134",
+    "Created": "2026-10-15T16:17:45.613396491Z",
+    "Path": "/bin/sh",
+    "Args": [
+      "-c",
+      "umask 077; python3 -I -c 'import os,sys,base64,hashlib;p,n,b,h=sys.argv[1:];d=base64.b64decode(b,validate=True);assert hashlib.sha256(d).hexdigest()==h;s=os.lstat(p);assert s.st_uid==s.st_gid==1000 and s.st_mode&511==448;fd=os.open(p,os.O_DIRECTORY|os.O_NOFOLLOW);f=os.open(n,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,384,dir_fd=fd);w=os.fdopen(f,'\"'\"'wb'\"'\"');w.write(d);w.close();os.close(fd)' /home/zap/.mozilla/firefox/1337hack.zap-client-profile firefox-extension-preferences.json eyJicm93c2VyLWV4dGVuc2lvblYzQHphcHJveHkub3JnIjp7InBlcm1pc3Npb25zIjpbIjxhbGxfdXJscz4iXSwib3JpZ2lucyI6WyI8YWxsX3VybHM+IiwiKjovLyovKiJdfX0= c06f1d12e7cfb8f12158d6ac4d5541c01664b9d62892d1b0382ea30df2c73f54 || exit 1; python3 -I -c 'import os,sys,base64,hashlib;p,n,b,h=sys.argv[1:];d=base64.b64decode(b,validate=True);assert hashlib.sha256(d).hexdigest()==h;s=os.lstat(p);assert s.st_uid==s.st_gid==1000 and s.st_mode&511==448;fd=os.open(p,os.O_DIRECTORY|os.O_NOFOLLOW);f=os.open(n,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,384,dir_fd=fd);w=os.fdopen(f,'\"'\"'wb'\"'\"');w.write(d);w.close();os.close(fd)' /home/zap/.ZAP .ZAP_JVM.properties LVhteDUxMm0gLURqYXZhLnV0aWwucHJlZnMudXNlclJvb3Q9L2hvbWUvemFwLy5aQVAK 997eb88086f22e0c31de671fb77332e79d905eb27a87086d61b0a3c3482c51c0 || exit 1; k=$(head -c 32 /dev/urandom | sha256sum | cut -d\" \" -f1); printf \"%s\" \"$k\" >/tmp/.key; exec zap.sh -silent -daemon -host 127.0.0.1 -port 8090 -config oast.callback.localaddr=127.0.0.1 -config api.disablekey=false -config api.key=\"$k\" -config autoupdate.checkOnStart=false -config autoupdate.downloadNewRelease=false -config autoupdate.installAddonUpdates=false -dir /home/zap/.ZAP"
+    ],
+    "State": {
+      "Status": "running",
+      "Running": true,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 341629,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-15T16:17:45.930833298Z",
+      "FinishedAt": "0001-01-01T00:00:00Z",
+      "Health": {
+        "Status": "starting",
+        "FailingStreak": 0,
+        "Log": []
+      }
+    },
+    "Image": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+    "ResolvConfPath": "/var/lib/docker/containers/9765e41ed28f2f26f88a440bf7e002562994b10daa006d3648c8dac064b10134/resolv.conf",
+    "HostnamePath": "/var/lib/docker/containers/9765e41ed28f2f26f88a440bf7e002562994b10daa006d3648c8dac064b10134/hostname",
+    "HostsPath": "/var/lib/docker/containers/9765e41ed28f2f26f88a440bf7e002562994b10daa006d3648c8dac064b10134/hosts",
+    "LogPath": "/var/lib/docker/containers/9765e41ed28f2f26f88a440bf7e002562994b10daa006d3648c8dac064b10134/9765e41ed28f2f26f88a440bf7e002562994b10daa006d3648c8dac064b10134-json.log",
+    "Name": "/cs-zap-complete-eumqv32d",
+    "RestartCount": 0,
+    "Driver": "overlayfs",
+    "Platform": "linux",
+    "MountLabel": "",
+    "ProcessLabel": "",
+    "AppArmorProfile": "",
+    "ExecIDs": null,
+    "HostConfig": {
+      "Binds": null,
+      "ContainerIDFile": "",
+      "LogConfig": {
+        "Type": "json-file",
+        "Config": {}
+      },
+      "NetworkMode": "none",
+      "PortBindings": {},
+      "RestartPolicy": {
+        "Name": "no",
+        "MaximumRetryCount": 0
+      },
+      "AutoRemove": false,
+      "VolumeDriver": "",
+      "VolumesFrom": null,
+      "ConsoleSize": [
+        0,
+        0
+      ],
+      "CapAdd": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "CgroupnsMode": "private",
+      "Dns": null,
+      "DnsOptions": [],
+      "DnsSearch": [],
+      "ExtraHosts": [
+        "cs-zap-complete-eumqv32d:127.0.0.1"
+      ],
+      "GroupAdd": null,
+      "IpcMode": "private",
+      "Cgroup": "",
+      "Links": null,
+      "OomScoreAdj": 0,
+      "PidMode": "",
+      "Privileged": false,
+      "PublishAllPorts": false,
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges:true"
+      ],
+      "Tmpfs": {
+        "/home/zap/.ZAP": "rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
+        "/home/zap/.mozilla/firefox/1337hack.zap-client-profile": "rw,noexec,nosuid,nodev,size=4m,uid=1000,gid=1000,mode=0700",
+        "/tmp": "rw,noexec,nosuid,nodev,size=64m,uid=1000,gid=1000,mode=1777",
+        "/zap/wrk": "rw,noexec,nosuid,nodev,size=64m,uid=1000,gid=1000,mode=0700"
+      },
+      "UTSMode": "",
+      "UsernsMode": "",
+      "ShmSize": 67108864,
+      "Runtime": "runc",
+      "Isolation": "",
+      "CpuShares": 0,
+      "Memory": 1610612736,
+      "NanoCpus": 1000000000,
+      "CgroupParent": "",
+      "BlkioWeight": 0,
+      "BlkioWeightDevice": [],
+      "BlkioDeviceReadBps": [],
+      "BlkioDeviceWriteBps": [],
+      "BlkioDeviceReadIOps": [],
+      "BlkioDeviceWriteIOps": [],
+      "CpuPeriod": 0,
+      "CpuQuota": 0,
+      "CpuRealtimePeriod": 0,
+      "CpuRealtimeRuntime": 0,
+      "CpusetCpus": "",
+      "CpusetMems": "",
+      "Devices": [],
+      "DeviceCgroupRules": null,
+      "DeviceRequests": null,
+      "MemoryReservation": 0,
+      "MemorySwap": 3221225472,
+      "MemorySwappiness": null,
+      "OomKillDisable": null,
+      "PidsLimit": 128,
+      "Ulimits": [],
+      "CpuCount": 0,
+      "CpuPercent": 0,
+      "IOMaximumIOps": 0,
+      "IOMaximumBandwidth": 0,
+      "MaskedPaths": [
+        "/proc/acpi",
+        "/proc/asound",
+        "/proc/interrupts",
+        "/proc/kcore",
+        "/proc/keys",
+        "/proc/latency_stats",
+        "/proc/sched_debug",
+        "/proc/scsi",
+        "/proc/timer_list",
+        "/proc/timer_stats",
+        "/sys/devices/virtual/powercap",
+        "/sys/firmware"
+      ],
+      "ReadonlyPaths": [
+        "/proc/bus",
+        "/proc/fs",
+        "/proc/irq",
+        "/proc/sys",
+        "/proc/sysrq-trigger"
+      ]
+    },
+    "Storage": {
+      "RootFS": {
+        "Snapshot": {
+          "Name": "overlayfs"
+        }
+      }
+    },
+    "Mounts": [],
+    "Config": {
+      "User": "1000:1000",
+      "Hostname": "cs-zap-complete-eumqv32d",
+      "Labels": {
+        "cloudsentinel.owner": "cs-zap-complete-eumqv32d",
+        "cloudsentinel.role": "zap-initialization-diagnostic",
+        "maintainer": "psiinon@gmail.com",
+        "run.crashoverride.author": "Simon Bennetts <psiinon@gmail.com>",
+        "run.crashoverride.branch": "main",
+        "run.crashoverride.commit-id": "2665d972f6d587ba4773a95053ac39af3fdf8df9",
+        "run.crashoverride.committer": "GitHub <noreply@github.com>",
+        "run.crashoverride.date-authored": "2026-08-06T09:30:53.000+01:00",
+        "run.crashoverride.date-committed": "2026-08-06T09:30:53.000+01:00",
+        "run.crashoverride.origin-uri": "https://github.com/zaproxy/zaproxy"
+      }
+    },
+    "NetworkSettings": {
+      "SandboxID": "04de2fc59437562903e01e3c517279dee2820194edb9fb68f5450f267c19be4d",
+      "SandboxKey": "/var/run/docker/netns/04de2fc59437",
+      "Ports": {},
+      "Networks": {
+        "none": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "7f0b3c637435d350b1a76d7f715df545e36e3f120bd98db4192caf9977b380c6",
+          "EndpointID": "d6acbd292710e81ca58323ca48a9eff4732a0d4579a64b7aaa629a991796ad98",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "ImageManifestDescriptor": {
+      "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+      "digest": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+      "size": 3654,
+      "annotations": {
+        "io.containerd.image.name": "docker.io/cloudsentinel/zap-offline:verified-closure",
+        "org.opencontainers.image.ref.name": "verified-closure"
+      },
+      "platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      }
+    }
+  },
+  "storagePolicy": {
+    "storage": {
+      "homeCapacityBytes": 268435456,
+      "homeAvailableBytes": 85016576,
+      "usedFilesystemBytes": 183418880,
+      "regularFileBytes": 182477681,
+      "allocatedFileBytes": 183418880,
+      "fileCount": 408,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0700",
+      "homeWritable": true
+    },
+    "policy": {
+      "path": "/home/zap/.ZAP/policies/Default Policy.policy",
+      "xmlParsed": true,
+      "complete": true,
+      "bytes": 313,
+      "sha256": "6c520f86483c230a85138ad407c4de70bf1e1e85c2c705a90742ed09c481284e"
+    },
+    "observedJavaHeapArguments": [
+      "-Xmx512m"
+    ]
+  },
+  "writable": {
+    "profile": {
+      "path": "/home/zap/.mozilla/firefox/1337hack.zap-client-profile",
+      "writable": true,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0700",
+      "capacityBytes": 4194304,
+      "availableBytes": 4186112,
+      "seedSha256": "c06f1d12e7cfb8f12158d6ac4d5541c01664b9d62892d1b0382ea30df2c73f54",
+      "seedMode": "0600"
+    },
+    "javaPreferences": {
+      "path": "/home/zap/.ZAP/.java/.userPrefs",
+      "writable": true,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0700",
+      "capacityBytes": 268435456,
+      "availableBytes": 85016576,
+      "rootProperty": "/home/zap/.ZAP"
+    },
+    "observedJavaHeapArguments": [
+      "-Xmx512m"
+    ],
+    "listeners": {
+      "complete": true,
+      "tcpComplete": true,
+      "tcp6Complete": true,
+      "listeners": [
+        {
+          "family": "IPv6",
+          "address": "127.0.0.1",
+          "port": 34755,
+          "nativeAddress": "0000000000000000FFFF00000100007F",
+          "loopback": true
+        },
+        {
+          "family": "IPv6",
+          "address": "127.0.0.1",
+          "port": 8090,
+          "nativeAddress": "0000000000000000FFFF00000100007F",
+          "loopback": true
+        },
+        {
+          "family": "IPv6",
+          "address": "127.0.0.1",
+          "port": 45611,
+          "nativeAddress": "0000000000000000FFFF00000100007F",
+          "loopback": true
+        }
+      ]
+    }
+  },
+  "profile": {
+    "path": "/home/zap/.mozilla/firefox/1337hack.zap-client-profile/extension-preferences.json",
+    "exists": true,
+    "regular": true,
+    "uid": 1000,
+    "gid": 1000,
+    "bytes": 101,
+    "bounded": true,
+    "validJson": true,
+    "sha256": "c06f1d12e7cfb8f12158d6ac4d5541c01664b9d62892d1b0382ea30df2c73f54"
+  },
+  "addons": [
+    {
+      "id": "pscan",
+      "version": "0.6.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "zest",
+      "version": "48.14.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "onlineMenu",
+      "version": "15.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "reports",
+      "version": "0.46.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "soap",
+      "version": "31.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "retest",
+      "version": "0.11.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "authhelper",
+      "version": "0.41.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "formhandler",
+      "version": "6.8.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "diff",
+      "version": "18.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "directorylistv1",
+      "version": "9.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "gettingStarted",
+      "version": "20.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "sequence",
+      "version": "10.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "network",
+      "version": "0.29.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "graaljs",
+      "version": "0.14.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "exim",
+      "version": "0.21.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "oast",
+      "version": "0.24.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "postman",
+      "version": "0.9.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "invoke",
+      "version": "17.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "fuzz",
+      "version": "13.17.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "ascanrules",
+      "version": "83.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "scripts",
+      "version": "45.20.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "client",
+      "version": "0.30.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "callhome",
+      "version": "0.23.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "spider",
+      "version": "0.20.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "websocket",
+      "version": "38.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "hud",
+      "version": "0.19.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "webdriverlinux",
+      "version": "215.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "pscanrules",
+      "version": "75.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "spiderAjax",
+      "version": "23.32.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "scanpolicies",
+      "version": "0.8.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "automation",
+      "version": "0.60.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "tips",
+      "version": "16.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "help",
+      "version": "22.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "selenium",
+      "version": "15.53.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "commonlib",
+      "version": "1.43.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "graphql",
+      "version": "0.33.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "replacer",
+      "version": "22.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "reveal",
+      "version": "10.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "alertFilters",
+      "version": "27.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "openapi",
+      "version": "57.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "database",
+      "version": "0.9.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "bruteforce",
+      "version": "21.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "insights",
+      "version": "0.5.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "requester",
+      "version": "7.10.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "quickstart",
+      "version": "59.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "retire",
+      "version": "0.63.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "domxss",
+      "version": "24.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    {
+      "id": "encoder",
+      "version": "1.9.0",
+      "installationStatus": "INSTALLED"
+    }
+  ]
+}

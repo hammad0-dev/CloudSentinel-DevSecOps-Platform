@@ -6,10 +6,10 @@ const pool = require("../db");
 const auth = require("../middleware/auth");
 const { resolvePipelineExecutionId } = require("../services/pipelineExecutionContext");
 
+const { configuration: dependencyConfiguration, coverage: dependencyCoverage } = require("../services/dependencyRuntime");
 const router = express.Router();
 
 const TRIVY_CMD = process.env.TRIVY_CMD || "trivy";
-const CLONE_DIR = () => path.resolve(process.env.CLONE_DIR || "/tmp/cloudsentinel-scans");
 const hasUsableProjectToken = (token) =>
   typeof token === "string" &&
   token.trim() &&
@@ -37,24 +37,25 @@ const gitEnv = () => {
 /** Kill child on timeout — avoids RUNNING dependency scans stuck forever (hung git/trivy). */
 function spawnWithTimeout(label, command, args, spawnOptions, timeoutMs) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, spawnOptions);
+    const options = { ...spawnOptions };
+    if (process.platform !== "win32") options.detached = true;
+    const child = spawn(command, args, options);
     let stdout = "";
     let stderr = "";
     let settled = false;
+    let timedOut = false;
+    let killTimer;
+    const terminateGroup = (signal) => {
+      try {
+        if (process.platform !== "win32" && child.pid) process.kill(-child.pid, signal);
+        else child.kill(signal);
+      } catch (_) { try { child.kill(signal); } catch (_) {} }
+    };
     const timer = setTimeout(() => {
       if (settled) return;
-      settled = true;
-      try {
-        child.kill("SIGKILL");
-      } catch (_) {
-        /* ignore */
-      }
-      reject(
-        new Error(
-          `${label}: timed out after ${Math.round(timeoutMs / 1000)}s. Large Java repos (e.g. WebGoat) ` +
-            `and first Trivy run (vuln DB download) can be slow — increase DEP_TRIVY_TIMEOUT_MS or DEP_GIT_TIMEOUT_MS in .env.`
-        )
-      );
+      timedOut = true;
+      terminateGroup("SIGTERM");
+      killTimer = setTimeout(() => terminateGroup("SIGKILL"), 2000);
     }, timeoutMs);
 
     child.stdout?.on("data", (c) => {
@@ -67,12 +68,22 @@ function spawnWithTimeout(label, command, args, spawnOptions, timeoutMs) {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      clearTimeout(killTimer);
+      if (timedOut) {
+        reject(new Error(`${label}: timed out after ${Math.round(timeoutMs / 1000)}s.`));
+        return;
+      }
       reject(err);
     });
     child.on("close", (code) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      clearTimeout(killTimer);
+      if (timedOut) {
+        reject(new Error(`${label}: timed out after ${Math.round(timeoutMs / 1000)}s.`));
+        return;
+      }
       if (code === 0) resolve({ stdout, stderr });
       else reject(new Error((stderr || stdout || `${label} exited ${code}`).trim()));
     });
@@ -174,7 +185,7 @@ function runTrivy(args, cwd) {
     args,
     {
       cwd: cwd || process.cwd(),
-      env: { ...process.env, TRIVY_NO_PROGRESS: "true" },
+      env: dependencyConfiguration().env,
       stdio: ["ignore", "pipe", "pipe"],
       shell: process.platform === "win32",
     },
@@ -311,10 +322,10 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     );
     scanId = runRow.rows[0].id;
 
-    const cloneRoot = CLONE_DIR();
+    const cloneRoot = dependencyConfiguration().checkoutRoot;
 
     if (!fs.existsSync(cloneRoot)) {
-      fs.mkdirSync(cloneRoot, { recursive: true });
+      fs.mkdirSync(cloneRoot, { recursive: true, mode: 0o700 });
     }
     cloneTarget = fs.mkdtempSync(path.join(cloneRoot, `${projectId}-dep-`));
     const runDir = cloneTarget;
@@ -347,15 +358,14 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     const fsScan = await runTrivy(TRIVY_FS_COMMON, runDir);
     const trivyFsJson = typeof fsScan === "object" ? fsScan.stdout : fsScan;
 
-    let sbomOutput = null;
-    try {
-      const sb = await runTrivy(["fs", "--format", "cyclonedx", "--scanners", "vuln,license", "."], runDir);
-      sbomOutput = typeof sb === "object" ? sb.stdout : sb;
-    } catch {
-      sbomOutput = null;
-    }
-
     const trivyData = parseTrivyJson(trivyFsJson || "");
+    if (!trivyData || trivyData.SchemaVersion !== 2 || !Array.isArray(trivyData.Results)) throw new Error("Invalid Trivy vulnerability report");
+    const sb = await runTrivy(["fs", "--format", "cyclonedx", "--scanners", "vuln,license", "."], runDir);
+    const sbomOutput = sb.stdout;
+    const bom = parseTrivyJson(sbomOutput);
+    if (!bom || bom.bomFormat !== "CycloneDX" || !Array.isArray(bom.components)) throw new Error("Invalid CycloneDX SBOM");
+    const coverage = dependencyCoverage(runDir, trivyData);
+    if (coverage.status === "MANIFESTS_WITHOUT_INVENTORY") throw new Error("Dependency coverage incomplete: manifests found but no package inventory");
     const components = trivyData ? extractComponents(trivyData) : [];
     const summary = summarize(components);
 
@@ -396,7 +406,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     if (fs.existsSync(cloneTarget)) {
       fs.rmSync(cloneTarget, { recursive: true, force: true });
     }
-    return res.json({ success: true, scanId, summary, total: components.length });
+    return res.json({ success: true, scanId, summary, total: components.length, coverage });
   } catch (error) {
     if (scanId) {
       await pool.query(
@@ -507,4 +517,5 @@ router.get("/report/:projectId", auth, async (req, res) => {
   }
 });
 
+router.spawnWithTimeout = spawnWithTimeout;
 module.exports = router;

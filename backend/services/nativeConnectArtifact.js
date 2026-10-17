@@ -41,18 +41,23 @@ async function readFile(file, mode) {
     return { bytes, stat: after };
   } finally { await handle.close(); }
 }
-async function stage(scanId) {
-  if (!/^[a-z0-9_.-]{1,80}$/i.test(scanId || '')) fail('INVALID_IDENTITY');
+async function readAuditedBuild(){
   const source = await readFile(SOURCE);
   if (hash(source.bytes) !== SOURCE_SHA) fail('NATIVE_SOURCE_HASH_MISMATCH');
   const binary = await readFile(BINARY, 0o500); verifyElf(binary.bytes);
   if (hash(binary.bytes) !== BINARY_SHA) fail('NATIVE_BINARY_HASH_MISMATCH');
+  return binary.bytes;
+}
+async function verifyAuditedBuild(){await readAuditedBuild();return {verified:true,digest:BINARY_SHA,architecture:'x86_64'};}
+async function stage(scanId) {
+  if (!/^[a-z0-9_.-]{1,80}$/i.test(scanId || '')) fail('INVALID_IDENTITY');
+  const binaryBytes=await readAuditedBuild();
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), `cloudsentinel-native-${scanId}-`));
   try {
     await fs.chmod(directory,0o700);
     const filePath = path.join(directory,'connect-peer');
     if (/[,\r\n]/.test(filePath)) fail('NATIVE_PATH_UNSAFE');
-    await fs.writeFile(filePath,binary.bytes,{ flag:'wx',mode:0o500 });
+    await fs.writeFile(filePath,binaryBytes,{ flag:'wx',mode:0o500 });
     await fs.chmod(filePath,0o500);
     const artifact = Object.freeze({ scanId,directory,filePath,containerPath:DESTINATION,digest:BINARY_SHA,mount:`type=bind,src=${filePath},dst=${DESTINATION},readonly` });
     issued.set(artifact,{ dir:await fs.lstat(directory), file:await fs.lstat(filePath), cleaned:false });
@@ -87,4 +92,4 @@ async function cleanup(artifact) {
   await fs.rmdir(artifact.directory);
   record.cleaned = true; return { cleaned:true,residual:[] };
 }
-module.exports = { stage,verify,cleanup,verifyElf,SOURCE_SHA,BINARY_SHA,DESTINATION };
+module.exports = { stage,verify,cleanup,verifyElf,verifyAuditedBuild,SOURCE_SHA,BINARY_SHA,DESTINATION };

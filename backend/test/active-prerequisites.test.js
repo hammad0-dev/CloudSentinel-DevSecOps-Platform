@@ -21,8 +21,8 @@ test('fixture recipe requires explicit pinned base and nonroot standard-library 
   const app=await fs.readFile(path.join(root,'app.py'),'utf8');assert.ok(app.includes('TemporaryDirectory'));assert.ok(app.includes('dir="/tmp"'));assert.ok(app.includes('"/health"'));
 });
 test('unverified API, rate, completion, cancellation and export capabilities block before execution',()=>{
-  const {capabilities}=require('../services/activeZapRuntime');const catalog=require('../config/active-runtime-artifacts.json');assert.throws(()=>capabilities(catalog),{code:'ACTIVE_RUNTIME_BLOCKED'});
-  const source=require('fs').readFileSync(require.resolve('../services/activeZapRuntime'),'utf8');for(const field of ['apiBinding','apiAuthentication','spiderRateLimited','jobCompletionVerified','timeoutVerified','cancellationVerified','exportFormat','evidenceSha256'])assert.ok(source.includes(field));
+  const {capabilities}=require('../services/activeZapRuntime');const catalog=require('../config/active-runtime-artifacts.json');assert.throws(()=>capabilities(catalog),{code:'ACTIVE_POLICY_CAPABILITIES_BLOCKED'});
+  const source=['activeZapRuntime','activeDastCommissioning'].map(name=>require('fs').readFileSync(require.resolve('../services/'+name),'utf8')).join('\n');for(const field of ['apiBinding','apiAuthentication','spiderRateLimited','jobCompletionVerified','timeoutVerified','cancellationVerified','exportFormat','evidenceSha256'])assert.ok(source.includes(field));
 });
 test('unapplied schemas enforce execution/project/target association and cleanup failure records',async()=>{
   const a=await fs.readFile(path.join(__dirname,'../migrations/012_active_dast_execution_records.sql'),'utf8'),b=await fs.readFile(path.join(__dirname,'../migrations/013_active_dast_grants.sql'),'utf8');

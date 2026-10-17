@@ -35,13 +35,13 @@ function assertPolicyConfiguration(policy = POLICY) {
   }
   return approved;
 }
-function automationPlan(target, policy = POLICY) {
+function automationPlan(target, policy = POLICY, {exactQueryScope=false} = {}) {
   const approved = assertPolicyConfiguration(policy);
   const parsed = canonical(target);
   if (!matchesPrefix(parsed.pathname) || excluded(parsed.pathname)) throw fail("Active DAST plan target is outside the approved fixture scope", 403);
   const scanUrl = parsed.toString().replace(/\/$/, "");
   const origin = parsed.origin;
-  const include = "^" + regexEscape(scanUrl) + "(?:/.*)?$";
+  const include = exactQueryScope ? "^" + regexEscape(origin+parsed.pathname) + "(?:[?][^#]*)?$" : "^" + regexEscape(scanUrl) + "(?:/.*)?$";
   const excludedPaths = policy.excludedPathPatterns.map((segment) =>
     "^" + regexEscape(origin) + "(?:/.*)?" + regexEscape(segment) + "(?:/|$|[?#])"
   );
@@ -59,14 +59,15 @@ function automationPlan(target, policy = POLICY) {
     "      name: " + quoteYaml(PLAN_POLICY),
     "    policyDefinition:",
     "      defaultStrength: Low",
-    "      defaultThreshold: Off",
+    "      defaultThreshold: \"Off\"",
     "      rules:",
     ...approved.map((id) => "        - id: " + id + "\n          strength: Low\n          threshold: Low"),
     "  - type: spider",
     "    parameters:",
     "      context: " + quoteYaml(PLAN_CONTEXT),
     "      url: " + quoteYaml(scanUrl),
-    "      maxDurationInMins: " + policy.maxSpiderMinutes,
+    "      maxDuration: " + policy.maxSpiderMinutes,
+    "      threadCount: " + policy.maxActiveScanners,
     "      maxChildren: " + policy.maxChildren,
     "  - type: activeScan",
     "    parameters:",
@@ -83,6 +84,24 @@ function automationPlan(target, policy = POLICY) {
     "      reportFile: report.json",
     ""
   ].join("\n");
+}
+function commissioningPlan(origin,{baseline=false}={}) {
+  const u=canonical(origin);
+  if(!/^[a-z0-9-]+\.test$/.test(u.hostname)||u.port!=='18080'||u.protocol!=='http:'||u.pathname!=='/'||u.search)throw fail('Invalid commissioning origin',403,'ACTIVE_SCOPE_BLOCKED');
+  assertPolicyConfiguration();
+  let plan=automationPlan(u.origin+'/test/sqli?id=1',POLICY,{exactQueryScope:true});
+  const includes=['sqli','xss'].map(p=>'^'+regexEscape(u.origin+'/test/'+p)+'(?:[?][^#]*)?$');
+  plan=plan.replace(/      urls:.*\n/,`      urls: [${quoteYaml(u.origin+'/test/sqli?id=1')}, ${quoteYaml(u.origin+'/test/xss?q=hello')}]\n`).replace(/      includePaths:.*\n/,`      includePaths: [${includes.map(quoteYaml).join(', ')}]\n`);
+  // requestor-max.yaml in the SHA-256 verified automation 0.60.0 archive:
+  // requests is job-level, url/method/responseCode are request fields.
+  const requests='  - type: requestor\n    requests:\n'+['/test/sqli?id=1','/test/xss?q=hello'].map(p=>`      - url: ${quoteYaml(u.origin+p)}\n        method: GET\n        responseCode: 200\n`).join('');
+  plan=plan.replace(/  - type: spider\n[\s\S]*?(?=  - type: activeScan\n)/,requests);
+  plan=plan.replace('      url: '+quoteYaml(u.origin+'/test/sqli?id=1')+'\n','');
+  plan=plan.replace('      maxScanDurationInMins: '+POLICY.maxMinutes,'      maxScanDurationInMins: 1\n      maxRuleDurationInMins: 1\n      maxAlertsPerRule: 10');
+  // No url limits the scan to only the first subtree: the exact two-path context
+  // supplies both seeded nodes. Every other origin/path remains excluded.
+  if(baseline)plan=plan.replace(/  - type: activeScan-policy\n[\s\S]*?(?=  - type: requestor\n)/,'').replace(/  - type: activeScan\n[\s\S]*?(?=  - type: report\n)/,'  - type: passiveScan-wait\n    parameters:\n      maxDuration: 1\n');
+  return plan;
 }
 async function authorizeActiveTarget(pool, { projectId, executionId, targetUrl, lookup = dns.lookup }) {
   if (!ENABLED) throw fail("Active DAST is disabled", 403, "DAST_ACTIVE_DISABLED");
@@ -111,4 +130,4 @@ async function runActiveScan({ pool, projectId, executionId, targetUrl, lookup, 
   catch(error) { await pool.query("UPDATE dast_scans SET status='FAILED',failure_reason=$1,completed_at=NOW() WHERE id=$2 AND project_id=$3 AND status='RUNNING'",[String(error.message).slice(0,2000),scanId,projectId]).catch(()=>{}); throw error; }
   finally { if(dir && fsImpl.existsSync(dir)) fsImpl.rmSync(dir,{recursive:true,force:true}); }
 }
-module.exports={ POLICY, authorizeActiveTarget, runActiveScan, matchesPrefix, excluded, automationPlan, assertPolicyConfiguration, PLAN_CONTEXT, PLAN_POLICY, REPORT_PATH };
+module.exports={ POLICY, authorizeActiveTarget, runActiveScan, matchesPrefix, excluded, automationPlan, commissioningPlan, assertPolicyConfiguration, PLAN_CONTEXT, PLAN_POLICY, REPORT_PATH };

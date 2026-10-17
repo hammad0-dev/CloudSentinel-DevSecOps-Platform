@@ -1,0 +1,1345 @@
+{
+  "source": "Sanitized genuine cs-zap-capability-2aspu6vu responses; no success responses fabricated",
+  "historicalRunnerStatus": "FAIL",
+  "historicalRunnerExitCode": 1,
+  "responses": {
+    "auth-valid-before": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+      "parameters": {
+        "Integer": "1"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "auth-missing": {
+      "errorType": "RemoteDisconnected",
+      "truncated": false,
+      "processExitCode": 1,
+      "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+      "parameters": {
+        "Integer": "1"
+      }
+    },
+    "auth-wrong": {
+      "errorType": "RemoteDisconnected",
+      "truncated": false,
+      "processExitCode": 1,
+      "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+      "parameters": {
+        "Integer": "1"
+      }
+    },
+    "auth-valid-after": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+      "parameters": {
+        "Integer": "1"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "policy-create": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/addScanPolicy/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "alertThreshold": "OFF",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "policy-disable-all": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/disableAllScanners/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "policy-enable": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/enableScanners/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "ids": "40012,40014,40016,40017,40018,40019,40020"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40012": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40012",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40012": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40012",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40014": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40014",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40014": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40014",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40016": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40016",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40016": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40016",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40017": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40017",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40017": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40017",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40018": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40018",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40018": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40018",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40019": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40019",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40019": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40019",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "threshold-40020": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAlertThreshold/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40020",
+        "alertThreshold": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "strength-40020": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setScannerAttackStrength/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic",
+        "id": "40020",
+        "attackStrength": "LOW"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "policy-readback": {
+      "httpStatus": 200,
+      "body": "{\"scanners\":[{\"allDependenciesAvailable\":\"true\",\"policyId\":\"2\",\"cweId\":\"22\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Path Traversal\",\"wascId\":\"33\",\"id\":\"6\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"2\",\"cweId\":\"98\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Remote File Inclusion\",\"wascId\":\"5\",\"id\":\"7\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"541\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Source Code Disclosure - /WEB-INF Folder\",\"wascId\":\"34\",\"id\":\"10045\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"2\",\"cweId\":\"78\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Remote Code Execution - Shell Shock\",\"wascId\":\"31\",\"id\":\"10048\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"119\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Heartbleed OpenSSL Vulnerability\",\"wascId\":\"20\",\"id\":\"20015\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"20\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Source Code Disclosure - CVE-2012-1823\",\"wascId\":\"20\",\"id\":\"20017\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"20\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Remote Code Execution - CVE-2012-1823\",\"wascId\":\"20\",\"id\":\"20018\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"601\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"External Redirect\",\"wascId\":\"38\",\"id\":\"20019\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"97\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Server Side Include\",\"wascId\":\"31\",\"id\":\"40009\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"79\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"Cross Site Scripting (Reflected)\",\"wascId\":\"8\",\"id\":\"40012\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"79\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"Cross Site Scripting (Persistent)\",\"wascId\":\"8\",\"id\":\"40014\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[\"40017\"]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"89\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"SQL Injection\",\"wascId\":\"19\",\"id\":\"40018\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"89\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"SQL Injection - MySQL (Time Based)\",\"wascId\":\"19\",\"id\":\"40019\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"89\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"SQL Injection - Hypersonic SQL (Time Based)\",\"wascId\":\"19\",\"id\":\"40020\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"89\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"SQL Injection - Oracle (Time Based)\",\"wascId\":\"19\",\"id\":\"40021\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"89\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"SQL Injection - PostgreSQL (Time Based)\",\"wascId\":\"19\",\"id\":\"40022\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"1\",\"cweId\":\"79\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Cross Site Scripting (DOM Based)\",\"wascId\":\"8\",\"id\":\"40026\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"89\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"SQL Injection - MsSQL (Time Based)\",\"wascId\":\"19\",\"id\":\"40027\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"117\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Log4Shell\",\"wascId\":\"20\",\"id\":\"40043\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"78\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Spring4Shell\",\"wascId\":\"20\",\"id\":\"40045\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"78\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Remote Code Execution (React2Shell)\",\"wascId\":\"32\",\"id\":\"40048\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"94\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Server Side Code Injection\",\"wascId\":\"20\",\"id\":\"90019\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"78\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Remote OS Command Injection\",\"wascId\":\"31\",\"id\":\"90020\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"643\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"XPath Injection\",\"wascId\":\"39\",\"id\":\"90021\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"611\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"XML External Entity Attack\",\"wascId\":\"43\",\"id\":\"90023\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"209\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Generic Padding Oracle\",\"wascId\":\"20\",\"id\":\"90024\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"1230\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Cloud Metadata Potentially Exposed\",\"wascId\":\"0\",\"id\":\"90034\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"1336\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Server Side Template Injection\",\"wascId\":\"20\",\"id\":\"90035\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"1336\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Server Side Template Injection (Blind)\",\"wascId\":\"20\",\"id\":\"90036\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"78\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Remote OS Command Injection (Time Based)\",\"wascId\":\"31\",\"id\":\"90037\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"548\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Directory Browsing\",\"wascId\":\"48\",\"id\":\"0\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"311\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"HTTP Only Site\",\"wascId\":\"4\",\"id\":\"10106\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"120\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Buffer Overflow\",\"wascId\":\"7\",\"id\":\"30001\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"134\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Format String Error\",\"wascId\":\"6\",\"id\":\"30002\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"113\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"CRLF Injection\",\"wascId\":\"25\",\"id\":\"40003\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"472\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Parameter Tampering\",\"wascId\":\"20\",\"id\":\"40008\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"94\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"ELMAH Information Leak\",\"wascId\":\"14\",\"id\":\"40028\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"215\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Trace.axd Information Leak\",\"wascId\":\"13\",\"id\":\"40029\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"94\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\".htaccess Information Leak\",\"wascId\":\"14\",\"id\":\"40032\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"215\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\".env Information Leak\",\"wascId\":\"13\",\"id\":\"40034\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"538\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Hidden File Finder\",\"wascId\":\"13\",\"id\":\"40035\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"215\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Spring Actuator Information Leak\",\"wascId\":\"13\",\"id\":\"40042\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"776\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Exponential Entity Expansion (Billion Laughs Attack)\",\"wascId\":\"44\",\"id\":\"40044\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"91\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"XSLT Injection\",\"wascId\":\"23\",\"id\":\"90017\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"311\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"HTTPS Content Available via HTTP\",\"wascId\":\"4\",\"id\":\"10047\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"16\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"GET for POST\",\"wascId\":\"20\",\"id\":\"10058\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"0\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"User Agent Fuzzer\",\"wascId\":\"0\",\"id\":\"10104\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"79\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"Cross Site Scripting (Persistent) - Prime\",\"wascId\":\"8\",\"id\":\"40016\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"4\",\"cweId\":\"79\",\"attackStrength\":\"LOW\",\"alertThreshold\":\"LOW\",\"name\":\"Cross Site Scripting (Persistent) - Spider\",\"wascId\":\"8\",\"id\":\"40017\",\"enabled\":\"true\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[\"40016\"]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"0\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Script Active Scan Rules\",\"wascId\":\"0\",\"id\":\"50000\",\"enabled\":\"false\",\"quality\":\"release\",\"status\":\"release\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"451\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"SOAP Action Spoofing\",\"wascId\":\"0\",\"id\":\"90026\",\"enabled\":\"false\",\"quality\":\"beta\",\"status\":\"beta\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"3\",\"cweId\":\"91\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"SOAP XML Injection\",\"wascId\":\"0\",\"id\":\"90029\",\"enabled\":\"false\",\"quality\":\"beta\",\"status\":\"beta\",\"dependencies\":[]},{\"allDependenciesAvailable\":\"true\",\"policyId\":\"0\",\"cweId\":\"522\",\"attackStrength\":\"DEFAULT\",\"alertThreshold\":\"OFF\",\"name\":\"Swagger UI Secret & Vulnerability Detector\",\"wascId\":\"0\",\"id\":\"100043\",\"enabled\":\"false\",\"quality\":\"alpha\",\"status\":\"alpha\",\"dependencies\":[]}]}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/view/scanners/",
+      "parameters": {
+        "scanPolicyName": "cloudsentinel-diagnostic"
+      },
+      "json": {
+        "scanners": [
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "2",
+            "cweId": "22",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Path Traversal",
+            "wascId": "33",
+            "id": "6",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "2",
+            "cweId": "98",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Remote File Inclusion",
+            "wascId": "5",
+            "id": "7",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "541",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Source Code Disclosure - /WEB-INF Folder",
+            "wascId": "34",
+            "id": "10045",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "2",
+            "cweId": "78",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Remote Code Execution - Shell Shock",
+            "wascId": "31",
+            "id": "10048",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "119",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Heartbleed OpenSSL Vulnerability",
+            "wascId": "20",
+            "id": "20015",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "20",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Source Code Disclosure - CVE-2012-1823",
+            "wascId": "20",
+            "id": "20017",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "20",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Remote Code Execution - CVE-2012-1823",
+            "wascId": "20",
+            "id": "20018",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "601",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "External Redirect",
+            "wascId": "38",
+            "id": "20019",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "97",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Server Side Include",
+            "wascId": "31",
+            "id": "40009",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "79",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "Cross Site Scripting (Reflected)",
+            "wascId": "8",
+            "id": "40012",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "79",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "Cross Site Scripting (Persistent)",
+            "wascId": "8",
+            "id": "40014",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": [
+              "40017"
+            ]
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "89",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "SQL Injection",
+            "wascId": "19",
+            "id": "40018",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "89",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "SQL Injection - MySQL (Time Based)",
+            "wascId": "19",
+            "id": "40019",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "89",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "SQL Injection - Hypersonic SQL (Time Based)",
+            "wascId": "19",
+            "id": "40020",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "89",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "SQL Injection - Oracle (Time Based)",
+            "wascId": "19",
+            "id": "40021",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "89",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "SQL Injection - PostgreSQL (Time Based)",
+            "wascId": "19",
+            "id": "40022",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "1",
+            "cweId": "79",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Cross Site Scripting (DOM Based)",
+            "wascId": "8",
+            "id": "40026",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "89",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "SQL Injection - MsSQL (Time Based)",
+            "wascId": "19",
+            "id": "40027",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "117",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Log4Shell",
+            "wascId": "20",
+            "id": "40043",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "78",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Spring4Shell",
+            "wascId": "20",
+            "id": "40045",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "78",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Remote Code Execution (React2Shell)",
+            "wascId": "32",
+            "id": "40048",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "94",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Server Side Code Injection",
+            "wascId": "20",
+            "id": "90019",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "78",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Remote OS Command Injection",
+            "wascId": "31",
+            "id": "90020",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "643",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "XPath Injection",
+            "wascId": "39",
+            "id": "90021",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "611",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "XML External Entity Attack",
+            "wascId": "43",
+            "id": "90023",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "209",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Generic Padding Oracle",
+            "wascId": "20",
+            "id": "90024",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "1230",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Cloud Metadata Potentially Exposed",
+            "wascId": "0",
+            "id": "90034",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "1336",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Server Side Template Injection",
+            "wascId": "20",
+            "id": "90035",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "1336",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Server Side Template Injection (Blind)",
+            "wascId": "20",
+            "id": "90036",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "78",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Remote OS Command Injection (Time Based)",
+            "wascId": "31",
+            "id": "90037",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "548",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Directory Browsing",
+            "wascId": "48",
+            "id": "0",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "311",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "HTTP Only Site",
+            "wascId": "4",
+            "id": "10106",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "120",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Buffer Overflow",
+            "wascId": "7",
+            "id": "30001",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "134",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Format String Error",
+            "wascId": "6",
+            "id": "30002",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "113",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "CRLF Injection",
+            "wascId": "25",
+            "id": "40003",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "472",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Parameter Tampering",
+            "wascId": "20",
+            "id": "40008",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "94",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "ELMAH Information Leak",
+            "wascId": "14",
+            "id": "40028",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "215",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Trace.axd Information Leak",
+            "wascId": "13",
+            "id": "40029",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "94",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": ".htaccess Information Leak",
+            "wascId": "14",
+            "id": "40032",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "215",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": ".env Information Leak",
+            "wascId": "13",
+            "id": "40034",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "538",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Hidden File Finder",
+            "wascId": "13",
+            "id": "40035",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "215",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Spring Actuator Information Leak",
+            "wascId": "13",
+            "id": "40042",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "776",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Exponential Entity Expansion (Billion Laughs Attack)",
+            "wascId": "44",
+            "id": "40044",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "91",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "XSLT Injection",
+            "wascId": "23",
+            "id": "90017",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "311",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "HTTPS Content Available via HTTP",
+            "wascId": "4",
+            "id": "10047",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "16",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "GET for POST",
+            "wascId": "20",
+            "id": "10058",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "0",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "User Agent Fuzzer",
+            "wascId": "0",
+            "id": "10104",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "79",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "Cross Site Scripting (Persistent) - Prime",
+            "wascId": "8",
+            "id": "40016",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "4",
+            "cweId": "79",
+            "attackStrength": "LOW",
+            "alertThreshold": "LOW",
+            "name": "Cross Site Scripting (Persistent) - Spider",
+            "wascId": "8",
+            "id": "40017",
+            "enabled": "true",
+            "quality": "release",
+            "status": "release",
+            "dependencies": [
+              "40016"
+            ]
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "0",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Script Active Scan Rules",
+            "wascId": "0",
+            "id": "50000",
+            "enabled": "false",
+            "quality": "release",
+            "status": "release",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "451",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "SOAP Action Spoofing",
+            "wascId": "0",
+            "id": "90026",
+            "enabled": "false",
+            "quality": "beta",
+            "status": "beta",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "3",
+            "cweId": "91",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "SOAP XML Injection",
+            "wascId": "0",
+            "id": "90029",
+            "enabled": "false",
+            "quality": "beta",
+            "status": "beta",
+            "dependencies": []
+          },
+          {
+            "allDependenciesAvailable": "true",
+            "policyId": "0",
+            "cweId": "522",
+            "attackStrength": "DEFAULT",
+            "alertThreshold": "OFF",
+            "name": "Swagger UI Secret & Vulnerability Detector",
+            "wascId": "0",
+            "id": "100043",
+            "enabled": "false",
+            "quality": "alpha",
+            "status": "alpha",
+            "dependencies": []
+          }
+        ]
+      }
+    },
+    "rate-set": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/network/action/addRateLimitRule/",
+      "parameters": {
+        "description": "diagnostic-loopback-only",
+        "enabled": "true",
+        "matchRegex": "false",
+        "matchString": "127.0.0.1",
+        "requestsPerSecond": "2",
+        "groupBy": "HOST"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "rate-get": {
+      "httpStatus": 200,
+      "body": "{\"getRateLimitRules\":[{\"description\":\"diagnostic-loopback-only\",\"matchString\":\"127.0.0.1\",\"requestsPerSecond\":2,\"groupBy\":\"HOST\",\"matchRegex\":false,\"enabled\":true}]}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/network/view/getRateLimitRules/",
+      "parameters": {},
+      "json": {
+        "getRateLimitRules": [
+          {
+            "description": "diagnostic-loopback-only",
+            "matchString": "127.0.0.1",
+            "requestsPerSecond": 2,
+            "groupBy": "HOST",
+            "matchRegex": false,
+            "enabled": true
+          }
+        ]
+      }
+    },
+    "set-ThreadPerHost": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setOptionThreadPerHost/",
+      "parameters": {
+        "Integer": "1"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "get-ThreadPerHost": {
+      "httpStatus": 200,
+      "body": "{\"ThreadPerHost\":\"1\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/view/optionThreadPerHost/",
+      "parameters": {},
+      "json": {
+        "ThreadPerHost": "1"
+      }
+    },
+    "set-HostPerScan": {
+      "httpStatus": 200,
+      "body": "{\"Result\":\"OK\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/action/setOptionHostPerScan/",
+      "parameters": {
+        "Integer": "1"
+      },
+      "json": {
+        "Result": "OK"
+      }
+    },
+    "get-HostPerScan": {
+      "httpStatus": 200,
+      "body": "{\"HostPerScan\":\"1\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/view/optionHostPerScan/",
+      "parameters": {},
+      "json": {
+        "HostPerScan": "1"
+      }
+    },
+    "status-list": {
+      "httpStatus": 200,
+      "body": "{\"scans\":[]}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/ascan/view/scans/",
+      "parameters": {},
+      "json": {
+        "scans": []
+      }
+    },
+    "stop-description": {
+      "httpStatus": 200,
+      "body": "<!DOCTYPE html>\n<head>\n<title>ZAP API UI</title>\n<script src=\"/script.js/?v=2&apinonce=[REDACTED_NONCE]\" type=\"text/javascript\"></script>\n</head>\n<body>\n<h1><a href=\"/UI/\">ZAP API UI</a></h1>\n<h2><a href=\"/UI/ascan/\">Component: ascan</a></h2>\n<h3>Action: stop</h3>\n\n<form id=\"zapform\" name=\"zapform\" action=\"override\"><table>\n<tr><td>Output Format</td><td>\n<select id=\"zapapiformat\">\n<option value=\"JSON\">JSON</option>\n<option value=\"JSONP\" disabled>JSONP</option>\n<option value=\"HTML\">HTML</option>\n<option value=\"XML\">XML</option>\n</select>\n</td><td></td></tr>\n<tr><td>apikey*</td><td><input id=\"apikey\" name=\"apikey\" value=\"\"/></td><td></td></tr>\n<tr><td>Form Method</td><td><select id=\"formMethod\">\n<option value=\"GET\" selected>GET</option>\n<option value=\"POST\">POST</option>\n</select>\n</td><td></td></tr>\n<tr><td>scanId*</td><td><input id=\"scanId\" name=\"scanId\"/></td><td></td></tr>\n<tr><td></td><td><input id=\"button\" value=\"stop\" type=\"submit\" zap-component=\"ascan\" zap-type=\"action\" zap-name=\"stop\"/>\n</td><td></td></tr>\n</table>\n</form>\n</body>\n",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "UI/ascan/action/stop/",
+      "parameters": {}
+    },
+    "status-description": {
+      "httpStatus": 200,
+      "body": "<!DOCTYPE html>\n<head>\n<title>ZAP API UI</title>\n<script src=\"/script.js/?v=2&apinonce=[REDACTED_NONCE]\" type=\"text/javascript\"></script>\n</head>\n<body>\n<h1><a href=\"/UI/\">ZAP API UI</a></h1>\n<h2><a href=\"/UI/ascan/\">Component: ascan</a></h2>\n<h3>View:status</h3>\n\n<form id=\"zapform\" name=\"zapform\" action=\"override\"><table>\n<tr><td>Output Format</td><td>\n<select id=\"zapapiformat\">\n<option value=\"JSON\">JSON</option>\n<option value=\"JSONP\" disabled>JSONP</option>\n<option value=\"HTML\">HTML</option>\n<option value=\"XML\">XML</option>\n</select>\n</td><td></td></tr>\n<tr><td>apikey*</td><td><input id=\"apikey\" name=\"apikey\" value=\"\"/></td><td></td></tr>\n<tr><td>Form Method</td><td><select id=\"formMethod\">\n<option value=\"GET\" selected>GET</option>\n<option value=\"POST\">POST</option>\n</select>\n</td><td></td></tr>\n<tr><td>scanId</td><td><input id=\"scanId\" name=\"scanId\"/></td><td></td></tr>\n<tr><td></td><td><input id=\"button\" value=\"status\" type=\"submit\" zap-component=\"ascan\" zap-type=\"view\" zap-name=\"status\"/>\n</td><td></td></tr>\n</table>\n</form>\n</body>\n",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "UI/ascan/view/status/",
+      "parameters": {}
+    },
+    "report-templates": {
+      "httpStatus": 200,
+      "body": "{\"templates\":[\"traditional-json\",\"sarif-json\",\"modern\",\"auth-report-json\",\"traditional-pdf\",\"traditional-md\",\"traditional-xml\",\"traditional-html\",\"high-level-report\",\"traditional-xml-plus\",\"risk-confidence-html\",\"traditional-json-plus\",\"traditional-html-plus\"]}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/reports/view/templates/",
+      "parameters": {},
+      "json": {
+        "templates": [
+          "traditional-json",
+          "sarif-json",
+          "modern",
+          "auth-report-json",
+          "traditional-pdf",
+          "traditional-md",
+          "traditional-xml",
+          "traditional-html",
+          "high-level-report",
+          "traditional-xml-plus",
+          "risk-confidence-html",
+          "traditional-json-plus",
+          "traditional-html-plus"
+        ]
+      }
+    },
+    "report-generate": {
+      "httpStatus": 200,
+      "body": "{\"generate\":\"/zap/wrk/empty-diagnostic.json\"}",
+      "truncated": false,
+      "processExitCode": 0,
+      "endpoint": "JSON/reports/action/generate/",
+      "parameters": {
+        "title": "CloudSentinel empty diagnostic",
+        "template": "traditional-json",
+        "reportDir": "/zap/wrk",
+        "reportFileName": "empty-diagnostic"
+      },
+      "json": {
+        "generate": "/zap/wrk/empty-diagnostic.json"
+      }
+    }
+  },
+  "finalLogs": {
+    "exitCode": 0,
+    "stdout": "Found Java version 17.0.20\nRead custom JVM args from /home/zap//.ZAP/.ZAP_JVM.properties\nUsing JVM args: -Xmx512m -Djava.util.prefs.userRoot=/home/zap/.ZAP\n899 [main] INFO  org.parosproxy.paros.Constant - Copying default configuration to /home/zap/.ZAP/config.xml\n1027 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/session\n1027 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/dirbuster\n1028 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/fuzzers\n1028 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/plugin\n1213 [main] INFO  org.zaproxy.zap.DaemonBootstrap - ZAP 2.17.0 started 15/10/2026, 17:03:01 with home: /home/zap/.ZAP/ cores: 1 maxMemory: 494 MB\n1306 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config oast.callback.localaddr = 127.0.0.1 was null\n1306 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config api.disablekey = false was null\n1307 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config api.key = [REDACTED] was null\n1307 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config autoupdate.checkOnStart = false was null\n1307 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config autoupdate.downloadNewRelease = false was null\n1307 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config autoupdate.installAddonUpdates = false was null\n4019 [ZAP-daemon] INFO  org.zaproxy.zap.control.ExtensionFactory - Installed add-ons: [[id=alertFilters, version=27.0.0], [id=ascanrules, version=83.0.0], [id=authhelper, version=0.41.0], [id=automation, version=0.60.0], [id=bruteforce, version=21.0.0], [id=callhome, version=0.23.0], [id=client, version=0.30.0], [id=commonlib, version=1.43.0], [id=database, version=0.9.0], [id=diff, version=18.0.0], [id=directorylistv1, version=9.0.0], [id=domxss, version=24.0.0], [id=encoder, version=1.9.0], [id=exim, version=0.21.0], [id=formhandler, version=6.8.0], [id=fuzz, version=13.17.0], [id=gettingStarted, version=20.0.0], [id=graaljs, version=0.14.0], [id=graphql, version=0.33.0], [id=help, version=22.0.0], [id=hud, version=0.19.0], [id=insights, version=0.5.0], [id=invoke, version=17.0.0], [id=network, version=0.29.0], [id=oast, version=0.24.0], [id=onlineMenu, version=15.0.0], [id=openapi, version=57.0.0], [id=postman, version=0.9.0], [id=pscan, version=0.6.0], [id=pscanrules, version=75.0.0], [id=quickstart, version=59.0.0], [id=replacer, version=22.0.0], [id=reports, version=0.46.0], [id=requester, version=7.10.0], [id=retest, version=0.11.0], [id=retire, version=0.63.0], [id=reveal, version=10.0.0], [id=scanpolicies, version=0.8.0], [id=scripts, version=45.20.0], [id=selenium, version=15.53.0], [id=sequence, version=10.0.0], [id=soap, version=31.0.0], [id=spider, version=0.20.0], [id=spiderAjax, version=23.32.0], [id=tips, version=16.0.0], [id=webdriverlinux, version=215.0.0], [id=websocket, version=38.0.0], [id=zest, version=48.14.0]]\n4020 [ZAP-daemon] INFO  org.zaproxy.zap.control.ExtensionFactory - Loading extensions\n4794 [ZAP-daemon] INFO  org.zaproxy.addon.network.internal.TlsUtils - Using supported SSL/TLS protocols: [TLSv1.2, TLSv1.3]\n5336 [ZAP-daemon] INFO  org.zaproxy.zap.control.ExtensionFactory - Extensions loaded\n5830 [ZAP-daemon] INFO  org.flywaydb.core.FlywayExecutor - Database: jdbc:hsqldb:file:/home/zap/.ZAP/session/untitled1 (HSQL Database Engine 2.7)\n6032 [ZAP-daemon] INFO  org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory - Schema history table \"PUBLIC\".\"SCRIPTS_FLYWAY_SCHEMA_HISTORY\" does not exist yet\n6036 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbValidate - Successfully validated 1 migration (execution time 00:00.106s)\n6102 [ZAP-daemon] INFO  org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory - Creating Schema History table \"PUBLIC\".\"SCRIPTS_FLYWAY_SCHEMA_HISTORY\" with baseline ...\n6202 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbBaseline - Successfully baselined schema with version: 0\n6224 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Current version of schema \"PUBLIC\": 0\n6303 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"1 - Create scripts run tables\"\n6321 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Successfully applied 1 migration to schema \"PUBLIC\", now at version v1 (execution time 00:00.008s)\n7412 [ZAP-daemon] INFO  org.flywaydb.core.FlywayExecutor - Database: jdbc:hsqldb:file:/home/zap/.ZAP/session/untitled1 (HSQL Database Engine 2.7)\n7421 [ZAP-daemon] INFO  org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory - Schema history table \"PUBLIC\".\"CLIENT_FLYWAY_SCHEMA_HISTORY\" does not exist yet\n7421 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbValidate - Successfully validated 1 migration (execution time 00:00.002s)\n7424 [ZAP-daemon] INFO  org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory - Creating Schema History table \"PUBLIC\".\"CLIENT_FLYWAY_SCHEMA_HISTORY\" with baseline ...\n7496 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbBaseline - Successfully baselined schema with version: 0\n7504 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Current version of schema \"PUBLIC\": 0\n7511 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"1 - Create history table\"\n7520 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Successfully applied 1 migration to schema \"PUBLIC\", now at version v1 (execution time 00:00.002s)\n7695 [ZAP-daemon] INFO  org.flywaydb.core.FlywayExecutor - Database: jdbc:hsqldb:file:/home/zap/.ZAP/session/untitled1 (HSQL Database Engine 2.7)\n7718 [ZAP-daemon] INFO  org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory - Schema history table \"PUBLIC\".\"AUTHHELPER_FLYWAY_SCHEMA_HISTORY\" does not exist yet\n7719 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbValidate - Successfully validated 6 migrations (execution time 00:00.004s)\n7722 [ZAP-daemon] INFO  org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory - Creating Schema History table \"PUBLIC\".\"AUTHHELPER_FLYWAY_SCHEMA_HISTORY\" with baseline ...\n7728 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbBaseline - Successfully baselined schema with version: 0\n7732 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Current version of schema \"PUBLIC\": 0\n7798 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"1 - Create tables\"\n7811 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"2 - Create storage tables\"\n7820 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"3 - Improve diags\"\n7893 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"4 - Web element selector\"\n7901 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"5 - Af plan\"\n7908 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Migrating schema \"PUBLIC\" to version \"6 - Auth report data\"\n7912 [ZAP-daemon] INFO  org.flywaydb.core.internal.command.DbMigrate - Successfully applied 6 migrations to schema \"PUBLIC\", now at version v6 (execution time 00:00.074s)\n9110 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Auto-update Extension - Allows ZAP to check for updates\n9111 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Options Extension - Options Extension\n9112 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Edit Menu Extension - Edit Menu Extension\n9112 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing API Extension - Provides a rest based API for controlling and accessing ZAP\n9117 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing History Extension - History Extension\n9117 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionReveal - Show hidden fields and enable disabled fields\n9118 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Search Extension - Search messages for strings and regular expressions\n9119 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Breakpoint Extension - Allows you to intercept and modify requests and responses\n9120 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Passive Scan Extension - Passive scanner\n9120 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Alerts Extension - Allows you to view and manage alerts\n9121 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Active Scan Extension - Active scanner, heavily based on the original Paros active scanner, but with additional tests added\n9125 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionSequence - ExtensionSequence\n9126 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Standard Menus Extension - A set of common popup menus for miscellaneous tasks\n9126 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionBruteForce - Forced browsing of files and directories using code from the OWASP DirBuster tool\n9127 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Compare Extension - Compares 2 sessions and generates an HTML file showing the differences\n9127 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionInvoke - Invoke external applications passing context related information such as URLs and parameters\n9127 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Anti-CSRF Extension - Handles anti cross site request forgery (CSRF) tokens\n9130 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Authentication Extension - Authentication Extension\n9135 [ZAP-daemon] INFO  org.zaproxy.zap.extension.authentication.ExtensionAuthentication - Loaded authentication method types: [Form-based Authentication, HTTP/NTLM Authentication, Manual Authentication, Script-based Authentication, JSON-based Authentication]\n9196 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Users Extension - Users Extension\n9198 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Parameters Extension - Summarise and analyse FORM and URL parameters as well as cookies\n9199 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Script Extension - Script integration\n9204 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionScripts - Scripting console, supports all JSR 223 scripting languages\n9210 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Forced User Extension - Forced User Extension\n9210 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Sessions Extension - Extension handling HTTP sessions\n9211 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionZest - Zest is a specialized scripting language, originally, from Mozilla specifically designed to be used in security tools\n9506 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionDiff - ExtensionDiff\n9506 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Panel Post Table View Extension - HTTP Panel Post Table View Extension\n9507 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Encoder Addon - Adds support for scriptable encoders to ZAP.\n9508 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Session Management Extension - Session Management Extension\n9512 [ZAP-daemon] INFO  org.zaproxy.zap.extension.sessions.ExtensionSessionManagement - Loaded session management method types: [Cookie-based Session Management, HTTP Authentication Session Management, Script-based Session Management]\n9513 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Panel Form Table View Extension - HTTP Panel Form Table View Extension\n9514 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing WebSockets Support - Capture messages from WebSockets with the ability to set breakpoints.\n9610 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing SOAP/WSDL Support - Allows you to import a WSDL file containing operations which ZAP will access, adding them to the Sites tree.\n9612 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Core UI Extension - Core UI related functionality.\n9612 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Authorization Extension - Authorization Extension\n9613 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Requester - Allows to manually edit and send messages.\n9620 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing AJAX Spider - AJAX Spider, uses Crawljax\n9626 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing WebDriver Provider - Provides WebDrivers to control several browsers using Selenium and includes HtmlUnit browser.\n9708 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionClientIntegration - Client Side Integration\n9715 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Refresh Sites Tree Extension - Adds menu item to refresh the Sites tree\n9715 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Help Extension - ZAP User Guide\n9715 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Call Home - Handles all of the calls to ZAP services\n9717 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Network Extension - Provides core networking capabilities.\n9738 [ZAP-daemon] INFO  org.zaproxy.addon.network.ConnectionOptions - Unsafe SSL/TLS renegotiation disabled.\n9795 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Extension Configuration Extension - Allows you to configure which extensions are loaded when ZAP starts\n9795 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Combined HTTP Panels Extension - Combined HTTP Panels Extension\n9795 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Panel Hex View Extension - HTTP Panel Hex View Extension\n9795 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Panel Image View Extension - HTTP Panel Image View Extension\n9796 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Panel Query Table View Extension - HTTP Panel Query Table View Extension\n9796 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Panel Syntax Highlighter View Extension - HTTP Panel Syntax Highlighter View Extension\n9796 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Keyboard Configuration Extension - Adds support for configurable keyboard shortcuts for all of the ZAP menus.\n9796 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Scanner Rule Configuration Extension - Active and passive rule configuration\n9797 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Statistics Extension - Statistics\n9798 [ZAP-daemon] INFO  org.zaproxy.zap.extension.stats.ExtensionStats - Start recording in memory stats\n9798 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Custom Pages Extension - Custom Pages Definition\n9799 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Passive Scanner Extension - Provides core passive scanning capabilities.\n9817 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Passive Scanner Automation Framework Extension - Provides jobs and result data related to the passive scanner.\n9818 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Zest Import/Export - Zest script export and import support for Import/Export.\n9819 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionOnlineMenu - The Online menu links\n9819 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Report Generator - Templated and themed report generation functionality\n9821 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Report Generation Automation Integration - Report Generation Automation Integration\n9824 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing SOAP Automation - SOAP Automation Framework Integration\n9825 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing SOAP Spider - SOAP Spider Integration\n9825 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Retest - Facilitates the verification of presence/absence of certain alerts.\n9826 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Authentication Helper - Authentication Helper\n9828 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Authentication Helper Automation - Authentication Helper Automation Framework Integration\n9830 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Client Spider Browser Based Authentication Support - Enables browser based authentication when performing an authenticated Client Spider scan.\n9831 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Authentication Helper Reports - Authentication Helper Reports\n9832 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing AJAX Spider Browser Based Authentication Support - Enables browser based authentication when performing an authenticated AJAX Spider scan.\n9833 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionFormHandler - This extension allows a user to change the default values used for generated content (e.g. spiders, importers).\n9835 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionGettingStarted - The ZAP Getting Started Guide\n9836 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Sequence Automation - Sequence Automation Framework Integration\n9839 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing GraalVM JavaScript Engine Extension - Provides the GraalVM JavaScript engine for ZAP scripting.\n9845 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Import/Export - Import and Export functionality supporting multiple formats.\n9894 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Import/Export Automation - Import/Export Automation Framework Integration\n9896 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Out-of-band Application Security Testing - Adds Out-of-band Application Security Testing functionality.\n9899 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing OAST Scripts - Adds OAST scripts.\n9900 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Postman Import - Allows you to spider and import Postman collections\n9900 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Postman Automation - Postman Automation Framework Integration\n9901 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Advance Fuzzer - Provides the foundation for concrete message types (for example, HTTP, WebSockets) expose fuzzer implementations.\n9902 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing HTTP Fuzzer - Allows to fuzz HTTP messages.\n9902 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Active Scan Rules - Release status active scan rules\n9902 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Scripts Automation Framework Integration - Scripts Automation\n9909 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Script Console Report Data - Supplies script data to reports when the session database contains recorded output.\n9909 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Client Spider Automation - Client Spider Automation Framework Integration\n9911 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Client Map Import/Export - Client Map export support for Import/Export.\n9912 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Client Zest Script Recording Support - Allows recording client events as Zest scripts.\n9913 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Spider Extension - Spider used for automatically finding URIs on a site.\n9925 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Spider Automation - Spider Automation Integration\n9927 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing WebSocket Fuzzer - Allows to fuzz WebSocket messages.\n9927 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing WebSocket Message Editor - Provides the WebSocket Message Editor dialogues.\n9927 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionHUD - Heads Up Display\n10130 [ZAP-daemon] WARN  io.netty.util.internal.MacAddressUtil - Failed to find a usable hardware address from the network interfaces; using random bytes: 46:24:a1:28:f4:ef:8b:a1\n10214 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionHUDlaunch - ExtensionHUDlaunch\n10215 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Passive Scan Rules - Release status passive scan rules.\n10215 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Ajax Spider Automation - Ajax Spider Automation Framework Integration\n10218 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Automation Framework - Provides functionality to simplify using ZAP in an automated manner\n10220 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionTipsAndTricks - Tips and Tricks\n10220 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Common Library - A library of shared functionality\n10221 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionGraphQl - Allows you to inspect and attack GraphQL endpoints.\n10223 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing GraphQL Automation - GraphQL Automation Framework Integration\n10224 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing GraphQL Spider - GraphQL Spider Integration\n10225 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Match and Replace - Easy way to replace strings in requests and responses\n10227 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Replacer Automation - Replacer Automation Framework Integration\n10227 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionAlertFilters - Context alert rules filter\n10228 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Alert Filters Automation - Alert Filters Automation Framework Integration\n10229 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing OpenAPI Import - Allows you to spider and import OpenAPI (Swagger) definitions \n10231 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing OpenAPI Automation - OpenAPI Automation Framework Integration\n10232 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing OpenAPI Scripts - Adds scripts relevant to OpenAPI specifications.\n10232 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing OpenAPI Spider - OpenAPI Spider Integration\n10234 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Database Extension - Provides databases and persistence capabilities.\n10293 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionInsights - Insights Extension\n10295 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Alert Filters Automation - Alert Filters Automation Framework Integration\n10297 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Insights Reports Extension - Adds Insights to the report data\n10297 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Quick Start panel  - Adds the Quick Start panel for scanning and exploring applications\n10299 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Quick Start Ajax Spider integration - Add the option to use the Ajax Spider in the Quick Start scan\n10299 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Quick Start Client Spider Integration - Provides the option to use the Client Spider when running a quick scan\n10299 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Quick Start HUD Integration - HUD integration for the quick start panel\n10300 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Quick Start Browser Launcher - Launch browsers preset proxying through ZAP\n10300 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Quick Start Spider Integration - Adds the option to use the traditional Spider in the Quick Start scan.\n10301 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing Retire.js - Retire.js\n10303 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Vulnerable JS Library (Powered by Retire.js)\n10303 [ZAP-daemon] INFO  org.parosproxy.paros.extension.ExtensionLoader - Initializing ExtensionDomXSS - DOM XSS Active Scan Rule\n10439 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: WSDL File Detection\n10441 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Authentication Request Identified\n10441 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Session Management Response Identified\n10441 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Verification Request Identified\n10495 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Script Passive Scan Rules\n10527 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Anti-clickjacking Header\n10527 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Application Error Disclosure\n10527 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Big Redirect Detected (Potential Sensitive Information Leak)\n10527 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Re-examine Cache-control Directives\n10527 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Charset Mismatch\n10527 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Content Security Policy (CSP) Header Not Set\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: CSP\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Content-Type Header Missing\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Cookie No HttpOnly Flag\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Loosely Scoped Cookie\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Cookie without SameSite Attribute\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Cookie Without Secure Flag\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Cross-Domain Misconfiguration\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Cross-Domain JavaScript Source File Inclusion\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Absence of Anti-CSRF Tokens\n10528 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Directory Browsing\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Hash Disclosure\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Heartbleed OpenSSL Vulnerability (Indicative)\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: In Page Banner Information Leak\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Private IP Disclosure\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Session ID in URL Rewrite\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Information Disclosure - Debug Error Messages\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Information Disclosure - Sensitive Information in URL\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Information Disclosure - Sensitive Information in HTTP Referrer Header\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Information Disclosure - Suspicious Comments\n10529 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Weak Authentication Method\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: HTTP to HTTPS Insecure Transition in Form Post\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: HTTPS to HTTP Insecure Transition in Form Post\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Insecure JSF ViewState\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Java Serialization Object\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Reverse Tabnabbing\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Secure Pages Include Mixed Content\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Modern Web Application\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: PII Disclosure\n10530 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Script Served From Malicious Domain (polyfill)\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Retrieved from Cache\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: HTTP Server Response Header\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Strict-Transport-Security Header\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Sub Resource Integrity Attribute Missing\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Timestamp Disclosure\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: User Controllable Charset\n10531 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Cookie Poisoning\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: User Controllable HTML Element Attribute (Potential XSS)\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: User Controllable JavaScript Event (XSS)\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Off-site Redirect\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Username Hash Found\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Viewstate\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: X-AspNet-Version Response Header\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: X-Backend-Server Header Information Leak\n10532 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: X-ChromeLogger-Data (XCOLD) Header Information Leak\n10533 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: X-Content-Type-Options Header Missing\n10533 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: X-Debug-Token Information Leak\n10533 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)\n10533 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: ZAP is Out of Date\n10534 [ZAP-daemon] INFO  org.zaproxy.addon.pscan.internal.ScanRuleManager - Loaded passive scan rule: Stats Passive Scan Rule\n10824 [ZAP-daemon] INFO  org.zaproxy.addon.oast.services.callback.CallbackService - Started callback service on 127.0.0.1:38183\n12931 [ZAP-daemon] INFO  org.zaproxy.zap.extension.quickstart.ExtensionQuickStart - Shh! No check-for-news - silent mode enabled\n12931 [ZAP-daemon] INFO  org.zaproxy.addon.network.ExtensionNetwork - Creating new root CA certificate.\n14799 [ZAP-daemon] INFO  org.zaproxy.addon.network.ExtensionNetwork - New root CA certificate created.\n14832 [ZAP-daemon] INFO  org.zaproxy.zap.extension.autoupdate.ExtensionAutoUpdate - Shh! No check-for-update - silent mode enabled\n14833 [ZAP-daemon] INFO  org.zaproxy.addon.callhome.ExtensionCallHome - Shh! Silent mode or telemetry turned off\n14896 [ZAP-daemon] INFO  org.zaproxy.addon.network.ExtensionNetwork - ZAP is now listening on 127.0.0.1:8090\n17741 [ZAP-IO-Server-1-1] WARN  org.zaproxy.zap.extension.api.API - API key incorrect or not supplied: null in request from 127.0.0.1\n18252 [ZAP-IO-Server-1-1] WARN  org.zaproxy.zap.extension.api.API - API key incorrect or not supplied: invalid-diagnostic-key in request from 127.0.0.1\n",
+    "stderr": "Oct 15, 2026 5:03:08 PM java.util.prefs.FileSystemPreferences$1 run\nINFO: Created user preferences directory.\n",
+    "truncated": false
+  },
+  "reportText": "{\n\t\"@programName\": \"ZAP\",\n\t\"@version\": \"2.17.0\",\n\t\"@generated\": \"Thu, 15 Oct 2026 17:03:22\",\n\t\"created\": \"2026-10-15T17:03:22.607458614Z\",\n\t\"insights\":[\n\t\t{\n\t\t\t\"level\": \"Low\",\n\t\t\t\"reason\": \"Warning\",\n\t\t\t\"site\": \"\",\n\t\t\t\"key\": \"insight.log.warn\",\n\t\t\t\"description\": \"ZAP warnings logged - see the zap.log file for details\",\n\t\t\t\"statistic\": \"3\"\n\t\t}\n\t],\n\t\"site\":[ \n\t],\n\t\"sequences\":[\n\t]\n\n}\n",
+  "productionParser": {
+    "parser": "dastBaselineScanner.extractFindings",
+    "valid": true,
+    "siteCount": 0,
+    "findingsCount": 0
+  },
+  "initialization": "PASS",
+  "inspectionIdentity": {
+    "containerId": "a4d70e1a24186559cf5b44193509aed95616db04bf669a417505269fbc90575b",
+    "imageId": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550"
+  },
+  "listeners": {
+    "complete": true,
+    "tcpComplete": true,
+    "tcp6Complete": true,
+    "listeners": [
+      {
+        "family": "IPv6",
+        "address": "127.0.0.1",
+        "port": 8090,
+        "nativeAddress": "0000000000000000FFFF00000100007F",
+        "loopback": true
+      },
+      {
+        "family": "IPv6",
+        "address": "127.0.0.1",
+        "port": 36983,
+        "nativeAddress": "0000000000000000FFFF00000100007F",
+        "loopback": true
+      },
+      {
+        "family": "IPv6",
+        "address": "127.0.0.1",
+        "port": 38183,
+        "nativeAddress": "0000000000000000FFFF00000100007F",
+        "loopback": true
+      }
+    ]
+  },
+  "installedAddons": {
+    "reports": {
+      "version": "0.46.0",
+      "installationStatus": "INSTALLED"
+    },
+    "network": {
+      "version": "0.29.0",
+      "installationStatus": "INSTALLED"
+    },
+    "oast": {
+      "version": "0.24.0",
+      "installationStatus": "INSTALLED"
+    },
+    "ascanrules": {
+      "version": "83.0.0",
+      "installationStatus": "INSTALLED"
+    },
+    "automation": {
+      "version": "0.60.0",
+      "installationStatus": "INSTALLED"
+    },
+    "commonlib": {
+      "version": "1.43.0",
+      "installationStatus": "INSTALLED"
+    },
+    "database": {
+      "version": "0.9.0",
+      "installationStatus": "INSTALLED"
+    }
+  },
+  "historicalResultSha256": "10f4f597f2d2091f2b121623cf6bd4410f8defa064c94fd7e61bca61bec68112",
+  "observedChecks": {
+    "initialization": {
+      "status": "PASS",
+      "rule": "GENUINE_INITIALIZATION_GATE"
+    },
+    "authentication": {
+      "status": "PASS",
+      "rule": "VALID_KEY_HEALTH_AND_CORRELATED_REJECTIONS"
+    },
+    "policy": {
+      "status": "PASS",
+      "rule": "OBSERVED_CONFIGURATION_READBACK"
+    },
+    "rateConfiguration": {
+      "status": "PASS",
+      "rule": "OBSERVED_CONFIGURATION_READBACK"
+    },
+    "concurrency": {
+      "status": "FAIL",
+      "rule": "OBSERVED_CONFIGURATION_READBACK"
+    },
+    "status": {
+      "status": "PASS",
+      "rule": "OBSERVED_CONFIGURATION_READBACK"
+    },
+    "cancellationContract": {
+      "status": "FAIL",
+      "rule": "DESCRIPTION_ONLY_NO_JOB_CANCELLATION"
+    },
+    "report": {
+      "status": "PASS",
+      "rule": "OBSERVED_CONFIGURATION_READBACK"
+    },
+    "automation": {
+      "status": "PASS",
+      "rule": "OFFLINE_AUTHENTIC_SCHEMA_COMPARISON_NO_JOB_EXECUTION"
+    },
+    "rateEnforcement": {
+      "status": "UNVERIFIED",
+      "rule": "REQUIRES_AUTHORIZED_CONTAINED_JOB"
+    },
+    "completionBehavior": {
+      "status": "UNVERIFIED",
+      "rule": "REQUIRES_AUTHORIZED_CONTAINED_JOB"
+    },
+    "cancellationBehavior": {
+      "status": "UNVERIFIED",
+      "rule": "REQUIRES_AUTHORIZED_CONTAINED_JOB"
+    }
+  },
+  "daemonVersion": "2.17.0"
+}

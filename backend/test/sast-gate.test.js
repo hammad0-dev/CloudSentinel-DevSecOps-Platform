@@ -18,7 +18,7 @@ test.afterEach(() => {
 const validZero = {
   total_issues: 0, critical: 0, high: 0, medium: 0, low: 0,
   persisted_total: 0, distinct_total: 0,
-  persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0,
+  security_critical:0,security_high:0,hotspots_pending:0,unknown_types:0,persisted_critical: 0, persisted_high: 0, persisted_medium: 0, persisted_low: 0,
 };
 
 test("SAST gate fails closed when the exact execution has no completed linked scan", async () => {
@@ -42,5 +42,5 @@ test("SAST gate uses only the requested execution and accepts a verified zero-fi
   });
   const result = await check(12, 55, "SAST");
   assert.deepEqual(parameters, [12, 55]);
-  assert.deepEqual(result, { evidenceFound: true, hasCritical: false, evidenceConsistent: true });
+  assert.deepEqual(result, { evidenceFound: true, hasCritical: false, hasHigh: false, classificationVerified:true, requiresReview:false, evidenceConsistent: true });
 });

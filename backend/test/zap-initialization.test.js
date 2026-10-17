@@ -1,7 +1,8 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {STORAGE,diagnosticStorageArguments,assertInitialized,startupFailure}=require('../services/zapInitialization');
+const {STORAGE,diagnosticStorageArguments,profileBootstrapArguments,jvmBootstrapArguments,jvmProperties,assertInitialized,startupFailure,assertListeners}=require('../services/zapInitialization');
+const writable=require('../config/zap-writable-paths.json');
 const evidence=require('./helpers/zapInitializationEvidence');
 const errors=require('./fixtures/zap-storage-initialization-errors.json');
 const imageId='sha256:'+'a'.repeat(64);
@@ -12,11 +13,12 @@ test('diagnostic storage keeps networking disabled and writable mounts bounded a
   assert.equal(args[args.indexOf('--user')+1],'1000:1000');
   assert.equal(args[args.indexOf('--memory')+1],'1536m');
   assert.ok(args.includes('--read-only'));
-  assert.equal(args.filter(arg=>arg==='--tmpfs').length,3);
+  assert.equal(args.filter(arg=>arg==='--tmpfs').length,4);
   const mounts=args.filter(arg=>arg.startsWith('/'));
   assert.ok(mounts.some(arg=>arg.includes('/home/zap/.ZAP:')&&arg.includes('size=256m')&&arg.includes('mode=0700')));
   assert.ok(mounts.every(arg=>['uid=1000','gid=1000','noexec','nosuid','nodev','size='].every(option=>arg.includes(option))));
   assert.ok(!args.includes('--mount')&&!args.includes('--volume')&&!args.includes('--publish'));
+  assert.ok(mounts.includes(`${writable.profilePath}:rw,noexec,nosuid,nodev,size=4m,uid=1000,gid=1000,mode=0700`));
 });
 
 test('initialization requires bounded storage, owner, permissions, heap and native memory headroom',()=>{
@@ -81,4 +83,46 @@ test('production Active DAST catalog remains blocked after offline storage corre
   const {assertReady,artifacts}=require('../services/activeRuntimeArtifacts');
   assert.equal(artifacts.zap.capabilities,null);
   assert.throws(()=>assertReady(),{code:'ACTIVE_RUNTIME_BLOCKED'});
+});
+
+test('profile and preferences readiness requires measured owned writable paths and preserved seed',()=>{
+  for(const change of [s=>{delete s.profile;},s=>{s.profile.uid=0;},s=>{s.profile.capacityBytes=32*1024*1024;},s=>{s.profile.seedSha256='wrong';},s=>{s.profile.writable=false;}]){
+    const value=evidence();change(value.storage);assert.throws(()=>assertInitialized(value,imageId),{code:'ZAP_PROFILE_NOT_READY'});
+  }
+  for(const change of [s=>{delete s.javaPreferences;},s=>{s.javaPreferences.rootProperty='/home/zap';},s=>{s.javaPreferences.uid=0;},s=>{s.javaPreferences.writable=false;}]){
+    const value=evidence();change(value.storage);assert.throws(()=>assertInitialized(value,imageId),{code:'ZAP_PREFERENCES_NOT_READY'});
+  }
+});
+
+test('genuine Firefox profile and Java preferences errors cannot establish readiness',()=>{
+  const failures=[[errors.profileFailure,'ZAP_PROFILE_NOT_READY'],[errors.preferencesWarning,'ZAP_PREFERENCES_NOT_READY']];
+  for(const [line,code] of failures){const value=evidence();value.startupLog+='\n'+line;assert.throws(()=>assertInitialized(value,imageId),{code});}
+  assert.equal(jvmProperties(),'-Xmx512m -Djava.util.prefs.userRoot=/home/zap/.ZAP\n');
+  assert.equal(Buffer.from(jvmBootstrapArguments().at(-2),'base64').toString(),jvmProperties());
+});
+
+test('dual-stack listener evidence accepts IPv4, IPv6 and normalized mapped loopback only',()=>{
+  for(const entry of [{family:'IPv4',address:'127.0.0.1',port:8090,nativeAddress:'0100007F'},
+    {family:'IPv6',address:'::1',port:8090,nativeAddress:'00000000000000000000000001000000'},
+    {family:'IPv6',address:'127.0.0.1',port:8090,nativeAddress:'0000000000000000FFFF00000100007F'}]){
+    assert.equal(assertListeners({complete:true,tcpComplete:true,tcp6Complete:true,listeners:[entry]}),true);
+  }
+  for(const address of ['0.0.0.0','::','192.0.2.1','::ffff:0:0']){
+    const value=evidence();value.listeners.listeners.push({family:'IPv6',address,port:40247});
+    assert.throws(()=>assertInitialized(value,imageId),{code:'ZAP_NON_LOOPBACK_LISTENER'});
+  }
+  const value=evidence();value.listeners.tcp6Complete=false;
+  assert.throws(()=>assertInitialized(value,imageId),{code:'ZAP_LISTENERS_UNVERIFIED'});
+  const contradictory=evidence();contradictory.listeners.listeners[0].nativeAddress='0'.repeat(32);
+  assert.throws(()=>assertInitialized(contradictory,imageId),{code:'ZAP_LISTENERS_UNVERIFIED'});
+});
+
+test('seed bootstrap uses audited bytes and complies with strict Docker argument limits',()=>{
+  const crypto=require('node:crypto');
+  const args=profileBootstrapArguments();
+  assert.equal(crypto.createHash('sha256').update(Buffer.from(writable.profileSeed.base64,'base64')).digest('hex'),writable.profileSeed.sha256);
+  assert.equal(Buffer.from(writable.profileSeed.base64,'base64').length,101);
+  assert.ok(args.includes('-I'));
+  assert.doesNotThrow(()=>require('../services/dockerAdapter').operation(['exec','f'.repeat(64),...args]));
+  assert.doesNotThrow(()=>require('../services/dockerAdapter').operation(['exec','f'.repeat(64),...jvmBootstrapArguments()]));
 });

@@ -1,12 +1,206 @@
 {
   "schemaVersion": 1,
   "zap": {
-    "reference": "zaproxy/zap-stable@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
-    "imageId": "sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+    "reference": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+    "imageId": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
     "architecture": "amd64",
     "os": "linux",
-    "capabilities": null
+    "capabilities": null,
+    "config": {
+      "User": "zap",
+      "Env": [
+        "PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:/zap/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64",
+        "ZAP_PATH=/zap/zap.sh",
+        "ZAP_PORT=8080",
+        "IS_CONTAINERIZED=true",
+        "HOME=/home/zap/",
+        "LC_ALL=C.UTF-8",
+        "LANG=C.UTF-8"
+      ],
+      "Cmd": [
+        "bash"
+      ],
+      "WorkingDir": "/zap",
+      "Labels": {
+        "maintainer": "psiinon@gmail.com",
+        "run.crashoverride.author": "Simon Bennetts <psiinon@gmail.com>",
+        "run.crashoverride.branch": "main",
+        "run.crashoverride.commit-id": "2665d972f6d587ba4773a95053ac39af3fdf8df9",
+        "run.crashoverride.committer": "GitHub <noreply@github.com>",
+        "run.crashoverride.date-authored": "2026-08-06T09:30:53.000+01:00",
+        "run.crashoverride.date-committed": "2026-08-06T09:30:53.000+01:00",
+        "run.crashoverride.origin-uri": "https://github.com/zaproxy/zaproxy"
+      },
+      "Healthcheck": {
+        "Test": [
+          "CMD-SHELL",
+          "curl --silent --output /dev/null --fail http://localhost:$ZAP_PORT/ || exit 1"
+        ]
+      }
+    },
+    "layerDiffIds": [
+      "sha256:66462cc862fe2053b9863fefa3866e07bb5dfb06f6b3ce3177cc096e4021aabe",
+      "sha256:5bc5025d406e110f09df4be1a0a3bf33d26cb09930a632d379efc6b59414b35b",
+      "sha256:fe8089058c94f258d01622d874af7230097c5f461e77528c2370064a911f0387",
+      "sha256:f805cd11ec202e59f10847286c03c66d2d3dd422c429ce2c1eeafeb9de3797df",
+      "sha256:1bc8afe96b01e8ffabf9181e902c85c9d9d9f1069844666686d508ca31cda7f5",
+      "sha256:4bc13aaf2851f2fb571123a070ee19c8e17ee59ee2684871efbd7f5a65607aa9",
+      "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+      "sha256:98a80e7989feee3b5627a2cd8ff540a47e93998194f95a460c746603247bfe69",
+      "sha256:9204caafeef8d11d4d3f33f4d8011a7ee63405c8bf8d2fba764a08c1dd5accc1",
+      "sha256:4bc3103ed06a7cd48d18cca2adab792a5cbcb44a1f444e27878af911da55cd7a",
+      "sha256:ad5206cdaf5cf267a0c7dda5a8e372096ec100ced3acb64d129ecbfe439f9e75",
+      "sha256:4c9c9901512ede5d22c37d57215e23f22dcda91b6a9d92468ed63aa28d47bbb3",
+      "sha256:b5484b50331ead49baf00e66b6e555279df533cf4a334f421ba0c4700f0f44d6",
+      "sha256:e1860ee3ef1e4c424196b8651bbf7d9b5fd8c1605acef31eb1875ffa896e6d4c",
+      "sha256:0465997d731650442647422badbb1e016fb34e98b023709e14d3f71a924d50b3",
+      "sha256:1914ba4149fca86a337ca4de4aae9daaa4a758ac5914e684ee27df17b21a6ae9",
+      "sha256:2128195dab6c9bdbc304bc1182e5c7c5c49b8ae756f5a0aa7c0e68f590ed5c35",
+      "sha256:2f00e47b70ef647dbdbe8df72649e185ac912ca4f6ec2c393b76e49bae98115c",
+      "sha256:654a5aeebb11096cc7fdd49e84a5a2a8488fc8a5c3212359953f9d584bffe3e4",
+      "sha256:5931495998f4941ccd8ea551f588dfcb2b2136290f7f37f3992860a646729ce5",
+      "sha256:7575709f2b0261fc1d521c1f2bb6092cf1dd2ab2087e57218199fa98568ec04d"
+    ]
   },
-  "fixture": null,
-  "containmentAdapterValidated": false
+  "fixture": {
+    "reference": "sha256:7a76c5a6a58a677bdf967ed082660bf3e4d2e87800daa618a4882dfbd2e86ff4",
+    "imageId": "sha256:7a76c5a6a58a677bdf967ed082660bf3e4d2e87800daa618a4882dfbd2e86ff4",
+    "architecture": "amd64",
+    "os": "linux",
+    "fixtureKind": "cloudsentinel-vulnerable-v1",
+    "sourceSha256": "7262673f553626678dd1648dccf778ff34a4698be54b89d9007167961298a09f",
+    "layerDiffIds": [
+      "sha256:e58989146fcec76699871403b9897b5c014af1ccd85f5a9300a215e7975525d7",
+      "sha256:ba0f973ad05d82f20d8dd8dc79a9d1b71e9d90ab48380d8c0912fad39dda5ced",
+      "sha256:8664c9b18215e1141ccc8fa3cbc7483f4cd16fb5230b570fa7c744da58251da3",
+      "sha256:c167899be569aee196241ae0905aeed34708881d5a8784be3de0ed9bf9db7200",
+      "sha256:58d46babcfc896779fb3ef70d75a762864ccc42ad3730730879fabde04d90065"
+    ],
+    "expectedConfig": {
+      "Env": [
+        "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+        "HOME=/tmp",
+        "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "PYTHONUNBUFFERED=1",
+        "PYTHON_SHA256=f4b1bfb3c79b5bb11b8d228a12504163b4c0dab4d679828d8f5f26b6cb6ab35d",
+        "PYTHON_VERSION=3.13.16",
+        "TMPDIR=/tmp"
+      ],
+      "Cmd": null,
+      "User": "10001:10001",
+      "WorkingDir": "/app",
+      "Entrypoint": [
+        "python3",
+        "/app/app.py"
+      ],
+      "Healthcheck": {
+        "Test": [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:18080/health',timeout=1).read()==b'fixture-ready'"
+        ],
+        "Interval": 5000000000,
+        "Timeout": 2000000000,
+        "Retries": 3
+      },
+      "Labels": {
+        "cloudsentinel.build.owner": "cs-fixture-cf0a6d855118",
+        "cloudsentinel.fixture.kind": "cloudsentinel-vulnerable-v1",
+        "cloudsentinel.fixture.source.sha256": "7262673f553626678dd1648dccf778ff34a4698be54b89d9007167961298a09f",
+        "cloudsentinel.fixture.base": "docker.io/library/python@sha256:f040863673aea2570c3ff6a5c3fb4c673a016cbc5375005ad145915922b6b78a"
+      }
+    },
+    "validation": {
+      "verified": true,
+      "evidenceSha256": "3f4ae9bbd82c8a25520354893115e4e1147feb595aaa73f00ee3142d8202acca",
+      "scope": "NETWORK_NONE_FIXTURE_ONLY",
+      "scannerContainmentVerified": false
+    },
+    "localTag": "cloudsentinel/active-fixture:cs-fixture-cf0a6d855118"
+  },
+  "containmentAdapterValidated": false,
+  "verifiedConfiguration": {
+    "schemaVersion": 1,
+    "diagnosticReportSha256": "14863e0f979268fb9f2486f489acfc0b60850d5ea3dd0665d70a852d5713e5a0",
+    "zapImageId": "sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+    "fixtureImageId": "sha256:7a76c5a6a58a677bdf967ed082660bf3e4d2e87800daa618a4882dfbd2e86ff4",
+    "loadedAddons": {
+      "reports": "0.46.0",
+      "network": "0.29.0",
+      "oast": "0.24.0",
+      "ascanrules": "83.0.0",
+      "automation": "0.60.0",
+      "commonlib": "1.43.0",
+      "database": "0.9.0"
+    },
+    "activeRuleIds": [
+      "40012",
+      "40014",
+      "40016",
+      "40017",
+      "40018",
+      "40019",
+      "40020"
+    ],
+    "scope": "ZAP_SHARED_NETWORK_NAMESPACE_HELPER",
+    "diagnosticCasesPassed": 12,
+    "zapApplicationRequestsVerified": false,
+    "rateConfiguredRequestsPerSecond": 2,
+    "concurrencyConfigured": 1,
+    "rateEnforcementVerified": false,
+    "jobCompletionVerified": false,
+    "timeoutVerified": false,
+    "cancellationVerified": false,
+    "traditionalJsonExportConfigured": true,
+    "productionReady": false,
+    "policyConfiguration": {
+      "enabledRuleIds": [
+        "40012",
+        "40014",
+        "40018",
+        "40019",
+        "40020",
+        "40016",
+        "40017"
+      ],
+      "strengths": {
+        "40012": "LOW",
+        "40014": "LOW",
+        "40018": "LOW",
+        "40019": "LOW",
+        "40020": "LOW",
+        "40016": "LOW",
+        "40017": "LOW"
+      },
+      "thresholds": {
+        "40012": "LOW",
+        "40014": "LOW",
+        "40018": "LOW",
+        "40019": "LOW",
+        "40020": "LOW",
+        "40016": "LOW",
+        "40017": "LOW"
+      },
+      "evidenceSha256": "58fc736304151ee6186908588650b6050b2ae200b666debfad3131974aa57f2d",
+      "scanExecuted": false
+    },
+    "observedRateConfiguration": [
+      {
+        "description": "diagnostic-loopback-only",
+        "matchString": "127.0.0.1",
+        "requestsPerSecond": 2,
+        "groupBy": "HOST",
+        "matchRegex": false,
+        "enabled": true
+      }
+    ],
+    "observedConcurrencyConfiguration": {
+      "ThreadPerHost": 1,
+      "HostPerScan": 1
+    },
+    "rateConfigurationScope": "HISTORICAL_LOOPBACK_API_DIAGNOSTIC_ONLY"
+  }
 }

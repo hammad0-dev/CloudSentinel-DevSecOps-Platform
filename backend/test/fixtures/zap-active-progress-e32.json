@@ -1,0 +1,207 @@
+{
+  "executionId": 32,
+  "nativeExitCode": 0,
+  "historicalFailure": "ZAP_STARTUP_LOG_UNVERIFIED",
+  "lines": [
+    {
+      "lineNumber": 4,
+      "sha256": "18ba36f2c74e233858365f153069f698711486bed7b6c68699865a60a73e2fa2",
+      "bytes": 64,
+      "text": "Job activeScan-policy set name = cloudsentinel-active-fixture-v1",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 5,
+      "sha256": "718924fd226f4884d08879a370753b29fc56e580d6f7dc13cc88d9278d33483d",
+      "bytes": 47,
+      "text": "Job activeScan-policy set defaultStrength = Low",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 6,
+      "sha256": "c7c41cc47727d5049787f3539767bd71c4b6be56219e2935cb160fca6f471eda",
+      "bytes": 48,
+      "text": "Job activeScan-policy set defaultThreshold = Off",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 13,
+      "sha256": "c21b3d496a16e266aff41ac8eb1578fe90798411ce45405c74a47616648bfb3b",
+      "bytes": 57,
+      "text": "Job activeScan set context = cloudsentinel-active-fixture",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 14,
+      "sha256": "ee84f8e76e022e067921ab5a7e3e5afc37b844913f89a7e97eb674f204288e3b",
+      "bytes": 59,
+      "text": "Job activeScan set policy = cloudsentinel-active-fixture-v1",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 15,
+      "sha256": "2e1f0e8f1c1e74d17e77f117c3c3d41854470fdf26ba539b2b96ed593063f32f",
+      "bytes": 44,
+      "text": "Job activeScan set maxScanDurationInMins = 1",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 16,
+      "sha256": "99bfcde1a9a3b93c12c51c7dae7387eafc83968ab11c6bd62676eabebde6e7ef",
+      "bytes": 44,
+      "text": "Job activeScan set maxRuleDurationInMins = 1",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 17,
+      "sha256": "eb80d2e8fb09f056b9a40ee9df05a8d80ff69557c6e4710df8368deb793742e6",
+      "bytes": 40,
+      "text": "Job activeScan set maxAlertsPerRule = 10",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 18,
+      "sha256": "b6eff44f0282e7d744ecf9a0f8a7109f00065067785ff90a5a8b910d2614ba66",
+      "bytes": 36,
+      "text": "Job activeScan set threadPerHost = 1",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 19,
+      "sha256": "b2e771ced6a640741c29d050e9828c620e66d7af79357b146bd9e4c311fc3f53",
+      "bytes": 34,
+      "text": "Job activeScan set delayInMs = 500",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 23,
+      "sha256": "18ba36f2c74e233858365f153069f698711486bed7b6c68699865a60a73e2fa2",
+      "bytes": 64,
+      "text": "Job activeScan-policy set name = cloudsentinel-active-fixture-v1",
+      "truncated": false,
+      "recoveredFromExactNativeFingerprint": true
+    },
+    {
+      "lineNumber": 25,
+      "sha256": "0b3111446a51c27b40b67a768a2f3d85ead04be3ab1215cea6252cd61751224d",
+      "bytes": 49,
+      "text": "Job activeScan-policy set default strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 26,
+      "sha256": "54add044289da08289dd115c5891f6295afe0309d56c1f98dfa7f94c708ef815",
+      "bytes": 50,
+      "text": "Job activeScan-policy set default threshold to OFF",
+      "truncated": false
+    },
+    {
+      "lineNumber": 27,
+      "sha256": "d06747828aa34635324317c326cae4fe86a15f8c6e528b8fed487e588be551a2",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40012 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 28,
+      "sha256": "1372b4245649c7c713a4fd8096b19d0efd34222a7e9c7d2dec350a707a7c66ae",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40012 threshold to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 29,
+      "sha256": "a1d37ee602803ab4ca7fb7cef027ccc9b454db803f8ff41720d509352353a605",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40014 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 30,
+      "sha256": "9778b3e6bd3736779f6fcbe4465d74a9ce92c7109014e4a92cdfb4294e60f982",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40014 threshold to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 31,
+      "sha256": "aadd36dd2da71fbf8e6447115ef95f4f7251a4ee8bc17c051e4da60115ada829",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40016 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 32,
+      "sha256": "fb71d5d8bb8f97562b42533cf503eceffcee2f10325eb47731fa723b586e4a0c",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40016 threshold to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 33,
+      "sha256": "e239edac051e1d01d95372a42eb72fe81b51a40ba1b8f183b71dedd93c30dffc",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40017 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 34,
+      "sha256": "a865276c08d9867b5216cbdaa5d3dd4d3d466a5d518ba0b8447ac97fece95219",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40017 threshold to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 35,
+      "sha256": "38728de7ec2d924f2a3935a32b9c8124730d0f244de643328c7ed2cff552cd6c",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40018 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 36,
+      "sha256": "a04972f163ad7354f3215e01cabb253341b34487b33d348760157b63ca386b9c",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40018 threshold to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 37,
+      "sha256": "e8865878378f2d2fd0a19fe554d97d33d0bb7571c45d7195dba1cca13c6d30b5",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40019 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 38,
+      "sha256": "ed3bf73258c57cd9852da159a8d1f82bacb753420007f4c89febe89e1e91c9e9",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40019 threshold to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 39,
+      "sha256": "720663e2cb349f32593ba3d0ff0cc93d11db887af30c206b2f032564878106ca",
+      "bytes": 52,
+      "text": "Job activeScan-policy set rule 40020 strength to LOW",
+      "truncated": false
+    },
+    {
+      "lineNumber": 40,
+      "sha256": "916f76ef308e738367b5e011c9f2e0449230889284572ab820401656fe235b99",
+      "bytes": 53,
+      "text": "Job activeScan-policy set rule 40020 threshold to LOW",
+      "truncated": false
+    }
+  ]
+}

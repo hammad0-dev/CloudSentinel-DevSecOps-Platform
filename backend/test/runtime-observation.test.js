@@ -17,6 +17,32 @@ test("collects actual command contracts but marks mocked adapters unverified",as
   assert.deepEqual(commands,[["ip","route","list"],["ip","-f","inet6","route","list"],["ip","address","show"]]);
   assert.equal(e.routes.source,"busybox-ip-text");
 });
+test('gateway binding accepts only the exact independently inspected numeric endpoint',async()=>{
+ const d=await setup();const e=await d.observation.collect(d.input);assert.equal(e.probes.length,11);
+ for(const proxy of ['http://172.30.25.9:3128','http://172.30.26.3:3128','http://172.30.25.3:3129','http://gateway:3128','http://secret:credential@172.30.25.3:3128','http://172.30.25.3:3128/']){
+  const x=await setup();await assert.rejects(x.observation.collect({...x.input,target:{...x.input.target,proxy}}),e=>{assert.equal(e.code,'INVALID_PROBE');assert.equal(e.gatewayDiagnostic.proxyMatches,false);assert.equal(JSON.stringify(e.gatewayDiagnostic).includes('credential'),false);assert.equal(e.gatewayDiagnostic.inspectedGatewayIp,'172.30.25.3');return true;});
+  assert.ok(!x.calls.some(a=>a[0]==='exec'));
+ }
+});
+test('stale gateway address fails without rebinding the expected proxy',async()=>{
+ const d=await setup();d.state.gatewayNetworks['cs-scanner'].IPAddress='172.30.25.9';
+ await assert.rejects(d.observation.collect(d.input),e=>e.code==='INVALID_PROBE'&&e.gatewayDiagnostic.expectedProxyIp==='172.30.25.3'&&e.gatewayDiagnostic.inspectedGatewayIp==='172.30.25.9');
+ assert.ok(!d.calls.some(a=>a[0]==='exec'));
+});
+test('stopped gateway and missing addresses are distinguished before traffic',async()=>{
+ for(const stopped of [true,false]){
+  const d=await setup(),run=d.adapter.run.bind(d.adapter);
+  d.adapter.run=async args=>{const r=await run(args);if(args[0]==='inspect'&&args.at(-1)===d.ids.gateway){const raw=JSON.parse(r.stdout);raw.State={Running:!stopped,ExitCode:stopped?1:0,OOMKilled:false};if(!stopped)delete raw.NetworkSettings.Networks['cs-scanner'].IPAddress;return {...r,stdout:JSON.stringify(raw)};}return r;};
+  await assert.rejects(d.observation.collect(d.input),e=>e.code===(stopped?'GATEWAY_NOT_RUNNING':'GATEWAY_ENDPOINT_INVALID')&&e.gatewayDiagnostic.gatewayRunning===!stopped);
+  assert.ok(!d.calls.some(a=>a[0]==='exec'));
+ }
+});
+test('spoofed gateway container, ownership and scanner network identities stay rejected',async()=>{
+ for(const change of [raw=>raw.Id='9'.repeat(64),raw=>raw.Config.Labels['cloudsentinel.owner']='foreign',raw=>raw.NetworkSettings.Networks['cs-scanner'].NetworkID='9'.repeat(64)]){
+  const d=await setup(),run=d.adapter.run.bind(d.adapter);d.adapter.run=async args=>{const r=await run(args);if(args[0]==='inspect'&&args.at(-1)===d.ids.gateway){const raw=JSON.parse(r.stdout);change(raw);return {...r,stdout:JSON.stringify(raw)};}return r;};
+  await assert.rejects(d.observation.collect(d.input));assert.ok(!d.calls.some(a=>a[0]==='exec'));
+ }
+});
 test("captured M-DOWN grammar reaches trusted probe contracts only with matching mocked endpoint",async()=>{
   const capture=require('./fixtures/nginx-address-internal-248470e9.json');
   const d=await setup();

@@ -5,7 +5,7 @@ const ID=/^[a-f0-9]{12,64}$/i;
 // Fixed POSIX shell program; destinations remain separate argv entries. Clear
 // inherited proxy exclusions rather than sending curl an unsupported empty flag.
 const CURL_ENV = 'unset no_proxy NO_PROXY http_proxy HTTP_PROXY https_proxy HTTPS_PROXY all_proxy ALL_PROXY; exec curl "$@"';
-function fail(code,msg){const e=new Error(msg);e.code=code;throw e;}
+function fail(code,msg,meta){const e=new Error(msg);e.code=code;if(meta)e.namespaceDiagnostic=meta;throw e;}
 function validateIdentity(o){if(!o||!o.scanId||!o.networkId||!/^[a-z0-9_.-]+$/i.test(String(o.scanId)))fail("INVALID_IDENTITY","scan and network identity required");require('./acceptanceNames').containerName(String(o.scanId),'client');}
 const { inspectOwnedNetwork, verifyMemberships } = require("./ownedDockerNetworks");
 const { supportsDirectIsolation } = require("./runtimeNetworkText");
@@ -61,12 +61,42 @@ function connectHeaders(stderr, authority) {
   };
 }
 const verifiedClients = new WeakMap();
+function namespaceId(result,source) {
+  if(result?.exitCode!==0 || result.stderr!=='' || !/^net:\[[1-9][0-9]{0,19}\]\n?$/.test(result.stdout||''))fail('NAMESPACE_UNVERIFIED','missing native network namespace identity',{rule:'NAMESPACE_READLINK_INCOMPLETE',source,exitCode:Number.isInteger(result?.exitCode)?result.exitCode:null,stdoutPresent:typeof result?.stdout==='string'&&result.stdout.length>0});
+  return result.stdout.trim();
+}
+async function readNamespace(adapter,id,args,source){
+  try{return namespaceId(await adapter.run(['exec',id,...args]),source);}
+  catch(error){if(!error.namespaceDiagnostic)error.namespaceDiagnostic={rule:'NAMESPACE_READLINK_COMMAND_FAILED',source,exitCode:Number.isInteger(error.exitCode)?error.exitCode:null,category:/^[A-Z_]{1,64}$/.test(error.code||'')?error.code:'COMMAND_FAILED'};throw error;}
+}
+async function verifyNamespace(adapter,client,record,helper) {
+  const production=require('./activeScannerBinding').requirement(record.scope,adapter,record.reference.scanIdentity.scanId,record.namespaceParent);
+  if(production&&production.networkId!==record.reference.id)fail('NAMESPACE_UNVERIFIED','production network identity mismatch');
+  if(!(production||require('./zapContainmentDiagnostic').isNamespaceScope(record.scope,record.reference.scanIdentity.scanId,record.namespaceParent)) || !/^[a-f0-9]{64}$/.test(record.namespaceParent||'') || helper.security.networkMode!==`container:${record.namespaceParent}` || Object.keys(helper.networks||{}).length)fail('NAMESPACE_UNVERIFIED','helper does not exclusively share the exact ZAP namespace',{rule:'HELPER_NOT_IN_BOUND_PARENT_NAMESPACE',expectedParentId:record.namespaceParent,observedParentId:/^container:[a-f0-9]{64}$/.test(helper.security.networkMode||'')?helper.security.networkMode.slice(10):null,independentAttachmentCount:Object.keys(helper.networks||{}).length});
+  const inspected=await adapter.run(['inspect','--format','{{json .}}',client.id]);
+  const native=JSON.parse(inspected.stdout),h=native.HostConfig||{};
+  if(inspected.exitCode!==0||inspected.stderr!==''||native.Id!==client.id||h.NetworkMode!==`container:${record.namespaceParent}`||h.Memory!==134217728||h.NanoCpus!==500000000||h.PidsLimit!==64||h.PublishAllPorts||Object.keys(h.PortBindings||{}).length||Object.values(native.NetworkSettings?.Ports||{}).some(Boolean)||h.Tmpfs&&Object.keys(h.Tmpfs).length)fail('NAMESPACE_UNVERIFIED','helper resource or namespace configuration mismatch',{rule:'HELPER_RUNTIME_CONFIGURATION_MISMATCH'});
+  const parent=(await adapter.inspect([record.namespaceParent],'container')).normalized;
+  if(production){const raw=await adapter.run(['inspect','--format','{{json .}}',record.namespaceParent]);if(raw.exitCode!==0||raw.stderr!=='')fail('NAMESPACE_UNVERIFIED','parent inspection failed');require('./activeZapRuntime').assertScannerSecurity(JSON.parse(raw.stdout),{networkId:record.reference.id,directory:production.directory});}
+  if(parent.objectId!==record.namespaceParent || parent.imageId!==(production?.imageId||require('../config/zap-containment-diagnostic.json').imageId) || parent.labels?.['cloudsentinel.owner']!==client.owner || parent.labels?.['cloudsentinel.role']!==(production?.role||'zap-containment-diagnostic') || parent.labels?.['cloudsentinel.scan']!==record.reference.scanIdentity.scanId || parent.state?.Running!==true || !parent.security.readOnly || parent.security.privileged || parent.security.capAdd.length || parent.security.user!=='1000:1000' || !parent.security.capDrop.includes('ALL') || !parent.security.securityOpt.includes('no-new-privileges:true'))fail('NAMESPACE_UNVERIFIED','ZAP namespace owner/image/security mismatch');
+  verifyMemberships(parent,[await inspectOwnedNetwork(adapter,record.reference)]);
+  const own=await readNamespace(adapter,client.id,['readlink','/proc/self/ns/net'],'helper');
+  const zap=await readNamespace(adapter,parent.objectId,['python3','-I','-c',"import os;print(os.readlink('/proc/self/ns/net'))"],'zap');
+  if(own!==zap)fail('NAMESPACE_UNVERIFIED','network namespace inode mismatch',{rule:'NETWORK_NAMESPACE_ID_MISMATCH',helperNamespace:own,zapNamespace:zap,expectedParentId:record.namespaceParent});
+  return {...parent,namespaceEvidence:{helperId:client.id,zapContainerId:parent.objectId,networkMode:`container:${parent.objectId}`,namespaceId:zap,equivalent:true,source:'LIVE_PROC_SELF_NS_NET',zapApplicationRequests:false}};
+}
 async function verifyClient(adapter, client) {
   const record = verifiedClients.get(client);
   if (!record || record.adapter !== adapter) fail("INVALID_CLIENT", "lifecycle-verified client required");
   const network = await inspectOwnedNetwork(adapter, record.reference);
   const n = (await adapter.inspect([client.id], "container")).normalized;
   if (!n || n.objectId !== client.id || n.imageDigest !== IMAGE || n.labels?.["cloudsentinel.owner"] !== client.owner || n.labels?.["cloudsentinel.role"] !== "acceptance-client" || n.security?.privileged !== false || n.security?.networkMode === "host" || n.security?.capAdd?.length || (n.mounts || []).some(m => String(m.Source || "").includes("docker.sock"))) fail("IDENTITY_MISMATCH", "client security or ownership mismatch");
+  if(record.bounded){const raw=JSON.parse((await adapter.run(['inspect','--format','{{json .}}',client.id])).stdout),h=raw.HostConfig||{};if(h.Memory!==134217728||h.NanoCpus!==500000000||h.PidsLimit!==64)fail('IDENTITY_MISMATCH','acceptance client resource limits mismatch');}
+  if(record.namespaceParent) {
+    const parent=await verifyNamespace(adapter,client,record,n);
+    n.networks=parent.networks;
+    n.namespaceEvidence=parent.namespaceEvidence;
+  }
   verifyMemberships(n, [network]);
   if (record.nativeArtifact) {
     await nativeArtifact.verify(record.nativeArtifact);
@@ -86,16 +116,20 @@ async function provision(adapter, o) {
   validateIdentity(o);
   if (!adapter || typeof adapter.run !== "function" || typeof adapter.inspect !== "function") fail("ADAPTER_GAP", "run and inspect are required");
   const network = await inspectOwnedNetwork(adapter, o.networkReference);
+  if(o.namespaceParent && !/^[a-f0-9]{64}$/.test(o.namespaceParent))fail('NAMESPACE_UNVERIFIED','immutable namespace parent required');
   if (network.id !== o.networkId || o.networkReference.scanIdentity.scanId !== String(o.scanId)) fail("IDENTITY_MISMATCH", "client network reference mismatch");
   const owner = "cloudsentinel-" + o.scanId;
-  const runArgs = ["run", "-d", "--pull=never", "--name", require('./acceptanceNames').containerName(String(o.scanId),'client'), "--network", network.id, "--label", "cloudsentinel.owner=" + owner, "--label", "cloudsentinel.role=acceptance-client", "--read-only", "--sysctl", "net.ipv6.conf.all.disable_ipv6=1", "--sysctl", "net.ipv6.conf.default.disable_ipv6=1", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true", "--entrypoint", "/bin/sh", IMAGE, "-c", "sleep 3600"];
+  const namespaceScope=o.namespaceScope||o.diagnosticScope;
+  if(o.namespaceParent && !(require('./activeScannerBinding').requirement(namespaceScope,adapter,o.scanId,o.namespaceParent)||require('./zapContainmentDiagnostic').isNamespaceScope(namespaceScope,o.scanId,o.namespaceParent)))fail('INVALID_DIAGNOSTIC_SCOPE','shared namespace requires a currently authorized immutable parent');
+  const runArgs = ["run", "-d", "--pull=never", "--name", require('./acceptanceNames').containerName(String(o.scanId),'client'), "--network", o.namespaceParent?`container:${o.namespaceParent}`:network.id, "--label", "cloudsentinel.owner=" + owner, "--label", "cloudsentinel.scan=" + o.scanId, "--label", "cloudsentinel.role=acceptance-client", "--read-only", ...(o.namespaceParent?[]:["--sysctl", "net.ipv6.conf.all.disable_ipv6=1", "--sysctl", "net.ipv6.conf.default.disable_ipv6=1"]), "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true", "--entrypoint", "/bin/sh", IMAGE, "-c", "sleep 3600"];
+  if(o.namespaceParent||o.bounded===true)runArgs.splice(runArgs.indexOf('--entrypoint'),0,'--pids-limit','64','--memory','128m','--cpus','0.5');
   if (o.nativeArtifact) { await nativeArtifact.verify(o.nativeArtifact); if (o.nativeArtifact.scanId !== String(o.scanId)) fail("NATIVE_UNOWNED","native artifact scan mismatch"); runArgs.splice(runArgs.indexOf("--entrypoint"),0,"--user",`${process.getuid()}:${process.getgid()}`,"--mount",o.nativeArtifact.mount); }
   const run = await adapter.run(runArgs);
   const id = run.objectId || String(run.stdout || "").trim();
   if (!ID.test(id)) fail("IDENTITY_MISSING", "client ID missing");
   const client = Object.freeze({ id, owner, networkId: network.id, networkName: network.name, image: IMAGE });
   o.onCreated?.(client);
-  verifiedClients.set(client, { adapter, reference: o.networkReference, nativeArtifact: o.nativeArtifact });
+  verifiedClients.set(client, { adapter, reference: o.networkReference, nativeArtifact: o.nativeArtifact, namespaceParent:o.namespaceParent, scope:namespaceScope, bounded:o.bounded===true });
   await verifyClient(adapter, client);
   return client;
 }

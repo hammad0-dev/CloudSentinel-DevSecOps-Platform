@@ -32,13 +32,21 @@ The shared source contract is `services/zapInitialization.js`:
 * Production `/tmp`: retain its existing 256 MiB cap for reports and temporary
   data. Its `/zap/wrk` remains the existing read-only artifact mount; no new host
   mount is added.
-* Java: pass the genuine launcher's supported `-Xmx512m` argument explicitly.
+* Java: supply `-Xmx512m` through the launcher-supported `.ZAP_JVM.properties`
+  together with the preferences-root property (see `zap-writable-paths.md`).
   Offline inspection of the pinned `zap.sh` shows it accepts `-Xmx*` and forwards
   that value to Java. Its automatic heap calculation may consult host memory on
   cgroup v2, so it must not determine this bounded diagnostic's heap budget.
 * Container memory: 1536 MiB. Even a conservative combined 576 MiB tmpfs cap and
   512 MiB heap leave 448 MiB for native JVM memory, processes and other charged
   pages. Actual diagnostic tmpfs caps total 384 MiB; production totals 512 MiB.
+
+The later profile/preferences correction adds one 4 MiB Firefox-profile tmpfs,
+preserves its 101-byte inherited seed file, and redirects Java user preferences
+inside the existing ZAP home. See `zap-writable-paths.md`. Current combined caps
+are therefore 388 MiB for the diagnostic and 516 MiB for production, leaving
+636 MiB and 508 MiB respectively beyond a 512 MiB heap under the 1536 MiB limit.
+The earlier 384/512 MiB totals above describe the pre-profile configuration.
 
 256 MiB provides over six times the declared installation payload; 512 MiB is
 not initially justified by the available footprint and would consume more memory
@@ -52,7 +60,7 @@ Use `diagnosticStorageArguments()` with the existing hardened diagnostic
 arguments. It keeps `--network none`, read-only rootfs, user 1000:1000 and bounded
 tmpfs mounts; retain dropped capabilities, no-new-privileges, CPU/PID limits,
 local hostname mapping, no published ports, no host mounts and private API key.
-Add `-Xmx512m` to the existing daemon invocation. The production command now uses
+Seed the verified JVM properties file before daemon invocation. The production command uses
 `-dir /home/zap/.ZAP` rather than initializing add-on state inside `/tmp/zap-*`.
 
 ## Readiness boundary

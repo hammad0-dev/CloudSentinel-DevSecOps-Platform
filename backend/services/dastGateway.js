@@ -27,9 +27,23 @@ class SecureGatewayLifecycle {
   }
   async provision(input) {
     const { projectId, executionId, scanId, target } = input || {}; const key = String(scanId);
-    require('./acceptanceNames').validateNames(input);
+    const python = input.fixtureKind === fixtureService.PYTHON_KIND;
+    const diagnostic=input.diagnosticScope!==undefined;
+    const production=input.productionScope!==undefined;
+    if(production&&!require('./activeTargetEnrollment').isPreparation(input.productionScope,input))throw error('invalid production preparation scope','ACTIVE_AUTHORIZATION_BLOCKED');
+    if(diagnostic && (!python || !require('./zapContainmentDiagnostic').isScope(input.diagnosticScope,scanId))) throw error('invalid diagnostic scope','INVALID_DIAGNOSTIC_SCOPE');
+    if(diagnostic && (projectId!==input.diagnosticScope.projectId||executionId!==input.diagnosticScope.executionId||target?.hostname!==`${scanId}.test`||target?.port!==18080||Object.keys(target).some(k=>!['hostname','port'].includes(k))||input.mode!=='full'||input.nativeConnect!==true))throw error('diagnostic origin/execution mismatch','INVALID_DIAGNOSTIC_SCOPE');
+    const checkDiagnostic=()=>{if(input.signal?.aborted)throw error('execution cancelled','ACTIVE_CANCELLED');if(production&&!require('./activeTargetEnrollment').isPreparation(input.productionScope,input))throw error('preparation expired or cancelled','ACTIVE_AUTHORIZATION_BLOCKED');if(diagnostic&&!require('./zapContainmentDiagnostic').isScope(input.diagnosticScope,scanId))throw error('diagnostic expired or cancelled','DIAGNOSTIC_EXPIRED');};
+    require('./acceptanceNames').validateNames(python ? {...input,projectId:String(projectId),executionId:String(executionId)} : input);
+    if (input.fixtureKind !== undefined && !python) throw error('unknown fixture kind','ACTIVE_SCOPE_BLOCKED');
+    if (python && input.mode!==undefined && input.mode!=='full') throw error('Active fixture requires full path/isolation observations','INVALID_MODE');
+    if (python && (projectId===17 || !Number.isSafeInteger(projectId) || projectId<1 || !Number.isSafeInteger(executionId) || executionId<1 || target?.port!==18080 || !/^[a-z0-9-]+\.test$/.test(target?.hostname||''))) throw error('invalid disposable execution','ACTIVE_SCOPE_BLOCKED');
+    // The Nginx acceptance matrix contains fixture-specific redirects/health.
+    // Never attest Python/ZAP containment by reusing that matrix unchanged.
+    if (python && typeof this.observation?.collectActiveFixture !== 'function') throw error('Python/ZAP containment collector not verified','ACTIVE_NAMESPACE_BLOCKED');
+    if (python) await fixtureService.verifyPythonAvailable(this.adapter);
     if (input?.nativeConnect !== undefined && typeof input.nativeConnect !== 'boolean') throw error('invalid native opt-in','INVALID_MODE');
-    if (input?.nativeConnect && process.env.DAST_ACTIVE_ENABLED !== 'false') throw error('native CONNECT requires isolated acceptance opt-in','INVALID_MODE');
+    if (input?.nativeConnect && process.env.DAST_ACTIVE_ENABLED !== 'false'&&!production) throw error('native CONNECT requires isolated acceptance or authorized production preparation','INVALID_MODE');
     if (input?.mode !== undefined && !['full','connect-diagnostic','tcp-diagnostic'].includes(input.mode)) throw error('unsupported acceptance mode', 'INVALID_MODE');
     if (this.states.has(key)) throw error("duplicate scan identity", "GATEWAY_DUPLICATE_SCAN");
     this.states.set(key, "CREATED"); let staged;
@@ -37,38 +51,55 @@ class SecureGatewayLifecycle {
       this.states.set(key, "PROVISIONING");
       const resources = {}; this.resources.set(key, resources);
       if (input.nativeConnect) resources.nativeArtifact = await require('./nativeConnectArtifact').stage(String(scanId));
-      const owned = await this.networks.create({ projectId, executionId, scanId });
+      checkDiagnostic();
+      const owned = (diagnostic||production||input.signal)?await this.networks.create({ projectId, executionId, scanId },{beforeCreate:checkDiagnostic}):await this.networks.create({ projectId, executionId, scanId });
       resources.owned = owned;
+      checkDiagnostic();
       const scanner = owned.networks.find(n => n.role === "scanner"); const fixture = owned.networks.find(n => n.role === "fixture");
       if (!scanner || !fixture) throw error("owned scanner and fixture networks are required", "GATEWAY_NETWORK_INVALID");
-      const fixtureResource = await this.fixture.provision(this.adapter, { scanId, host: target.hostname, port: target.port, unauthorizedHost: target.unauthorizedHost || "unauthorized.test", unauthorizedIp: target.unauthorizedIp || "198.51.100.9", unauthorizedPort: target.unauthorizedPort || (target.port === 65535 ? 1 : target.port + 1), networkId: fixture.id, onStaged: staged => { resources.fixtureResource = { staged }; }, onCreated: resource => { resources.fixtureResource = resource; } });
+      const fixtureResource = await this.fixture.provision(this.adapter, { projectId, executionId, fixtureKind: input.fixtureKind, scanId, check: (diagnostic||production||input.signal)?checkDiagnostic:undefined, host: target.hostname, port: target.port, unauthorizedHost: target.unauthorizedHost || "unauthorized.test", unauthorizedIp: target.unauthorizedIp || "198.51.100.9", unauthorizedPort: target.unauthorizedPort || (target.port === 65535 ? 1 : target.port + 1), networkId: fixture.id, onStaged: staged => { resources.fixtureResource = { staged }; }, onCreated: resource => { resources.fixtureResource = resource;checkDiagnostic(); } });
       resources.fixtureResource = fixtureResource;
       if (!fixtureResource.ip || !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(fixtureResource.ip)) throw error("verified fixture IPv4 is required", "GATEWAY_TARGET_INVALID");
       const verifiedTarget = { ...target, ip: fixtureResource.ip };
-      staged = await this.policyService.stagePolicy({ scanId, target: verifiedTarget });
+      checkDiagnostic();
+      staged = await this.policyService.stagePolicy({ scanId, target: verifiedTarget, ...(python ? {profile:'active'} : {}) });
       resources.staged = staged;
       await this.policyService.verifyStagedPolicy(staged);
       const owner = `cloudsentinel-${scanId}`;
       const args = ["run", "-d", "--pull=never", "--name", require('./acceptanceNames').containerName(String(scanId),'gateway'), "--network", scanner.id, "--label", `cloudsentinel.owner=${owner}`, "--label", `cloudsentinel.scan=${scanId}`, "--label", "cloudsentinel.role=gateway", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true", "--read-only", "--mount", `type=bind,src=${staged.filePath},dst=${staged.containerPath},readonly`, "--entrypoint", "/usr/sbin/squid", IMAGE, "-N", "-f", staged.containerPath];
       // Match private host artifact ownership without granting DAC override.
       const user = `${process.getuid()}:${process.getgid()}`;
-      args.splice(args.indexOf(IMAGE), 0, "--sysctl", "net.ipv6.conf.all.disable_ipv6=1", "--sysctl", "net.ipv6.conf.default.disable_ipv6=1", "--user", user, ...["/run", "/var/log/squid", "/var/spool/squid"].flatMap(dir => ["--tmpfs", `${dir}:rw,noexec,nosuid,uid=${process.getuid()},gid=${process.getgid()},mode=0700,size=16m`]));
+      // Active-profile access logging uses /tmp; keep it bounded and private
+      // rather than allowing writes to the read-only image filesystem.
+      args.splice(args.indexOf(IMAGE), 0, "--sysctl", "net.ipv6.conf.all.disable_ipv6=1", "--sysctl", "net.ipv6.conf.default.disable_ipv6=1", "--user", user, ...["/run", "/var/log/squid", "/var/spool/squid", ...(python ? ["/tmp"] : [])].flatMap(dir => ["--tmpfs", `${dir}:rw,noexec,nosuid,uid=${process.getuid()},gid=${process.getgid()},mode=0700,size=16m`]));
+      if(diagnostic||production)args.splice(args.indexOf(IMAGE),0,'--memory','256m','--cpus','1','--pids-limit','64');
+      checkDiagnostic();
       const run = await this.adapter.run(args); const gatewayId = run.objectId || String(run.stdout || "").trim();
       if (!/^[a-f0-9]{12,64}$/i.test(gatewayId)) throw error("gateway identity is missing", "GATEWAY_ID_MISSING");
       resources.gatewayId = gatewayId; resources.owner = owner;
+      checkDiagnostic();
       await this.adapter.run(["network", "connect", fixture.id, gatewayId]);
       const freshNetworks = await Promise.all([scanner, fixture].map(ref => inspectOwnedNetwork(this.adapter, ref)));
       const gateway = (await this.adapter.inspect([gatewayId], "container")).normalized;
       if (gateway.objectId !== gatewayId || gateway.imageDigest !== IMAGE || gateway.labels?.["cloudsentinel.owner"] !== owner || gateway.labels?.["cloudsentinel.scan"] !== String(scanId) || gateway.labels?.["cloudsentinel.role"] !== "gateway") throw error("gateway ownership mismatch", "OWNERSHIP_MISMATCH");
       verifyMemberships(gateway, freshNetworks);
-      const clientResource = await this.client.provision(this.adapter, { scanId, networkId: scanner.id, networkReference: scanner, nativeArtifact: resources.nativeArtifact, onCreated: resource => { resources.clientResource = resource; } });
+      resources.gatewayBinding={networkId:scanner.id,networkName:scanner.name,ip:gateway.networks[scanner.name].IPAddress};
+      if(diagnostic) {
+        checkDiagnostic();
+        resources.diagnosticOnly=true;
+        resources.target=verifiedTarget;
+        this.states.set(key,'DIAGNOSTIC_PROVISIONED');
+        return {state:'DIAGNOSTIC_PROVISIONED',diagnosticOnly:true,fullContainment:false};
+      }
+      const clientResource = await this.client.provision(this.adapter, { scanId, networkId: scanner.id, networkReference: scanner, nativeArtifact: resources.nativeArtifact, bounded:production, onCreated: resource => { resources.clientResource = resource; } });
       resources.clientResource = clientResource;
       if (typeof this.observation.bindAcceptanceClient !== "function") throw error("trusted acceptance-client binding is unavailable", "GATEWAY_EVIDENCE_INVALID");
       this.observation.bindAcceptanceClient(this.client, clientResource);
       this.states.set(key, "VERIFYING");
       if (!this.observation || typeof this.observation.collect !== "function") throw error("runtime observation is required", "GATEWAY_EVIDENCE_INVALID");
       const gatewayIp = gateway.networks[scanner.name].IPAddress;
-      const evidence = await this.observation.collect({ projectId, executionId, scanId, mode: input.mode, nativeConnect: input.nativeConnect, gatewayContainerId: gatewayId, scannerContainerId: clientResource.id, fixtureContainerId: fixtureResource.id, scannerNetworkId: scanner.id, fixtureNetworkId: fixture.id, networkReferences: [scanner, fixture], target: { ...verifiedTarget, proxy: `http://${gatewayIp}:3128` }, stagedPolicy: staged });
+      const collector=python?'collectActiveFixture':'collect';
+      const evidence = await this.observation[collector]({ projectId, executionId, scanId, mode: input.mode, nativeConnect: input.nativeConnect, beforeProbe:checkDiagnostic, gatewayContainerId: gatewayId, scannerContainerId: clientResource.id, fixtureContainerId: fixtureResource.id, scannerNetworkId: scanner.id, fixtureNetworkId: fixture.id, networkReferences: [scanner, fixture], target: { ...verifiedTarget, proxy: `http://${gatewayIp}:3128` }, stagedPolicy: staged });
       // Active ZAP cannot run namespace tools in the pinned image. Retain the
       // independently verified acceptance-client observation on the owned
       // lifecycle record so the runtime adapter can bind to that evidence.
@@ -81,7 +112,16 @@ class SecureGatewayLifecycle {
       }
       if (!runtimeReady(evidence)) throw error("runtime evidence is not independently verified", "GATEWAY_EVIDENCE_INVALID");
       this.states.set(key, "READY"); return { state: "READY", gateway: { id: gatewayId }, networks: owned, policyDigest: staged.policyDigest, evidence };
-    } catch (e) { this.states.set(key, "FAILED"); try { const cleanup = await this.cleanup(key); if (cleanup.residual.length) e.cleanup = cleanup; } catch (x) { e.cleanupError = x.code || "CLEANUP_FAILED"; } throw e; }
+    } catch (e) {
+      this.states.set(key, "FAILED");
+      const resources=this.resources.get(key);
+      if(resources?.gatewayId)try{
+        e.gatewayEvidenceFile=await require('./gatewayFailureEvidence').save({adapter:this.adapter,resources,projectId,executionId,scanId:key,error:e});
+      }catch(x){e.gatewayEvidenceError=x.code||'GATEWAY_EVIDENCE_WRITE_FAILED';}
+      try { const cleanup = await this.cleanup(key); if (cleanup.residual.length) e.cleanup = cleanup; }
+      catch (x) { e.cleanupError = x.code || "CLEANUP_FAILED"; }
+      throw e;
+    }
   }
   async cleanup(scanId) {
     const key = String(scanId), r = this.resources.get(key);
