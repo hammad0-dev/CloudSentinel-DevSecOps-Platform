@@ -122,15 +122,6 @@ export default function ProjectDetails() {
               <ArrowLeft size={14} className="inline mr-1" />
               Back
             </Link>
-            <Link className="secondary-btn" to={`/projects/${id}/sast`}>
-              View SAST Results
-            </Link>
-            <Link className="secondary-btn" to={`/projects/${id}/iac`}>
-              View IaC Results
-            </Link>
-            <Link className="secondary-btn" to={`/projects/${id}/dast`}>
-              View DAST Results
-            </Link>
             <button className="primary-btn" onClick={onScan}>
               <ScanSearch size={14} className="inline mr-1" />
               Scan

@@ -4,7 +4,7 @@ import api from "../lib/api";
 import { ChevronDown, AlertTriangle, CheckCircle, Clock, XCircle, Play, ArrowRight, Server } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const PIPELINE_STAGES = ["SAST", "Dependency", "IaC", "Deploy", "DAST", "Active DAST"];
+const PIPELINE_STAGES = ["SAST", "Dependency", "IaC", "Deploy", "DAST"];
 
 export default function CICDPipeline() {
   const [projects, setProjects] = useState([]);

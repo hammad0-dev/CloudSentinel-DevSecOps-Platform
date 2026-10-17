@@ -1,14 +1,21 @@
+import { executionResultsApi } from "../utils/executionScan";
+import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Cell, PieChart, Pie, ResponsiveContainer, Tooltip } from "recharts";
 import { AlertTriangle, Download, FileJson2, Package, ScanSearch, ShieldAlert } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
-import api from "../lib/api";
+import liveApi from "../lib/api";
 
 const PIE_COLORS = ["#d06060", "#c89b3c", "#3e8f63", "#a9b4ad", "#8f79c6"];
 const SEV_ORDER = { CRITICAL: 1, HIGH: 2, MEDIUM: 3, LOW: 4, NONE: 5, UNKNOWN: 6 };
 
 export default function Dependencies() {
+  const [searchParams] = useSearchParams();
+  const executionId = searchParams.get("executionId");
+  const reportProjectId = searchParams.get("projectId");
+  const api = executionResultsApi(liveApi, reportProjectId, executionId);
+
   const [projects, setProjects] = useState([]);
   const [selected, setSelected] = useState("");
   const [tab, setTab] = useState("Vulnerabilities");
@@ -23,7 +30,7 @@ export default function Dependencies() {
       .then((r) => {
         const list = r.data.projects || [];
         setProjects(list);
-        if (list.length) setSelected(String(list[0].id));
+        if (list.length) setSelected(reportProjectId || String(list[0].id));
       })
       .catch(() => setProjects([]));
   }, []);
@@ -36,7 +43,7 @@ export default function Dependencies() {
       .then((r) => setData(r.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [selected]);
+  }, [selected, executionId]);
 
   useEffect(() => {
     const st = String(data?.latestScan?.status || "").toUpperCase();
@@ -168,20 +175,20 @@ export default function Dependencies() {
         subtitle="Trivy-powered supply chain vulnerability scanning"
         actions={
           <div className="flex items-center gap-2 flex-wrap">
-            <select className="input" value={selected} onChange={(e) => setSelected(e.target.value)}>
+            <select className="input" value={selected} disabled={Boolean(executionId)} onChange={(e) => setSelected(e.target.value)}>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <button className="primary-btn inline-flex items-center gap-2" onClick={runScan} disabled={scanning || !selected}>
+            <button className="primary-btn inline-flex items-center gap-2" onClick={runScan} disabled={Boolean(executionId) || scanning || !selected}>
               <ScanSearch size={14} />
               {scanning ? "Scanning..." : "Run Scan"}
             </button>
-            <button className="secondary-btn inline-flex items-center gap-2" onClick={exportSbom} disabled={sbomLoading || !selected}>
+            <button className="secondary-btn inline-flex items-center gap-2" onClick={exportSbom} disabled={Boolean(executionId) || sbomLoading || !selected}>
               <FileJson2 size={14} />
               {sbomLoading ? "Exporting..." : "Export SBOM"}
             </button>
-            <button className="secondary-btn inline-flex items-center gap-2" onClick={exportReport} disabled={!selected}>
+            <button className="secondary-btn inline-flex items-center gap-2" onClick={exportReport} disabled={Boolean(executionId) || !selected}>
               <Download size={14} />
               Export Report
             </button>
@@ -229,7 +236,7 @@ export default function Dependencies() {
           <Package className="mx-auto mb-3 text-[var(--accent-green)]" size={34} />
           <p className="font-semibold mb-1">No dependency scan yet</p>
           <p className="text-sm text-[var(--text-secondary)] mb-4">Run a scan to detect vulnerable dependencies and generate SBOM.</p>
-          <button className="primary-btn" onClick={runScan} disabled={scanning || !selected}>
+          <button className="primary-btn" onClick={runScan} disabled={Boolean(executionId) || scanning || !selected}>
             {scanning ? "Scanning..." : "Run Scan Now"}
           </button>
         </div>
