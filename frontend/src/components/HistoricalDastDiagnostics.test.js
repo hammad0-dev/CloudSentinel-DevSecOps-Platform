@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {buildSync} from 'esbuild';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+const built=buildSync({entryPoints:[new URL('./HistoricalDastDiagnostics.jsx',import.meta.url).pathname],bundle:true,platform:'node',format:'cjs',write:false,external:['react','react-dom'],jsx:'automatic',define:{'import.meta.env':'{}'}}).outputFiles[0].text;
+const module={exports:{}};new Function('require','module','exports',built)(require,module,module.exports);
+const diagnostic={label:'Historical Isolated Active DAST Diagnostic — Not Part of Execution #37',target:'Disposable fixture only; not Project 17',diagnosticId:'unit-test',date:'2026-10-17',totalFindings:1,diagnosticStatus:'PASS',integrity:'VERIFIED',evidenceStatus:'INCOMPLETE',productionAcceptance:'BLOCKED',configuredRequestsPerSecond:2,measuredRateEnforcement:'UNVERIFIED',findings:[{name:'Synthetic test alert',ruleId:'40018',cwe:'CWE-89',severity:'HIGH',source:'ACTIVE',endpoints:['/test/sqli'],instanceCount:1}]};
+test('renders explicit historical separation and honest limitations without scan controls',()=>{const html=renderToStaticMarkup(React.createElement(module.exports.DiagnosticCard,{diagnostic}));for(const value of [diagnostic.label,'CWE-89','40018','/test/sqli','INCOMPLETE','BLOCKED','UNVERIFIED','Active DAST remains SKIPPED'])assert(html.includes(value));assert(!html.includes('<button'));});
+test('finding text is escaped rather than injected as HTML',()=>{const d={...diagnostic,findings:[{...diagnostic.findings[0],name:'<script>bad()</script>'}]};const html=renderToStaticMarkup(React.createElement(module.exports.DiagnosticCard,{diagnostic:d}));assert(!html.includes('<script>'));assert(html.includes('&lt;script&gt;'));});
