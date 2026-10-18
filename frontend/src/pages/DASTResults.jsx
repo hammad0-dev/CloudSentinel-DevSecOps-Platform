@@ -6,6 +6,7 @@ import { ShieldAlert, ScanSearch, TriangleAlert, Link2, Save } from "lucide-reac
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
 import liveApi from "../lib/api";
+import HistoricalDastDiagnostics from "../components/HistoricalDastDiagnostics";
 
 const SEV_COLORS = {
   HIGH:          "border-red-600/40 bg-red-950/20",
@@ -129,6 +130,8 @@ export default function DASTResults() {
           </button>
         }
       />
+
+      <HistoricalDastDiagnostics projectId={id} />
 
       {/* Target URL configuration */}
       <div className="card p-4">

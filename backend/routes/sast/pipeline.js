@@ -386,7 +386,7 @@ function stripSonarProjectPropertiesFromClone(cloneTarget) {
   }
 }
 
-function runSonarScannerAsync(projectId, cloneTarget, sonarHost, branchName) {
+function runSonarScannerAsync(projectId, cloneTarget, sonarHost, branchName, executionCommit) {
   const scanner = process.env.SONAR_SCANNER_PATH || "sonar-scanner";
   const token = process.env.SONAR_TOKEN || "";
 
@@ -406,6 +406,7 @@ function runSonarScannerAsync(projectId, cloneTarget, sonarHost, branchName) {
     `-Dsonar.projectBaseDir=${cloneTarget}`,
     `-Dsonar.sources=.`,
   ];
+  if(executionCommit){if(!/^[a-f0-9]{40}$/.test(executionCommit))throw Error('Invalid Sonar execution revision');args.push(`-Dsonar.scm.revision=${executionCommit}`);}
   if (javaBinaries) {
     args.push(`-Dsonar.java.binaries=${javaBinaries}`);
     if (!envBin && discoveredBin.length) {

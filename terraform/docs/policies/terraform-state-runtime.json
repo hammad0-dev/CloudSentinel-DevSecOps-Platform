@@ -1,0 +1,62 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListExactStateKeys",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::APPROVED_STATE_BUCKET",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "cloudsentinel/projects/APPROVED_PROJECT_ID/network/terraform.tfstate",
+            "cloudsentinel/projects/APPROVED_PROJECT_ID/network/terraform.tfstate.tflock"
+          ]
+        },
+        "StringEquals": {
+          "s3:ResourceAccount": "229032674007"
+        },
+        "Bool": {
+          "aws:SecureTransport": "true"
+        }
+      }
+    },
+    {
+      "Sid": "ReadWriteExactState",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::APPROVED_STATE_BUCKET/cloudsentinel/projects/APPROVED_PROJECT_ID/network/terraform.tfstate",
+      "Condition": {
+        "StringEquals": {
+          "s3:ResourceAccount": "229032674007"
+        },
+        "Bool": {
+          "aws:SecureTransport": "true"
+        }
+      }
+    },
+    {
+      "Sid": "LockExactState",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::APPROVED_STATE_BUCKET/cloudsentinel/projects/APPROVED_PROJECT_ID/network/terraform.tfstate.tflock",
+      "Condition": {
+        "StringEquals": {
+          "s3:ResourceAccount": "229032674007"
+        },
+        "Bool": {
+          "aws:SecureTransport": "true"
+        }
+      }
+    }
+  ]
+}

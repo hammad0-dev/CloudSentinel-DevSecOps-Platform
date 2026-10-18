@@ -339,8 +339,18 @@ async function deployProject(projectId, userId, options = {}) {
     const cloneUrl = resolveCloneUrl(project);
     console.log(`[deploy] Cloning ${redactGitCredentials(cloneUrl)} into ${cloneDir}`);
     await gitCloneAsync(cloneUrl, cloneDir);
+    const provenance=await require('./stageProvenance').prepare(pool,{projectId,executionId:pipelineExecutionId,userId},cloneDir);
     const sourceCommit = await execute("git source commit", "git", ["rev-parse", "HEAD"], cloneDir, 30000);
     if (!/^[a-f0-9]{40,64}$/i.test(sourceCommit)) throw new Error("Unable to determine the checked-out source commit");
+
+    if(provenance?.artifact){
+      // Static runtime uses only the previously scanned immutable files; no repository Dockerfile executes.
+      fs.rmSync(cloneDir,{recursive:true,force:true});fs.mkdirSync(cloneDir,{mode:0o700});
+      const manifest=require('./staticArtifact').materialize(provenance.artifact,path.join(cloneDir,'site'));
+      fs.writeFileSync(path.join(cloneDir,'static.sha256'),manifest.files.map(f=>`${f.sha256}  ${f.path}`).join('\n')+'\n',{mode:0o600});
+      const dockerfile=generateDockerfileContent('unknown',cloneDir).replace('COPY --chown=10001:10001 . /usr/share/nginx/html','RUN rm -rf /usr/share/nginx/html/*\nCOPY --chown=10001:10001 site/ /usr/share/nginx/html\nCOPY static.sha256 /opt/cloudsentinel-static.sha256\nRUN chmod 0444 /opt/cloudsentinel-static.sha256 && cd /usr/share/nginx/html && sha256sum -c /opt/cloudsentinel-static.sha256').replace('CMD ["nginx", "-g", "daemon off;"]','CMD '+JSON.stringify(['sh','-c','cd /usr/share/nginx/html && sha256sum -c /opt/cloudsentinel-static.sha256 && exec nginx -g "daemon off;"']));
+      fs.writeFileSync(path.join(cloneDir,'Dockerfile'),dockerfile,{mode:0o600});
+    }
 
     // 3. Detect stack
     const stack = detectStack(cloneDir);
@@ -348,7 +358,7 @@ async function deployProject(projectId, userId, options = {}) {
     const containerPort = detectContainerPort(stack, cloneDir);
 
     // 4. Check for Dockerfile
-    let dockerfileSource = "existing";
+    let dockerfileSource = provenance?.artifact ? "generated" : "existing";
     const dockerfilePath = path.join(cloneDir, "Dockerfile");
     if (!fs.existsSync(dockerfilePath)) {
       console.log(`[deploy] No Dockerfile found — auto-generating for stack: ${stack}`);
@@ -510,6 +520,11 @@ async function deployProject(projectId, userId, options = {}) {
        VALUES ($1, $2, $3, 'SUCCESS', NOW(), $4, $5, $6, $7, $8)`,
       [projectId, pipelineExecutionId, imageIdentity.attempt, stagingUrl, dockerfileSource, manifestSource, safeAppName, imageTag]
     );
+
+    if(provenance?.artifact){
+      const deployed=await pool.query("SELECT id FROM deployment_history WHERE project_id=$1 AND pipeline_execution_id=$2 AND status='SUCCESS' ORDER BY id DESC LIMIT 1",[projectId,pipelineExecutionId]);
+      await require('./stageProvenance').attest(pool,{projectId,executionId:pipelineExecutionId,userId},'Deploy',deployed.rows[0].id,{commit:sourceCommit,reports:[{kind:'generated-staging-verification',bytes:Buffer.from(JSON.stringify({sourceCommit,localImageId,runningImageId,artifact:provenance.artifact.sha256,stagingUrl}))}],reportHash:require('./deploymentEligibility').digest({sourceCommit,localImageId,runningImageId,artifact:provenance.artifact.sha256,stagingUrl}),tool:`Pinned nginx image; built ${localImageId}; running ${runningImageId}`});
+    }
 
     // 12. Update project's target_url for DAST
     await pool.query(
