@@ -229,7 +229,7 @@ test('startup errors are captured before cleanup without replacing the original 
   await t.test(scenario,async t=>{
    const d=await setup(t,scenario),r=await d.diagnostic.run();
    assert.notEqual(r.status,'PASS');assert.equal(r.exitCode,1);assert.equal(r.cleanup.cleaned,true);
-   assert.ok(r.startupEvidence);assert.ok(r.startupEvidence.container);
+   assert.ok(r.startupEvidence,JSON.stringify({scenario,reason:r.reason,stage:r.stage,resources:r.resources}));assert.ok(r.startupEvidence.container);
    if(scenario==='early-exit'){assert.equal(r.reason,'DIAGNOSTIC_DAEMON_EXITED');assert.equal(r.startupEvidence.daemonExitCode,2);}
    if(scenario==='api-timeout'){assert.equal(r.reason,'DIAGNOSTIC_INITIALIZATION_TIMEOUT');assert.equal(r.startupEvidence.readinessCheck,'DIAGNOSTIC_API_NOT_READY');}
    if(['workspace','addon','policy','preferences','binding'].includes(scenario))assert.ok(r.startupEvidence.log.classification);

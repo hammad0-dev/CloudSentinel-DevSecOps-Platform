@@ -1,0 +1,10 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "MumbaiVpnAndTransitTableInventory",
+    "Effect": "Allow",
+    "Action": ["ec2:DescribeVpnConnections", "ec2:DescribeTransitGatewayRouteTables"],
+    "Resource": "*",
+    "Condition": {"StringEquals": {"aws:RequestedRegion": "ap-south-1"}}
+  }]
+}

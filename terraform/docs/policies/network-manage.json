@@ -1,0 +1,155 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ManageOwnedVpc",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ModifyVpcAttribute",
+        "ec2:DeleteVpc",
+        "ec2:AttachInternetGateway",
+        "ec2:DetachInternetGateway"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:vpc/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "ManageOwnedSubnet",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ModifySubnetAttribute",
+        "ec2:DeleteSubnet",
+        "ec2:AssociateRouteTable",
+        "ec2:ReplaceRouteTableAssociation",
+        "ec2:DisassociateRouteTable"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:subnet/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "ManageOwnedInternetgateway",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachInternetGateway",
+        "ec2:DetachInternetGateway",
+        "ec2:DeleteInternetGateway"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:internet-gateway/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "ManageOwnedRoutetable",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateRoute",
+        "ec2:ReplaceRoute",
+        "ec2:DeleteRoute",
+        "ec2:DeleteRouteTable",
+        "ec2:AssociateRouteTable",
+        "ec2:ReplaceRouteTableAssociation",
+        "ec2:DisassociateRouteTable"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:route-table/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "ManageOwnedSecuritygroup",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupEgress",
+        "ec2:DeleteSecurityGroup"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:security-group/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "ManageOwnedVpcflowlog",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DeleteFlowLogs"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:vpc-flow-log/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "DescriptiveTagsOnOwnedResources",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags",
+        "ec2:DeleteTags"
+      ],
+      "Resource": [
+        "arn:aws:ec2:ap-south-1:229032674007:vpc/*",
+        "arn:aws:ec2:ap-south-1:229032674007:subnet/*",
+        "arn:aws:ec2:ap-south-1:229032674007:internet-gateway/*",
+        "arn:aws:ec2:ap-south-1:229032674007:route-table/*",
+        "arn:aws:ec2:ap-south-1:229032674007:security-group/*",
+        "arn:aws:ec2:ap-south-1:229032674007:vpc-flow-log/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        },
+        "ForAllValues:StringEquals": {
+          "aws:TagKeys": [
+            "Name",
+            "NetworkTier"
+          ]
+        }
+      }
+    }
+  ]
+}

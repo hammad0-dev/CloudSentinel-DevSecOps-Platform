@@ -95,10 +95,16 @@ async function checkCriticalFindings(projectId, executionId, stageName) {
   if (!result.rows.length) return { evidenceFound: false, hasCritical: true, evidenceConsistent: false };
   return { evidenceFound: true, hasCritical: Number(result.rows[0].critical || 0) > 0, evidenceConsistent: true };
 }
-async function runPipeline(executionId, projectId, userId) {
+async function runPipeline(executionId, projectId, userId, options = {}) {
+  // No effects before the durable start fence. Started work is never replayed automatically.
+  const provenanceMode=require('./pipelineProvenance').enabled();
+  if(provenanceMode){
+    if(!await require('./provenanceRecovery').admit(options.provenanceClaim,{executionId,projectId,userId}))return {status:'NOT_ADMITTED'};
+  }
   let awaitingActiveAuthorization=false;
+  let pipelineCompleted=false;
   try {
-    await pool.query("UPDATE pipeline_executions SET status = 'RUNNING' WHERE id = $1", [executionId]);
+    if(!provenanceMode)await pool.query("UPDATE pipeline_executions SET status = 'RUNNING' WHERE id = $1", [executionId]);
 
     const stagesCompleted = [];
 
@@ -186,6 +192,7 @@ async function runPipeline(executionId, projectId, userId) {
       "UPDATE pipeline_executions SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1",
       [executionId]
     );
+    pipelineCompleted=true;
 
   } catch (error) {
     console.error(`[orchestrator] Pipeline ${executionId} error:`, error);
@@ -201,6 +208,10 @@ async function runPipeline(executionId, projectId, userId) {
       catch(_){cleanupFailed=true;await pool.query("UPDATE pipeline_executions SET status='STAGE_FAILED',failure_reason='Active DAST CLEANUP_FAILED',completed_at=NOW() WHERE id=$1",[executionId]);}
       require('./commissioningFixtureStage').release(context);
       if(process.env.DAST_COMMISSIONING_SETUP_ENABLED==='true')await require('./commissioningPhases').failSetup(pool,context,cleanupFailed);
+    }
+    if(pipelineCompleted){
+      try{await require('./deploymentEligibility').record(pool,{projectId,executionId,userId});}
+      catch(_){console.error('[deployment-eligibility] Evidence persistence unavailable; no deployment authorized');}
     }
   }
 }

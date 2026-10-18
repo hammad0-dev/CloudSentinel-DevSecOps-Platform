@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TagExactNewVpcDefaultGroup",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Resource": "APPROVED_NEW_VPC_DEFAULT_SECURITY_GROUP_ARN",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform"
+        }
+      }
+    },
+    {
+      "Sid": "RestrictExactNewVpcDefaultGroup",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupEgress"
+      ],
+      "Resource": "APPROVED_NEW_VPC_DEFAULT_SECURITY_GROUP_ARN",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1"
+        }
+      }
+    }
+  ]
+}

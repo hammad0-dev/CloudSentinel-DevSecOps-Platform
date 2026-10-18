@@ -24,7 +24,7 @@ async function persistSastEvidence(pool, { projectId, scanHistoryId, issues, coe
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    await client.query("DELETE FROM scan_results WHERE scan_history_id = $1", [scanHistoryId]);
+    await client.query("DELETE FROM scan_results WHERE scan_history_id = $1 AND project_id = $2", [scanHistoryId, projectId]);
     for (const issue of issues) {
       const row = coerceIssueRow(issue, projectId);
       await client.query(

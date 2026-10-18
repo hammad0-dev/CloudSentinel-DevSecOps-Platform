@@ -6,3 +6,15 @@ node_modules/
 dist/
 **/dist/
 .DS_Store
+
+# Terraform private runtime data (commit .terraform.lock.hcl, never state/plans)
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+*.tfvars
+*.tfvars.json
+*.backend.hcl
+crash.log
+crash.*.log

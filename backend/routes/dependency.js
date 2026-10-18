@@ -190,7 +190,7 @@ function runTrivy(args, cwd) {
       shell: process.platform === "win32",
     },
     DEP_TRIVY_TIMEOUT_MS
-  ).then(({ stdout, stderr }) => ({ stdout: stdout?.trim?.() ?? stdout, stderr: stderr?.trim?.() ?? stderr }));
+  ).then(({ stdout, stderr }) => ({ stdout, stderr: stderr?.trim?.() ?? stderr }));
 }
 
 const TRIVY_FS_COMMON = ["fs", "--format", "json", "--scanners", "vuln,license", "--list-all-pkgs", "."];
@@ -352,6 +352,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       DEP_GIT_TIMEOUT_MS
     );
 
+    const provenance=await require('../services/stageProvenance').prepare(pool,{projectId,executionId:pipelineExecutionId,userId:req.user.id},runDir);
     await bestEffortGradleCompileForTrivy(runDir);
 
     // Run trivy filesystem scan with JSON output + SBOM CycloneDX (--list-all-pkgs fills package rows without CVEs)
@@ -381,7 +382,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       console.warn("[dep-scan] Trivy stdout was not valid JSON (first 200 chars):", String(trivyFsJson).slice(0, 200));
     }
 
-    await pool.query("DELETE FROM sbom_components WHERE project_id = $1", [projectId]);
+    await pool.query("DELETE FROM sbom_components WHERE project_id = $1 AND scan_id = $2", [projectId, scanId]);
 
     for (const c of components) {
       await pool.query(
@@ -403,6 +404,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       [components.length, summary.critical, summary.high, summary.medium, summary.low, summary.unknown, sbomOutput, scanId]
     );
 
+    if(provenance?.artifact)await require('../services/stageProvenance').attest(pool,{projectId,executionId:pipelineExecutionId,userId:req.user.id},'Dependency',scanId,{commit:provenance.commit_sha,reports:[{kind:'trivy-vulnerabilities',bytes:Buffer.from(trivyFsJson)},{kind:'cyclonedx',bytes:Buffer.from(sbomOutput)}],reportHash:require('../services/deploymentEligibility').digest({trivyData,bom,coverage}),tool:await require('../services/stageProvenance').toolVersion(TRIVY_CMD),sbomVerified:true,coverage,counts:require('../services/stageProvenance').counts(summary)});
     if (fs.existsSync(cloneTarget)) {
       fs.rmSync(cloneTarget, { recursive: true, force: true });
     }

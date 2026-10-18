@@ -139,6 +139,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       console.log(`[SAST project=${pid}] ${label} (+${Math.round((Date.now() - t0) / 1000)}s)`);
 
     await gitCloneAsync(cloneUrl, cloneTarget);
+    const provenance=await require('../../services/stageProvenance').prepare(pool,{projectId:pid,executionId:pipelineExecutionId,userId:req.user.id},cloneTarget);
     phase(useShallowGitClone() ? "git clone finished (shallow)" : "git clone finished (full)");
 
     const hasPom = fs.existsSync(path.join(cloneTarget, "pom.xml"));
@@ -171,7 +172,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
 
     const sonarHost = sonarBaseUrl();
     const branchName = detectedGitBranch(cloneTarget);
-    await runSonarScannerAsync(pid, cloneTarget, sonarHost, branchName);
+    const scannerStartedAt=Date.now();
+    await runSonarScannerAsync(pid, cloneTarget, sonarHost, branchName,provenance?.commit_sha);
     phase("sonar-scanner finished");
 
     const projectKey = `cloudsentinel_${pid}`;
@@ -216,19 +218,23 @@ router.post("/scan/:projectId", auth, async (req, res) => {
 
     // Supported project filter plus complete, bounded inventory. Foreign rows
     // are rejected rather than discarded after a global search.
+    const nativeReports=[];const evidenceGet=async(url,options)=>{if(!provenance?.artifact)return axios.get(url,options);const response=await axios.get(url,{...options,responseType:'text',transformResponse:[x=>x]});if(typeof response.data!=='string')throw Error('SONAR_RAW_RESPONSE_MISSING');const bytes=Buffer.from(response.data);const data=JSON.parse(response.data);nativeReports.push({kind:'sonar-api-response',bytes});return {...response,data};};
+    const verifyAnalysis=()=>require('../../services/sonarAnalysisProvenance').verify({cwd:cloneTarget,host:sonarHost,projectKey,commit:provenance.commit_sha,startedAt:scannerStartedAt,get:evidenceGet,options:sonarAuthAxiosConfig()});
+    const analysisId=provenance?.artifact?await verifyAnalysis():null;
     const issues = await require('../../services/sonarIssueEvidence').collect({
-      get:axios.get.bind(axios),host:sonarHost,projectKey,options:sonarAuthAxiosConfig(),
+      get:evidenceGet,host:sonarHost,projectKey,options:sonarAuthAxiosConfig(),
     });
 
-    const quality = await axios.get(`${sonarHost}/api/qualitygates/project_status?projectKey=${encodeURIComponent(projectKey)}`,sonarAuthAxiosConfig());
+    const quality = await evidenceGet(`${sonarHost}/api/qualitygates/project_status?${analysisId?`analysisId=${encodeURIComponent(analysisId)}`:`projectKey=${encodeURIComponent(projectKey)}`}`,sonarAuthAxiosConfig());
     require('../../services/sastClassification').qualityGate(quality.data);
-    const hotspots = await axios.get(`${sonarHost}/api/hotspots/search?projectKey=${encodeURIComponent(projectKey)}&ps=500`,sonarAuthAxiosConfig());
+    const hotspots = await evidenceGet(`${sonarHost}/api/hotspots/search?projectKey=${encodeURIComponent(projectKey)}&ps=500`,sonarAuthAxiosConfig());
     if(!Array.isArray(hotspots.data?.hotspots)||!Number.isSafeInteger(hotspots.data?.paging?.total)||hotspots.data.paging.total!==hotspots.data.hotspots.length)throw Error('SAST_HOTSPOT_EVIDENCE_INCOMPLETE');
     for(const hotspot of hotspots.data.hotspots){
       if(typeof hotspot.component!=='string'||!hotspot.component.startsWith(projectKey+':'))throw Error('SAST_HOTSPOT_SCOPE_INVALID');
       issues.push({...hotspot,type:'SECURITY_HOTSPOT',severity:'INFO',rule:hotspot.ruleKey||'unknown'});
     }
 
+    if(analysisId&&await verifyAnalysis()!==analysisId)throw Error('SONAR_ANALYSIS_CHANGED');
     // Details and completion are atomic: partial persistence is failed, never marked completed.
     const summary = await persistSastEvidence(pool, {
       projectId: pid,
@@ -237,6 +243,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       coerceIssueRow,
     });
 
+    if(provenance?.artifact){const version=(await axios.get(`${sonarHost}/api/server/version`,sonarAuthAxiosConfig())).data;if(typeof version!=='string'||!/^\d+\.\d+[\w.-]*$/.test(version))throw Error('SONAR_VERSION_UNVERIFIED');await require('../../services/stageProvenance').attest(pool,{projectId:pid,executionId:pipelineExecutionId,userId:req.user.id},'SAST',scanHistoryId,{commit:provenance.commit_sha,reports:nativeReports,reportHash:require('../../services/deploymentEligibility').digest({issues,quality:quality.data,analysisId}),tool:`SonarQube ${version}; ${await require('../../services/stageProvenance').toolVersion(process.env.SONAR_SCANNER_PATH||'sonar-scanner','SonarScanner')}`,sourceCoverageVerified:ncloc>0&&files>0,analysisId,qualityGate:quality.data.projectStatus.status});}
     if (commissioningCheckout) {
       commissioningCheckout.cleanup();
     } else if (!commissioning && !shouldKeepClone() && fs.existsSync(cloneTarget)) {

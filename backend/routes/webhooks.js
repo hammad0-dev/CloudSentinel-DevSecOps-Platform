@@ -105,6 +105,17 @@ router.post("/github", async (req, res) => {
       return res.status(200).json({ success: true, message: "Ignored non-push event" });
     }
 
+    if(require('../services/pipelineProvenance').enabled()){
+      try{
+        const recovery=require('../services/provenanceRecovery');
+        if(!recovery.ready())return res.status(503).json({error:'Provenance dispatch recovery is not ready; pipeline not created'});
+        const result=await require('../services/pipelineProvenance').registerPush(pool,project,req.body,req.headers['x-github-delivery'],req.rawBody);
+        res.status(202).json({success:true,...result,message:result.duplicate?'Delivery already accepted':'Pipeline triggered'});
+        recovery.wake(result.executionId,{projectId:project.id,userId:project.user_id,repository:require('../services/pipelineProvenance').canonical(project.repo_url),repositoryId:req.body.repository.id,branch:req.body.ref.slice('refs/heads/'.length),commit:req.body.after});
+        return;
+      }catch(e){return res.status(e.safe?e.status:503).json({error:e.safe?e.message:'Push provenance unavailable; pipeline not started'});}
+    }
+
     const activeRes = await pool.query(
       "SELECT id FROM pipeline_executions WHERE project_id = $1 AND status IN ('TRIGGERED', 'RUNNING') LIMIT 1",
       [project.id]
