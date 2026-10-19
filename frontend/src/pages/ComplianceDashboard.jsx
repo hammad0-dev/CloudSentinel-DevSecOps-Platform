@@ -1,225 +1,48 @@
-import { useEffect, useMemo, useState } from "react";
-import { Download, FileCode2, ShieldCheck } from "lucide-react";
-import PageHeader from "../components/PageHeader";
-import api from "../lib/api";
+import {useEffect, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
+import {Download, FileJson} from 'lucide-react';
+import api from '../lib/api';
 
-export default function ComplianceDashboard() {
-  const [projects, setProjects] = useState([]);
-  const [selected, setSelected] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-  const [reportLoading, setReportLoading] = useState(false);
-
-  useEffect(() => {
-    api
-      .get("/projects")
-      .then((r) => {
-        const list = r.data.projects || [];
-        setProjects(list);
-        if (list.length) setSelected(String(list[0].id));
-      })
-      .catch(() => setProjects([]));
-  }, []);
-
-  useEffect(() => {
-    if (!selected) return;
-    setLoading(true);
-    api
-      .get(`/sast/compliance/${selected}`)
-      .then((r) => setData(r.data))
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
-  }, [selected]);
-
-  const frameworks = useMemo(() => {
-    if (!data) return [];
-    const owaspFailed = data.owasp.length;
-    const owaspPass = Math.max(0, 10 - owaspFailed);
-    const owaspPct = Math.round((owaspPass / 10) * 100);
-    const cisFailed = data.cis.length;
-    const cisTotal = 18;
-    const cisPass = Math.max(0, cisTotal - cisFailed);
-    const cisPct = Math.round((cisPass / cisTotal) * 100);
-    return [
-      ["OWASP Top 10", owaspPct, `${owaspPass}/10 passed`, owaspPct >= 80 ? "Compliant" : "Partial"],
-      ["CIS Controls", cisPct, `${cisPass}/${cisTotal} passed`, cisPct >= 80 ? "Compliant" : "Partial"],
-    ];
-  }, [data]);
-
-  const buildHtmlReport = (report) => {
-    const owaspRows = (report.compliance?.owasp || [])
-      .map(
-        (x) => `<tr><td>${x.id}</td><td>${x.name}</td><td>${x.findings}</td><td>${x.critical}</td><td>${x.high}</td><td>${x.medium}</td><td>${x.low}</td></tr>`
-      )
-      .join("");
-    const cisRows = (report.compliance?.cis || [])
-      .map(
-        (x) => `<tr><td>${x.id}</td><td>${x.name}</td><td>${x.findings}</td><td>${x.critical}</td><td>${x.high}</td><td>${x.medium}</td><td>${x.low}</td></tr>`
-      )
-      .join("");
-    return `<!doctype html><html><head><meta charset="utf-8" /><title>CloudSentinel Security Report</title><style>
-      body { font-family: Inter, system-ui, sans-serif; background:#0f1412; color:#e7efe9; margin:24px; }
-      h1,h2 { margin:0 0 8px; } .muted { color:#a9b4ad; }
-      .card { background:#1a211e; border:1px solid #2f3934; border-radius:8px; padding:14px; margin:14px 0; }
-      .grid { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; }
-      .kpi { background:#232b27; border:1px solid #3a4740; border-radius:8px; padding:10px; }
-      table { width:100%; border-collapse: collapse; font-size:13px; } th, td { border:1px solid #2f3934; padding:8px; text-align:left; } th { background:#232b27; }
-    </style></head><body>
-      <h1>CloudSentinel Security Report</h1>
-      <p class="muted">Generated at: ${new Date(report.generatedAt).toLocaleString()}</p>
-      <div class="card"><h2>Project</h2>
-        <p><strong>Name:</strong> ${report.project?.name || "-"}</p>
-        <p><strong>Repository:</strong> ${report.project?.repo_url || "-"}</p>
-        <p><strong>Language:</strong> ${report.project?.language || "Unknown"}</p>
-      </div>
-      <div class="card"><h2>Key Metrics</h2><div class="grid">
-        <div class="kpi"><div class="muted">Issues</div><div>${report.totals?.issues ?? 0}</div></div>
-        <div class="kpi"><div class="muted">Critical</div><div>${report.totals?.critical ?? 0}</div></div>
-        <div class="kpi"><div class="muted">High</div><div>${report.totals?.high ?? 0}</div></div>
-        <div class="kpi"><div class="muted">Medium/Low</div><div>${report.totals?.medium ?? 0}</div></div>
-      </div></div>
-      <div class="card"><h2>OWASP Top 10 Mapping</h2><table><thead><tr><th>ID</th><th>Control</th><th>Findings</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th></tr></thead><tbody>${owaspRows || '<tr><td colspan="7">No mapped findings</td></tr>'}</tbody></table></div>
-      <div class="card"><h2>CIS Controls Mapping</h2><table><thead><tr><th>ID</th><th>Control</th><th>Findings</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th></tr></thead><tbody>${cisRows || '<tr><td colspan="7">No mapped findings</td></tr>'}</tbody></table></div>
-    </body></html>`;
-  };
-
-  const downloadBlob = (content, mimeType, filename) => {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportReport = async (format = "html") => {
-    if (!selected) return;
-    setReportLoading(true);
-    try {
-      const res = await api.get(`/sast/report/${selected}`);
-      if (format === "json") {
-        downloadBlob(
-          JSON.stringify(res.data, null, 2),
-          "application/json",
-          `cloudsentinel-security-report-${selected}.json`
-        );
-      } else {
-        downloadBlob(
-          buildHtmlReport(res.data),
-          "text/html",
-          `cloudsentinel-security-report-${selected}.html`
-        );
-      }
-    } finally {
-      setReportLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Compliance Dashboard"
-        subtitle="OWASP Top 10 and CIS benchmark mapping from combined SAST and dependency findings"
-        actions={
-          <div className="flex items-center gap-2">
-            <select className="input min-w-64" value={selected} onChange={(e) => setSelected(e.target.value)}>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <button className="primary-btn inline-flex items-center gap-2" onClick={() => exportReport("html")} disabled={!selected || reportLoading}>
-              <Download size={14} />
-              {reportLoading ? "Generating..." : "Export Readable Report"}
-            </button>
-            <button className="secondary-btn inline-flex items-center gap-2" onClick={() => exportReport("json")} disabled={!selected || reportLoading}>
-              <FileCode2 size={14} />
-              Export JSON
-            </button>
-          </div>
-        }
-      />
-      {loading ? <div className="card p-6">Loading compliance data...</div> : null}
-      {!loading && !data ? (
-        <div className="card p-10 text-center">
-          <ShieldCheck className="mx-auto mb-2 text-[var(--accent-green)]" />
-          <p className="text-[var(--text-secondary)]">No mapped findings yet. Run a scan and choose a project.</p>
-        </div>
-      ) : null}
-      {data ? (
-        <>
-      <div className="card p-6 text-center">
-        <p className="text-5xl font-bold">{data.summary.complianceScore}%</p>
-        <p className="text-[var(--text-secondary)] mt-1">
-          Compliance score • Failed controls: {data.summary.failedControls} • Unmapped findings: {data.summary.unmappedCount}
-        </p>
-        <p className="text-xs text-[var(--text-secondary)] mt-2">
-          Sources: SAST {data.summary.sastFindings ?? 0} + Dependencies {data.summary.dependencyFindings ?? 0}
-        </p>
-      </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {frameworks.map(([name, score, controls, status]) => (
-          <div key={name} className="card p-4">
-            <h3 className="font-bold">{name}</h3>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">{controls}</p>
-            <div className="h-2 bg-[var(--bg-tertiary)] rounded mt-3 border border-[var(--border-subtle)]">
-              <div className="h-2 rounded progress-anim" style={{ width: `${score}%`, background: score >= 80 ? "var(--accent-green)" : "var(--accent-yellow)" }} />
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-sm">{score}%</p>
-              <span className="text-xs text-[var(--text-secondary)]">{status}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="card p-5 overflow-auto">
-        <h3 className="font-bold mb-3">Mapped OWASP Controls</h3>
-        <table className="gh-table text-sm">
-          <thead><tr><th>Control ID</th><th>Framework</th><th>Description</th><th>Findings</th><th>Critical</th><th>High</th></tr></thead>
-          <tbody>
-            {data.owasp.length === 0 ? (
-              <tr><td colSpan={6} className="text-center text-[var(--text-secondary)] py-6">No OWASP-mapped findings</td></tr>
-            ) : (
-              data.owasp.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.id}</td>
-                  <td>OWASP Top 10</td>
-                  <td>{c.name}</td>
-                  <td>{c.findings}</td>
-                  <td>{c.critical}</td>
-                  <td>{c.high}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      <div className="card p-5 overflow-auto">
-        <h3 className="font-bold mb-3">Mapped CIS Controls</h3>
-        <table className="gh-table text-sm">
-          <thead><tr><th>Control ID</th><th>Framework</th><th>Description</th><th>Findings</th><th>Critical</th><th>High</th></tr></thead>
-          <tbody>
-            {data.cis.length === 0 ? (
-              <tr><td colSpan={6} className="text-center text-[var(--text-secondary)] py-6">No CIS-mapped findings</td></tr>
-            ) : (
-              data.cis.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.id}</td>
-                  <td>CIS Controls</td>
-                  <td>{c.name}</td>
-                  <td>{c.findings}</td>
-                  <td>{c.critical}</td>
-                  <td>{c.high}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-        </>
-      ) : null}
-    </div>
-  );
+const sources=['SAST','DEPENDENCY','IAC','IMAGE','DAST','ACTIVE_DAST'];
+const sourceName={DEPENDENCY:'Dependencies',IAC:'IaC',IMAGE:'Image',ACTIVE_DAST:'Active DAST'};
+const percentage=value=>value==null?'Not assessed':`${value}%`;
+function saveBlob(blob,name){const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function FrameworkCard({title,value,description,note}){
+ return <section className="card p-4 space-y-2"><h2 className="font-semibold">{title}</h2><p className="text-sm text-[var(--text-secondary)]">{description}</p><div className="h-2 rounded-full bg-[var(--bg-canvas)] border border-[var(--border-subtle)] overflow-hidden"><div className="h-full bg-emerald-400 rounded-full" style={{width:`${value??0}%`}}/></div><div className="flex justify-between text-sm"><span>{percentage(value)}</span><span className="text-[var(--text-secondary)]">{note}</span></div></section>;
+}
+function Controls({title,rows,framework}){
+ return <section className="card p-4 overflow-x-auto"><h2 className="font-semibold mb-3">{title}</h2><table className="gh-table w-full"><thead><tr>{['Control ID','Framework','Description','Findings','Critical','High'].map(x=><th key={x}>{x}</th>)}</tr></thead><tbody>{rows.length?rows.map(row=><tr key={row.id}><td>{row.id}</td><td>{framework}</td><td>{row.name}</td><td>{row.findings}</td><td>{row.bySeverity?.CRITICAL||0}</td><td>{row.bySeverity?.HIGH||0}</td></tr>):<tr><td colSpan={6} className="text-center py-5 text-[var(--text-secondary)]">No {title.includes('OWASP')?'OWASP':'CIS'}-mapped findings</td></tr>}</tbody></table></section>;
+}
+export default function ComplianceDashboard(){
+ const [params,setParams]=useSearchParams();
+ const project=params.get('project')||'',version=params.get('owaspVersion')||'2021';
+ const [projects,setProjects]=useState([]),[data,setData]=useState(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[exporting,setExporting]=useState(false),[revision,setRevision]=useState(0);
+ const query=new URLSearchParams({...(project?{project}:{}),owaspVersion:version}).toString();
+ useEffect(()=>{
+  const controller=new AbortController();let active=true;
+  async function load(){setLoading(true);setError('');try{
+   await api.post('/governance/sync',{}, {signal:controller.signal});
+   const [p,s]=await Promise.all([api.get('/projects',{signal:controller.signal}),api.get(`/governance/summary?${query}`,{signal:controller.signal})]);
+   if(active){setProjects(p.data.projects||[]);setData(s.data);}
+  }catch(e){if(active&&!controller.signal.aborted){setError(e.response?.data?.error||'Unable to load pipeline compliance results');setData(null);}}finally{if(active)setLoading(false);}}
+  load();const timer=setInterval(load,30000);return()=>{active=false;controller.abort();clearInterval(timer);};
+ },[query,revision]);
+ function change(key,value){setData(null);setLoading(true);const next=new URLSearchParams(params);if(value)next.set(key,value);else next.delete(key);setParams(next);}
+ async function report(){setExporting(true);try{const r=await api.get(`/governance/export/compliance?${query}`,{responseType:'blob'});saveBlob(r.data,'cloudsentinel-compliance.pdf');}catch{setError('Unable to export report. Please retry.');}finally{setExporting(false);}}
+ const compliance=data?.compliance,metrics=compliance?.metrics||{};
+ const mappedOwasp=compliance?.owasp.filter(c=>c.findings>0)||[],mappedCis=compliance?.cisControls?.filter(c=>c.findings>0)||[];
+ const verifiedCompliance=compliance?.overall?.passRate??null;
+ const owaspMappingCoverage=compliance?.matching?.owasp?.percentage??0;
+ return <div className="space-y-5 min-w-0">
+ <header className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-semibold">Compliance Dashboard</h1><p className="text-sm text-[var(--text-secondary)] mt-1">OWASP Top 10 and CIS benchmark mapping from combined pipeline results</p></div><div className="flex flex-wrap items-center gap-2"><select aria-label="Project" className="input min-w-48" value={project} onChange={e=>change('project',e.target.value)}><option value="">All projects</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><button className="primary-btn flex items-center gap-2" disabled={!data||exporting||loading} onClick={report}><Download size={16}/>{exporting?'Exporting…':'Export Readable Report'}</button><button className="secondary-btn flex items-center gap-2" disabled={!data||loading} onClick={()=>saveBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'cloudsentinel-compliance.json')}><FileJson size={16}/>Export JSON</button></div></header>
+ {error&&<div className="card p-4 text-red-400" role="alert">{error} <button className="secondary-btn" onClick={()=>setRevision(r=>r+1)}>Retry</button></div>}
+ {loading&&!data&&<p className="card p-6" role="status">Loading pipeline compliance results…</p>}
+ {data&&compliance&&<>
+ <section className="card p-6 text-center space-y-2"><p className="text-5xl font-bold">{percentage(verifiedCompliance)}</p><p className="text-[var(--text-secondary)]">Docker assessment pass rate · Failed controls: {compliance.overall?.FAIL||0} · Unmapped findings: {compliance.unmapped}</p><p className="text-xs text-[var(--text-secondary)]">Sources: {sources.map(source=>`${sourceName[source]||source} ${data.bySource.find(s=>s.name===source)?.value||0}`).join(' · ')}</p><p className="text-xs text-[var(--text-secondary)]">Assessed controls: {compliance.overall?.assessed||0}/{compliance.overall?.applicable||0} · Coverage: {percentage(compliance.overall?.coverage)} · Controls without assessment: {compliance.overall?.NOT_ASSESSED||0} · Errors: {compliance.overall?.ERROR||0}</p><p className="text-xs text-[var(--text-secondary)]">{compliance.overall?.methodology}</p></section>
+ <div className="grid md:grid-cols-3 gap-4"><FrameworkCard title={compliance.version||'OWASP Top 10'} value={owaspMappingCoverage} description={`${compliance.matching?.owasp?.matched||0}/10 categories matched · ${compliance.owaspMetrics?.PASS||0} passed · ${compliance.owaspMetrics?.FAIL||0} failed · ${compliance.owaspMetrics?.NOT_ASSESSED||0} unassessed project-category slots`} note={`Category matching · pass rate: ${percentage(compliance.owaspMetrics?.passRate)}`}/><FrameworkCard title="CIS Controls" value={compliance.matching?.cisControls?.percentage??0} description={`${compliance.matching?.cisControls?.matched||0}/18 controls matched · Docker ${metrics.assessed||0}/${metrics.applicable||0} assessed project-control slots · ${metrics.PASS||0} passed · ${metrics.FAIL||0} failed · ${metrics.NOT_ASSESSED||0} unassessed`} note={`Control matching · Docker pass rate: ${percentage(metrics.passRate)}`}/></div>
+ <Controls title="Mapped OWASP Controls" rows={mappedOwasp} framework={compliance.version}/>
+ <Controls title="Mapped CIS Controls" rows={mappedCis} framework="CIS Controls v8 (associations)"/>
+ <details className="card p-4"><summary className="cursor-pointer font-semibold">Pipeline evidence and assessment details</summary><p className="text-sm my-3">Results refresh every 30 seconds. Includes stored results from all scanning stages; deployment does not itself assess compliance. Missing scans and zero findings do not establish compliance.</p><div className="overflow-x-auto"><table className="gh-table w-full"><thead><tr><th>Project</th><th>Source</th><th>Scan</th><th>Result</th><th>Evidence</th></tr></thead><tbody>{data.recentScans.map(s=><tr key={s.id}><td>{s.project_name}</td><td>{sourceName[s.source]||s.source}</td><td>#{s.scan_id}</td><td>{s.source_status}</td><td>{s.details_complete?'Complete':'Incomplete'}</td></tr>)}</tbody></table></div><p className="text-sm mt-3">CIS assessment pass rate: {percentage(metrics.passRate)} ({metrics.PASS||0} passed / {metrics.assessed||0} assessed). {metrics.assessed?'':'No verified CIS checks are available. The adapter currently needs Dockerfile targets and explicit check outcomes; a completed scan with no targets does not assess this benchmark.'}</p><p className="text-sm mt-3">{metrics.methodology}</p><p className="text-sm mt-2">{compliance.limitations}</p><label className="block mt-3">OWASP version<select aria-label="OWASP version" className="input ml-2" value={version} onChange={e=>change('owaspVersion',e.target.value)}>{(compliance.availableOwaspVersions||['2021']).map(v=><option key={v}>{v}</option>)}</select></label><div className="overflow-x-auto mt-3"><table className="gh-table w-full"><thead><tr><th>Project</th><th>Control</th><th>Description</th><th>Assessment</th></tr></thead><tbody>{(compliance.projectControls||[]).map(c=><tr key={`${c.project_id}-${c.id}`}><td>{c.project_name}</td><td>{c.id}</td><td>{c.name}</td><td>{c.status}</td></tr>)}</tbody></table></div></details>
+ </>}
+ </div>;
 }

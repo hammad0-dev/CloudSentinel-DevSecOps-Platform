@@ -9,6 +9,16 @@ function sonarBaseUrl() {
   return raw.replace(/\/$/, "");
 }
 
+function sonarOrganizationArgs(host = sonarBaseUrl()) {
+  const organization = (process.env.SONAR_ORGANIZATION || "").trim();
+  let hostname = "";
+  try { hostname = new URL(host).hostname.toLowerCase(); } catch { /* reachability handles malformed hosts */ }
+  if (["sonarcloud.io", "sonarqube.us"].includes(hostname) && !organization) {
+    throw new Error("SonarQube Cloud requires SONAR_ORGANIZATION in backend/.env (use the organization key, not its display name). Restart the backend after updating it.");
+  }
+  return organization ? [`-Dsonar.organization=${organization}`] : [];
+}
+
 function parseEnvTimeoutMs(raw, fallback) {
   const n = Number.parseInt(String(raw ?? "").trim(), 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
@@ -40,7 +50,15 @@ function parseSastProjectId(raw) {
 
 function sanitizeScanError(err) {
   if (err == null) return "SAST scan failed";
-  const m = typeof err.message === "string" && err.message.trim() ? err.message.trim() : String(err);
+  let m = typeof err.message === "string" && err.message.trim() ? err.message.trim() : String(err);
+  if (Number.isInteger(err.response?.status)) {
+    const messages = Array.isArray(err.response.data?.errors)
+      ? err.response.data.errors.map(e => typeof e?.msg === "string" ? e.msg : "").filter(Boolean).join("; ")
+      : "";
+    let endpoint = "";
+    try { if (typeof err.config?.url === "string") endpoint = new URL(err.config.url, sonarBaseUrl()).pathname; } catch { /* omit malformed URL */ }
+    m = `Sonar HTTP ${err.response.status}${endpoint ? ` (${endpoint})` : ""}: ${messages || m}`;
+  }
   return m.length > 4000 ? `${m.slice(0, 3997)}...` : m;
 }
 
@@ -97,6 +115,7 @@ function sonarAuthAxiosConfig(extra = {}) {
  */
 async function assertSonarReachable() {
   const base = sonarBaseUrl();
+  sonarOrganizationArgs(base);
   const url = `${base}/api/system/status`;
   const token = (process.env.SONAR_TOKEN || "").trim();
   const req = token
@@ -141,6 +160,7 @@ const shouldUseSonarBranchAnalysis = () =>
 module.exports = {
   severityOrder,
   sonarBaseUrl,
+  sonarOrganizationArgs,
   assertSonarReachable,
   parseEnvTimeoutMs,
   GIT_CLONE_TIMEOUT_MS,

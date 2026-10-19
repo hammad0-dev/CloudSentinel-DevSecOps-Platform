@@ -37,3 +37,25 @@ npm run dev
 ## Split dev (Windows frontend)
 
 Point the frontend `BASE_URL` at your Ubuntu LAN IP (`http://<ubuntu-ip>:3000/api`) and ensure `server.js` allows your Vite `Origin`. Replace `http://YOUR_WINDOWS_IP:5173` with your PC’s LAN address if needed.
+
+### SAST classification schema
+
+If SAST reports `column "issue_type" of relation "scan_results" does not exist`,
+apply the existing additive classification migration from the repository root:
+
+```bash
+npm run migrate:sast -w cloudsentinel-backend
+```
+
+Migration 016 adds `issue_type` and `hotspot_review` plus validation constraints.
+It is repeatable and preserves historical rows as `UNKNOWN` / `NOT_APPLICABLE`.
+No backend restart is required for these columns. Failed pipeline executions remain
+historical; retry the project's webhook to create a new execution.
+
+The actual persistence path can be checked without scanning or public test data:
+
+```bash
+npm run test:sast:db -w cloudsentinel-backend
+```
+
+This uses a temporary isolated PostgreSQL schema and removes it afterward.

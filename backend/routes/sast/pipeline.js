@@ -10,6 +10,7 @@ const {
   SONAR_SCANNER_TIMEOUT_MS,
   sanitizeScanError,
   shouldUseSonarBranchAnalysis,
+  sonarOrganizationArgs,
 } = require("./config");
 
 function spawnWithTimeout(label, command, args, spawnOptions, timeoutMs) {
@@ -405,6 +406,7 @@ function runSonarScannerAsync(projectId, cloneTarget, sonarHost, branchName) {
     `-Dsonar.projectKey=cloudsentinel_${projectId}`,
     `-Dsonar.projectBaseDir=${cloneTarget}`,
     `-Dsonar.sources=.`,
+    ...sonarOrganizationArgs(sonarHost),
   ];
   if (javaBinaries) {
     args.push(`-Dsonar.java.binaries=${javaBinaries}`);

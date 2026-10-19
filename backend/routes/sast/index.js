@@ -33,11 +33,7 @@ const {
   detectedGitBranch,
   runSonarScannerAsync,
 } = require("./pipeline");
-const {
-  OWASP_RULE_MAP,
-  buildComplianceFromIssues,
-  mergeDependencyIntoCompliance,
-} = require("./compliance");
+const { projectSnapshot } = require("./compliance");
 const { fetchSonarMetrics } = require("./metrics");
 const { persistSastEvidence } = require("../../services/sastEvidence");
 
@@ -278,54 +274,14 @@ router.post("/scan/:projectId", auth, async (req, res) => {
 
 router.get("/compliance/:projectId", auth, async (req, res) => {
   try {
-    const { projectId } = req.params;
-    const projectRes = await pool.query("SELECT id, name FROM projects WHERE id = $1 AND user_id = $2", [
-      projectId,
-      req.user.id,
-    ]);
-    if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
-
-    const [issuesRes, depRes] = await Promise.all([
-      pool.query(
-        latestCompletedSastResultsQuery("rule, severity, issue_type, hotspot_review, message, file_path, line_number, status") + " ORDER BY sr.created_at DESC",
-        [projectId]
-      ),
-      pool.query(
-        "SELECT severity, pkg_name, cve_id FROM sbom_components WHERE project_id = $1 AND cve_id IS NOT NULL",
-        [projectId]
-      ),
-    ]);
-    const issues = issuesRes.rows;
-    const dependencyFindings = depRes.rows;
-    const compliance = mergeDependencyIntoCompliance(
-      buildComplianceFromIssues(issues),
-      dependencyFindings
-    );
-
-    const total = issues.length + dependencyFindings.length;
-    const failedControls = compliance.owasp.reduce((a, c) => a + (c.findings > 0 ? 1 : 0), 0);
-    const passedControls = Math.max(0, OWASP_RULE_MAP.length - failedControls);
-    const complianceScore = OWASP_RULE_MAP.length
-      ? Math.round((passedControls / OWASP_RULE_MAP.length) * 100)
-      : 100;
-
-    return res.json({
-      project: projectRes.rows[0],
-      summary: {
-        totalIssues: total,
-        sastFindings: issues.length,
-        dependencyFindings: dependencyFindings.length,
-        failedControls,
-        passedControls,
-        complianceScore,
-        unmappedCount: compliance.unmappedCount,
-      },
-      owasp: compliance.owasp,
-      cis: compliance.cis,
-    });
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to assemble compliance dashboard" });
-  }
+    const data=await projectSnapshot(pool,req.user.id,{...req.query,project:req.params.projectId});
+    const compliance=data.compliance;
+    return res.json({...compliance,project:data.projects[0],summary:{totalIssues:data.total,
+      sastFindings:data.bySource.find(x=>x.name==='SAST')?.value||0,
+      dependencyFindings:data.bySource.find(x=>x.name==='DEPENDENCY')?.value||0,
+      failedControls:compliance.overall.FAIL,passedControls:compliance.overall.PASS,
+      complianceScore:compliance.overall.passRate,assessmentCoverage:compliance.overall.coverage,unmappedCount:compliance.unmapped}});
+  } catch(error) {return res.status(error.status||500).json({error:error.status?error.message:'Failed to assemble compliance dashboard'});}
 });
 
 router.get("/report/:projectId", auth, async (req, res) => {
@@ -353,10 +309,7 @@ router.get("/report/:projectId", auth, async (req, res) => {
     ]);
     const issues = issuesRes.rows;
     const dependencyFindings = depRes.rows;
-    const compliance = mergeDependencyIntoCompliance(
-      buildComplianceFromIssues(issues),
-      dependencyFindings
-    );
+    const compliance = (await projectSnapshot(pool,req.user.id,{...req.query,project:projectId})).compliance;
     const metrics = await fetchSonarMetrics(projectId).catch(() => null);
     const depCritical = dependencyFindings.filter((i) => (i.severity || "").toUpperCase() === "CRITICAL").length;
     const depHigh = dependencyFindings.filter((i) => (i.severity || "").toUpperCase() === "HIGH").length;

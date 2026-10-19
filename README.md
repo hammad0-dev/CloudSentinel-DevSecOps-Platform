@@ -1180,3 +1180,14 @@ If **`remote origin`** points at another user’s repo, use **`git remote set-ur
 ---
 
 *This document reflects the codebase and operational lessons through the session that included: split Windows/Ubuntu env templates, `DATABASE_URL` vs `DB_*`, CORS, non-interactive Git clone with PAT, async SAST, scan_history RUNNING/COMPLETED/FAILED single-row updates, register→login redirect, Sonar token/branch troubleshooting, Java (Maven) pre-build with `sonar.java.binaries`, `SONAR_ENABLE_BRANCH_ANALYSIS` gating for Community Edition, `SAST_KEEP_CLONE` debugging mode, Trivy dependency scanning + CycloneDX SBOM generation, compliance mapping from both SAST and dependency findings, and enterprise blue frontend redesign across auth/landing pages.*
+
+## Module 12 — Governance, Compliance & Unified Dashboard
+
+The unified dashboard, findings, compliance, analytics and report views now use
+persisted, owner-scoped scanner evidence. See [Module 12 setup and verification](docs/module12.md)
+for migration 017, API filters, mapping versions, scoring methodology, local commands,
+executed tests, demonstration steps and upstream data limitations.
+
+FE-3 now supports separately versioned OWASP 2021/2025 mappings and evidence-based
+CIS Docker static assessments. See the [FE-3 coverage and evaluator handoff](docs/fe3.md)
+for migration 018, supported checks, actual data availability and verified limitations.

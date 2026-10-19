@@ -53,11 +53,7 @@ export default function Navbar() {
   const searchInputRef = useRef(null);
   const notifRef = useRef(null);
 
-  const notifications = [
-    { id: 1, text: "3 critical alerts in auth.js", time: "2m ago" },
-    { id: 2, text: "Dependency scan completed", time: "7m ago" },
-    { id: 3, text: "New compliance report ready", time: "14m ago" },
-  ];
+  const notifications = [];
 
   useEffect(() => {
     if (searchOpen) searchInputRef.current?.focus();
@@ -96,7 +92,7 @@ export default function Navbar() {
               title="Notifications"
             >
               <Bell size={16} />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] rounded-full bg-[var(--accent-red)] text-white grid place-items-center">3</span>
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] rounded-full bg-[var(--accent-red)] text-white grid place-items-center">{notifications.length}</span>
             </button>
             {notifOpen ? (
               <div className="absolute right-0 mt-2 w-72 card p-2 z-40 shadow-xl">
@@ -104,6 +100,7 @@ export default function Navbar() {
                   Notifications
                 </p>
                 <div className="max-h-64 overflow-auto">
+                  {notifications.length === 0 && <p className="p-2 text-sm text-[var(--text-secondary)]">No connected notification feed. View stored findings in the dashboard.</p>}
                   {notifications.map((n) => (
                     <div
                       key={n.id}

@@ -358,12 +358,11 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     const fsScan = await runTrivy(TRIVY_FS_COMMON, runDir);
     const trivyFsJson = typeof fsScan === "object" ? fsScan.stdout : fsScan;
 
-    const trivyData = parseTrivyJson(trivyFsJson || "");
-    if (!trivyData || trivyData.SchemaVersion !== 2 || !Array.isArray(trivyData.Results)) throw new Error("Invalid Trivy vulnerability report");
+    const {filesystemReport,cycloneDxReport}=require("../services/trivyReport");
+    const trivyData = filesystemReport(parseTrivyJson(trivyFsJson || ""));
     const sb = await runTrivy(["fs", "--format", "cyclonedx", "--scanners", "vuln,license", "."], runDir);
     const sbomOutput = sb.stdout;
-    const bom = parseTrivyJson(sbomOutput);
-    if (!bom || bom.bomFormat !== "CycloneDX" || !Array.isArray(bom.components)) throw new Error("Invalid CycloneDX SBOM");
+    const bom = cycloneDxReport(parseTrivyJson(sbomOutput));
     const coverage = dependencyCoverage(runDir, trivyData);
     if (coverage.status === "MANIFESTS_WITHOUT_INVENTORY") throw new Error("Dependency coverage incomplete: manifests found but no package inventory");
     const components = trivyData ? extractComponents(trivyData) : [];

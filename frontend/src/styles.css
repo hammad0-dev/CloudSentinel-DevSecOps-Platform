@@ -168,3 +168,13 @@ body {
     transform: translateY(-6px);
   }
 }
+
+/* Module 12: keep the existing theme while containing wide evidence tables. */
+.governance-page > .card { min-width: 0; }
+.governance-page label { font-size: 0.875rem; }
+.governance-page .input { max-width: 100%; }
+@media (max-width: 640px) {
+  .governance-page > div:first-child { flex-wrap: wrap; }
+  .governance-page form label { width: 100%; }
+  .governance-page form .input { width: 100%; }
+}

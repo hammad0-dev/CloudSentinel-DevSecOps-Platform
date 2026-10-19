@@ -76,6 +76,8 @@ function extractIacFindings(trivyData) {
     const configFile = result.Target || "unknown";
     const misconfigs = result.Misconfigurations || [];
     for (const m of misconfigs) {
+      // Non-failure check outcomes belong to compliance evidence, not vulnerability totals.
+      if (m.Status && m.Status !== "FAIL") continue;
       findings.push({
         config_file:    configFile,
         misconfig_type: m.Title  || m.ID || "Unknown",
@@ -174,7 +176,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     const trivyResult = await spawnWithTimeout(
       "trivy config (iac)",
       TRIVY_CMD,
-      ["config", "--format", "json", "--exit-code", "1", cloneTarget],
+      ["config", "--format", "json", "--include-non-failures", "--exit-code", "1", cloneTarget],
       {
         cwd: cloneTarget,
         env: { ...process.env, TRIVY_NO_PROGRESS: "true" },
@@ -191,7 +193,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       console.warn("[iac-scan] Trivy stdout was not valid JSON:", String(trivyRaw).slice(0, 300));
     }
 
-    const findings = trivyData ? extractIacFindings(trivyData) : [];
+    const configurationEvidence = require("../services/governance/configuration").captureConfiguration(trivyData);
+    const findings = extractIacFindings(trivyData);
     const summary  = summarize(findings);
 
     await pool.query("DELETE FROM iac_findings WHERE project_id = $1", [projectId]);
@@ -204,8 +207,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     }
 
     await pool.query(
-      "UPDATE iac_scans SET status = 'COMPLETED', total_findings = $1, critical = $2, high = $3, medium = $4, low = $5, unknown = $6, completed_at = NOW() WHERE id = $7",
-      [summary.total, summary.critical, summary.high, summary.medium, summary.low, summary.unknown, scanId]
+      "UPDATE iac_scans SET status = 'COMPLETED', total_findings = $1, critical = $2, high = $3, medium = $4, low = $5, unknown = $6, completed_at = NOW(), configuration_evidence = $8::jsonb WHERE id = $7",
+      [summary.total, summary.critical, summary.high, summary.medium, summary.low, summary.unknown, scanId, JSON.stringify(configurationEvidence)]
     );
 
     if (fs.existsSync(cloneTarget)) fs.rmSync(cloneTarget, { recursive: true, force: true });

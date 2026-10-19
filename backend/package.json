@@ -4,7 +4,15 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "migrate:governance": "node scripts/migrate-governance.js",
+    "test:governance": "node --test test/governance.test.js",
+    "test:governance:db": "GOVERNANCE_DB_TEST=1 node --test test/governance.integration.test.js",
+    "verify:governance": "node scripts/verify-governance.js",
+    "migrate:compliance": "node scripts/migrate-governance.js --compliance-only",
+    "test:compliance": "node --test test/compliance.test.js",
+    "migrate:sast": "node scripts/migrate-sast.js",
+    "test:sast:db": "SAST_DB_TEST=1 node --test test/sast-migration.integration.test.js"
   },
   "dependencies": {
     "axios": "^1.9.0",
@@ -15,6 +23,7 @@
     "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.10.1",
+    "pdfkit": "^0.20.2",
     "pg": "^8.13.1"
   }
 }

@@ -56,6 +56,7 @@ app.use("/api/dast", require("./routes/dast"));
 app.use("/api/webhooks", require("./routes/webhooks"));
 app.use("/api/deployment", require("./routes/deployment"));
 app.use("/api/reports", require("./routes/reports"));
+app.use("/api/governance", require("./routes/governance"));
 app.use("/api/kubernetes", require("./routes/kubernetes"));
 
 const healthPayload = { ok: true, service: "CloudSentinel API" };

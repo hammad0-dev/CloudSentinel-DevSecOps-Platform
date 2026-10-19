@@ -1,0 +1,23 @@
+{
+  "id": "docker-cis-1.6.0",
+  "name": "CIS Docker Benchmark",
+  "version": "1.6.0",
+  "targetTechnology": "Dockerfile",
+  "sourceRevision": "80a592945fe732fd8f60819efc0ca98a49ee9d79",
+  "reference": "https://github.com/aquasecurity/trivy-checks/blob/80a592945fe732fd8f60819efc0ca98a49ee9d79/pkg/compliance/docker-cis-1.6.0.yaml",
+  "scope": "Image/build-file section only. Static Dockerfile checks are indicators; built images, daemon, host and runtime configuration are not audited.",
+  "controls": [
+    {"id":"4.1","name":"Use a non-root image user","check":"DS0002","summary":"Check the declared Dockerfile user.","remediation":"Define a non-root USER and verify the built image user."},
+    {"id":"4.2","name":"Review base-image trust","summary":"Base-image provenance requires a separate trust review.","remediation":"Verify base-image provenance and approved registry policy."},
+    {"id":"4.3","name":"Review unnecessary packages","summary":"Package necessity requires application context.","remediation":"Remove packages not required by the application."},
+    {"id":"4.4","name":"Review image patching and rebuilds","summary":"Vulnerabilities alone cannot verify rebuild cadence or patch management.","remediation":"Review image advisories, patch policy and rebuild evidence."},
+    {"id":"4.5","name":"Review image content trust","summary":"Signing enforcement is not recorded by the current scanner.","remediation":"Verify signing and trust enforcement in the target environment."},
+    {"id":"4.6","name":"Declare an image health check","check":"DS0026","summary":"Check for a Dockerfile HEALTHCHECK.","remediation":"Define a meaningful HEALTHCHECK and verify the built image."},
+    {"id":"4.7","name":"Combine package update and installation","check":"DS0017","summary":"Check package-update instructions for isolated updates.","remediation":"Combine package update and installation in the same build instruction."},
+    {"id":"4.8","name":"Review setuid and setgid permissions","summary":"Filesystem permission evidence is unavailable.","remediation":"Review privileged executables in the built image."},
+    {"id":"4.9","name":"Prefer COPY over ADD","check":"DS0005","summary":"Check Dockerfile copy instructions.","remediation":"Use COPY when ADD functionality is unnecessary."},
+    {"id":"4.10","name":"Review embedded secrets","summary":"The current IaC integration does not retain a complete secret assessment.","remediation":"Use a secret manager and review build-time secret handling."},
+    {"id":"4.11","name":"Review package authenticity","summary":"Package authenticity evidence is unavailable.","remediation":"Verify signatures and trusted package distribution."},
+    {"id":"4.12","name":"Review artifact signature validation","summary":"Signature-validation evidence is unavailable.","remediation":"Validate artifact signatures against the approved trust policy."}
+  ]
+}
