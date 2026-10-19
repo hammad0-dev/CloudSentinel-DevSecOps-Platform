@@ -1,25 +1,21 @@
-import PageHeader from "../components/PageHeader";
-import SeverityBadge from "../components/SeverityBadge";
-
-export default function KubernetesSecurity() {
-  const issues = [
-    ["CRITICAL", "production", "api-server", "Pod", "Container runs as root", "Add runAsNonRoot: true"],
-    ["HIGH", "production", "web-app", "Deployment", "Privileged container", "Set privileged: false"],
-    ["HIGH", "default", "data-processor", "Pod", "No resource limits", "Add CPU/memory limits"],
-    ["MEDIUM", "default", "cache", "Deployment", "Latest image tag used", "Pin specific image version"],
-  ];
-  return (
-    <div className="space-y-6">
-      <PageHeader title="Kubernetes Security" subtitle="Cluster security posture and compliance" />
-      <div className="card p-4 space-y-2">
-        <p>Namespaces: 4 | Pods Running: 18 | Issues: 7 | Compliance: 71%</p>
-        <div className="overflow-auto">
-          <table className="w-full text-sm">
-            <thead><tr className="text-left text-[#64748b]"><th>Severity</th><th>Namespace</th><th>Resource</th><th>Kind</th><th>Issue</th><th>Recommendation</th></tr></thead>
-            <tbody>{issues.map((i) => <tr key={`${i[1]}-${i[2]}`} className="border-t border-[#1e2d4a]"><td><SeverityBadge severity={i[0]} /></td><td>{i[1]}</td><td>{i[2]}</td><td>{i[3]}</td><td>{i[4]}</td><td>{i[5]}</td></tr>)}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+import {useEffect,useState} from 'react';
+import PageHeader from '../components/PageHeader';
+import SeverityBadge from '../components/SeverityBadge';
+import api from '../lib/api';
+const tableClass='w-full text-base [&_td]:p-4 [&_td]:align-top [&_th]:p-4 [&_tr]:border-b [&_tr]:border-[#1e2d4a]';
+export function KubernetesPanel({data}){
+ if(!data)return <div className="card p-5">Select a project to inspect its Kubernetes deployment.</div>;
+ if(data.status!=='observed')return <div className="card p-5">{data.status==='not_deployed'?'Not deployed':'Not connected'}. {data.reason}<p>AWS EKS: Not configured</p></div>;
+ return <div className="space-y-6">
+  <div className="card p-5 space-y-2"><h3 className="font-bold">Connected • Local Minikube • {data.context}</h3><p>Project {data.projectId} • Namespaces: {data.counts.namespaces} • Pods running: {data.counts.running}/{data.counts.pods} • Ready: {data.counts.ready}/{data.counts.pods}</p><p>Deployment replicas ready: {data.counts.readyReplicas}/{data.counts.desiredReplicas}</p><p>Namespaces: {data.namespaces.join(', ')}</p><p className="text-sm text-slate-400">Read-only snapshot observed {new Date(data.observedAt).toLocaleString()}. Project deployment scope only.</p><p>AWS EKS: Not configured</p></div>
+  <section className="card p-5 overflow-auto"><h3 className="font-bold">Deployment health</h3><table className={tableClass}><thead><tr className="text-left text-slate-400"><th>Namespace</th><th>Deployment</th><th>Desired</th><th>Ready</th><th>Available</th></tr></thead><tbody>{data.deployments.map(d=><tr key={`${d.namespace}/${d.name}`}><td>{d.namespace}</td><td className="font-mono break-all">{d.name}</td><td>{d.desired}</td><td>{d.ready}</td><td>{d.available}</td></tr>)}</tbody></table></section>
+  <section className="card p-5 overflow-auto"><h3 className="font-bold">Pod inventory</h3><table className={tableClass}><thead><tr className="text-left text-slate-400"><th>Namespace</th><th>Pod</th><th>Phase</th><th>Ready</th><th>Restarts</th><th>Images</th></tr></thead><tbody>{data.pods.map(p=><tr key={`${p.namespace}/${p.name}`}><td>{p.namespace}</td><td className="font-mono break-all">{p.name}</td><td>{p.phase}</td><td>{p.ready?'Yes':'No'}</td><td>{p.restarts}</td><td className="font-mono break-all max-w-sm">{p.images.join(', ')}</td></tr>)}</tbody></table>{!data.pods.length&&<p>No matching pods observed.</p>}</section>
+  <section className="card p-5 overflow-auto"><h3 className="font-bold">Security observations</h3><p className="text-sm text-slate-400 my-3">{data.assessment}. No compliance percentage is calculated. Missing non-root enforcement does not prove root execution.</p><table className={tableClass}><thead><tr className="text-left text-slate-400"><th>Severity</th><th>Namespace</th><th>Resource</th><th>Kind</th><th>Observed issue</th><th>Recommendation</th></tr></thead><tbody>{data.issues.map((i,n)=><tr key={n}><td><SeverityBadge severity={i.severity}/></td><td>{i.namespace}</td><td className="break-all">{i.resource}</td><td>{i.kind}</td><td>{i.issue}</td><td>{i.recommendation}</td></tr>)}</tbody></table>{!data.issues.length&&<p>No observations from the implemented workload checks. This is not a complete security assessment.</p>}</section>
+ </div>;
+}
+export default function KubernetesSecurity(){
+ const [projects,setProjects]=useState([]),[project,setProject]=useState(''),[data,setData]=useState(null),[loading,setLoading]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{let active=true;api.get('/projects').then(r=>{if(active)setProjects(r.data.projects||[])}).catch(()=>{if(active)setError('Unable to load authorized projects.')});return()=>{active=false}},[]);
+ useEffect(()=>{let active=true;setData(null);setLoading(false);if(!project)return()=>{active=false};setLoading(true);setError('');api.get(`/kubernetes/projects/${project}/inventory`,{timeout:30000}).then(r=>{if(active)setData(r.data)}).catch(()=>{if(active)setError('Kubernetes inventory unavailable. No cluster status verified.')}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[project]);
+ return <div className="space-y-6"><PageHeader title="Kubernetes Security" subtitle="Project-scoped local cluster inventory and security observations"/><label className="block">Project <select className="ml-3 bg-[#0b1220] border border-[#1e2d4a] rounded p-2" value={project} onChange={e=>setProject(e.target.value)}><option value="">Select project</option>{projects.map(p=><option value={p.id} key={p.id}>{p.name} (#{p.id})</option>)}</select></label>{error&&<p role="alert">{error}</p>}{loading?<p role="status">Reading Minikube…</p>:<KubernetesPanel data={data}/>}</div>;
 }

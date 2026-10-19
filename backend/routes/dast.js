@@ -7,6 +7,11 @@ const { resolvePipelineExecutionId } = require("../services/pipelineExecutionCon
 const { runBaselineScan } = require("../services/dastBaselineScanner");
 
 const router = express.Router();
+router.get('/diagnostics/:projectId',auth,async(req,res)=>{
+  res.set('Cache-Control','no-store');
+  try{return res.json(await require('../services/historicalDastDiagnostics').get(pool,req.user,Number(req.params.projectId)));}
+  catch(error){return res.status(error.status||503).json({error:error.code||'DIAGNOSTIC_EVIDENCE_UNAVAILABLE'});}
+});
 router.post('/active/:projectId/commissioning/executions',auth,async(req,res)=>{
   if(req.user.pipelineOrchestrator===true||!req.body||Object.keys(req.body).join(',')!=='approval')return res.status(403).json({error:'Private commissioning approval required'});
   try{return res.status(201).json(await require('../services/activeOperatorEnrollment').createExecution(pool,{projectId:Number(req.params.projectId),userId:Number(req.user.id)},req.body.approval));}

@@ -1,0 +1,198 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RegionalNetworkInventory",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeInternetGateways",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSecurityGroupRules",
+        "ec2:DescribeTags",
+        "ec2:DescribeNetworkAcls",
+        "ec2:DescribeFlowLogs"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1"
+        }
+      }
+    },
+    {
+      "Sid": "ReadVpcAttributes",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeVpcAttribute"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:vpc/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateVpc",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateVpc"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:vpc/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateSubnet",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateSubnet"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:subnet/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateInternetgateway",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateInternetGateway"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:internet-gateway/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateRoutetable",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateRouteTable"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:route-table/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateSecuritygroup",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateSecurityGroup"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:security-group/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateVpcflowlog",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateFlowLogs"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:vpc-flow-log/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "CreateChildrenOnlyInOwnedVpc",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateSubnet",
+        "ec2:CreateRouteTable",
+        "ec2:CreateSecurityGroup",
+        "ec2:CreateFlowLogs"
+      ],
+      "Resource": "arn:aws:ec2:ap-south-1:229032674007:vpc/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:ResourceTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:ResourceTag/Module": "8-network",
+          "aws:ResourceTag/ManagedBy": "Terraform",
+          "aws:ResourceTag/Environment": "development"
+        }
+      }
+    },
+    {
+      "Sid": "TagsDuringCreationOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Resource": [
+        "arn:aws:ec2:ap-south-1:229032674007:vpc/*",
+        "arn:aws:ec2:ap-south-1:229032674007:subnet/*",
+        "arn:aws:ec2:ap-south-1:229032674007:internet-gateway/*",
+        "arn:aws:ec2:ap-south-1:229032674007:route-table/*",
+        "arn:aws:ec2:ap-south-1:229032674007:security-group/*",
+        "arn:aws:ec2:ap-south-1:229032674007:vpc-flow-log/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-south-1",
+          "aws:RequestTag/ProjectId": "APPROVED_PROJECT_ID",
+          "aws:RequestTag/Module": "8-network",
+          "aws:RequestTag/ManagedBy": "Terraform",
+          "ec2:CreateAction": [
+            "CreateVpc",
+            "CreateSubnet",
+            "CreateInternetGateway",
+            "CreateRouteTable",
+            "CreateSecurityGroup",
+            "CreateFlowLogs"
+          ],
+          "aws:RequestTag/Environment": "development"
+        }
+      }
+    }
+  ]
+}

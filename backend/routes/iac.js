@@ -173,6 +173,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       IAC_GIT_TIMEOUT_MS
     );
 
+    const provenance=await require('../services/stageProvenance').prepare(pool,{projectId,executionId:pipelineExecutionId,userId:req.user.id},cloneTarget);
     const trivyResult = await spawnWithTimeout(
       "trivy config (iac)",
       TRIVY_CMD,
@@ -197,7 +198,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     const findings = extractIacFindings(trivyData);
     const summary  = summarize(findings);
 
-    await pool.query("DELETE FROM iac_findings WHERE project_id = $1", [projectId]);
+    await pool.query("DELETE FROM iac_findings WHERE project_id = $1 AND scan_id = $2", [projectId, scanId]);
 
     for (const f of findings) {
       await pool.query(
@@ -211,6 +212,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       [summary.total, summary.critical, summary.high, summary.medium, summary.low, summary.unknown, scanId, JSON.stringify(configurationEvidence)]
     );
 
+    if(provenance?.artifact){if(!trivyData||trivyData.SchemaVersion!==2||!Array.isArray(trivyData.Results))throw Error('IAC_REPORT_UNVERIFIED');await require('../services/stageProvenance').attest(pool,{projectId,executionId:pipelineExecutionId,userId:req.user.id},'IaC',scanId,{commit:provenance.commit_sha,reports:[{kind:'trivy-config',bytes:Buffer.from(trivyRaw)}],reportHash:require('../services/deploymentEligibility').digest(trivyData),tool:await require('../services/stageProvenance').toolVersion(TRIVY_CMD),counts:require('../services/stageProvenance').counts(summary)});}
     if (fs.existsSync(cloneTarget)) fs.rmSync(cloneTarget, { recursive: true, force: true });
     return res.json({ success: true, scanId, summary, total: summary.total });
 

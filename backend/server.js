@@ -58,6 +58,9 @@ app.use("/api/deployment", require("./routes/deployment"));
 app.use("/api/reports", require("./routes/reports"));
 app.use("/api/governance", require("./routes/governance"));
 app.use("/api/kubernetes", require("./routes/kubernetes"));
+app.use("/api/static-deployments", require("./routes/staticDeployments"));
+app.use("/api/cloud", require("./routes/cloud"));
+app.use("/api/infrastructure", require("./routes/infrastructure"));
 
 const healthPayload = { ok: true, service: "CloudSentinel API" };
 
@@ -284,6 +287,7 @@ const boot = async () => {
   app.listen(port, () => {
     console.log(`CloudSentinel API listening on http://localhost:${port}`);
     console.log(`Health check: http://localhost:${port}/api/health`);
+    require('./services/provenanceRecovery').start(pool,require('./services/orchestrator').runPipeline).catch(()=>console.error('[provenance-recovery] Startup unavailable; provenance dispatch blocked'));
   });
 };
 

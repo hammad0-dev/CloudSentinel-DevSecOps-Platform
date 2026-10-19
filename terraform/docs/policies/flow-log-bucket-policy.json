@@ -1,0 +1,55 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyInsecureTransport",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::APPROVED_FLOW_LOG_BUCKET",
+        "arn:aws:s3:::APPROVED_FLOW_LOG_BUCKET/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    },
+    {
+      "Sid": "LogDeliveryAclCheck",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "delivery.logs.amazonaws.com"
+      },
+      "Action": "s3:GetBucketAcl",
+      "Resource": "arn:aws:s3:::APPROVED_FLOW_LOG_BUCKET",
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "229032674007"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:logs:ap-south-1:229032674007:*"
+        }
+      }
+    },
+    {
+      "Sid": "LogDeliveryWrite",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "delivery.logs.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::APPROVED_FLOW_LOG_BUCKET/AWSLogs/229032674007/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "229032674007",
+          "s3:x-amz-acl": "bucket-owner-full-control"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:logs:ap-south-1:229032674007:*"
+        }
+      }
+    }
+  ]
+}

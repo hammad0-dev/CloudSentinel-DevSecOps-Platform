@@ -1,0 +1,6 @@
+# Design template only; no bucket is approved or created by this configuration.
+# Replace both placeholders following state-bootstrap approval. Use default workspace only.
+bucket  = "REPLACE_WITH_APPROVED_STATE_BUCKET"
+key     = "cloudsentinel/projects/APPROVED_PROJECT_ID/network/terraform.tfstate"
+profile = "cloudsentinel-dev"
+# SSE-S3 AES256 bucket encryption required; use_lockfile/encrypt are fixed in main.tf.
