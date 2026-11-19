@@ -47,6 +47,10 @@ app.use(express.json({
   }
 }));
 
+app.use(require("./services/securityLog").requestLogger);
+require("./services/metrics").init(pool);
+app.get("/metrics", require("./services/metrics").handler);
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/projects", require("./routes/projects"));
 app.use("/api/sast", require("./routes/sast"));
@@ -61,6 +65,7 @@ app.use("/api/kubernetes", require("./routes/kubernetes"));
 app.use("/api/static-deployments", require("./routes/staticDeployments"));
 app.use("/api/cloud", require("./routes/cloud"));
 app.use("/api/infrastructure", require("./routes/infrastructure"));
+app.use("/api/monitoring", require("./routes/monitoring"));
 
 const healthPayload = { ok: true, service: "CloudSentinel API" };
 
@@ -287,6 +292,12 @@ const boot = async () => {
   app.listen(port, () => {
     console.log(`CloudSentinel API listening on http://localhost:${port}`);
     console.log(`Health check: http://localhost:${port}/api/health`);
+    const { logEvent, recentEvents } = require("./services/securityLog");
+    require("./services/threatDetection").start({
+      getEvents: () => recentEvents(),
+      createAlert: (d) => require("./services/alertStore").createAlert(pool, d),
+      onError: (e, stage) => logEvent({ level: "warn", event: "threat_detection_error", detail: { stage, error: String(e?.message || e).slice(0, 300) } }),
+    });
     require('./services/provenanceRecovery').start(pool,require('./services/orchestrator').runPipeline).catch(()=>console.error('[provenance-recovery] Startup unavailable; provenance dispatch blocked'));
   });
 };
