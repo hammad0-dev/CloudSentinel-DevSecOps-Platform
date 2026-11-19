@@ -4,8 +4,11 @@ const pool = require("../db");
 const { deployProject } = require("./deployment");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const telemetry = require("./pipelineTelemetry");
+const runStage = telemetry.instrumentStage(runStageRaw);
+const runDeployStage = telemetry.instrumentStage(runDeployStageRaw, () => "Deploy");
 
-async function runStage(executionId, projectId, userId, stageName, endpoint) {
+async function runStageRaw(executionId, projectId, userId, stageName, endpoint) {
   const commissioning = !!require('./activeDastCommissioning').selection({projectId,executionId,userId});
   const maxAttempts = commissioning ? 1 : 2;
   const token = jwt.sign({ id: userId, pipelineExecutionId: executionId, pipelineOrchestrator: true,
@@ -35,7 +38,7 @@ async function runStage(executionId, projectId, userId, stageName, endpoint) {
   }
 }
 
-async function runDeployStage(executionId, projectId, userId) {
+async function runDeployStageRaw(executionId, projectId, userId) {
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const result = await deployProject(projectId, userId, { executionId, attempt });
@@ -229,4 +232,4 @@ async function resumeActive(executionId,projectId,userId){
  return result;
 }
 
-module.exports = { runPipeline, resumeActive, checkCriticalFindings };
+module.exports = { runPipeline: telemetry.instrumentPipeline(runPipeline, pool), resumeActive, checkCriticalFindings };
