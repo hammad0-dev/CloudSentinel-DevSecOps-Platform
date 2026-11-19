@@ -56,3 +56,4 @@ services-ml/ml-sast/data/**
 !services-ml/ml-sast/data/heldout/
 !services-ml/ml-sast/data/heldout/LABELS.md
 !services-ml/ml-sast/data/heldout/labels.json
+services-ml/ml-sast/.hf/
