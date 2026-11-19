@@ -43,3 +43,16 @@ models/
 *.safetensors
 *.h5
 .pytest_cache/
+
+# ml-sast training workspace: venv, datasets, models, logs, checkpoints (only samples + manifest are committed)
+services-ml/ml-sast/.venv/
+services-ml/ml-sast/logs/
+services-ml/ml-sast/checkpoints/
+services-ml/ml-sast/data/**
+!services-ml/ml-sast/data/
+!services-ml/ml-sast/data/manifest.json
+!services-ml/ml-sast/data/samples/
+!services-ml/ml-sast/data/samples/**
+!services-ml/ml-sast/data/heldout/
+!services-ml/ml-sast/data/heldout/LABELS.md
+!services-ml/ml-sast/data/heldout/labels.json
