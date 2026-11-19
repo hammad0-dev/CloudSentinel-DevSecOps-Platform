@@ -7,6 +7,7 @@ const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
 const pool = require("../db");
 const auth = require("../middleware/auth");
+const { logEvent, clientIp } = require("../services/securityLog");
 
 const router = express.Router();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -107,11 +108,15 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
+    const loginFailed = (reason, userId) => {
+      logEvent({ level: "warn", event: "auth_login_failed", userId, ip: clientIp(req), detail: { account: String(email).toLowerCase().slice(0, 254), reason } });
+      return res.status(401).json({ error: "Invalid credentials" });
+    };
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (!result.rows.length) return res.status(401).json({ error: "Invalid credentials" });
+    if (!result.rows.length) return loginFailed("unknown_account");
 
     const valid = await bcrypt.compare(password, result.rows[0].password_hash);
-    if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+    if (!valid) return loginFailed("bad_password", result.rows[0].id);
 
     const token = jwt.sign(
       { id: result.rows[0].id, email: result.rows[0].email },
@@ -174,6 +179,7 @@ router.post("/google", async (req, res) => {
     return res.json({ token, user: safeUser(user) });
   } catch (error) {
     if (error?.response?.status === 401 || error?.message?.toLowerCase().includes("token")) {
+      logEvent({ level: "warn", event: "auth_google_failed", ip: clientIp(req), detail: { reason: "invalid_token" } });
       return res.status(401).json({ error: "Invalid Google token" });
     }
     return res.status(500).json({ error: "Google login failed" });
