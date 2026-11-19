@@ -20,3 +20,10 @@ dist/
 *.backend.hcl
 crash.log
 crash.*.log
+__pycache__/
+*.pyc
+*.orig
+*.dump
+backups/
+.codex/
+.terraform/
