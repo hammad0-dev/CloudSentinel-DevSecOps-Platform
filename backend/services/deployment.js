@@ -82,7 +82,7 @@ function generateDockerfileContent(stack, repoDir) {
       const portMatch = startCmd.match(/PORT[= ]+(\d+)|--port[= ]+(\d+)/i);
       if (portMatch) port = parseInt(portMatch[1] || portMatch[2]);
     } catch {}
-    return `FROM node:18-alpine
+    return `FROM node:22-alpine
 RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
 WORKDIR /app
 COPY package*.json ./

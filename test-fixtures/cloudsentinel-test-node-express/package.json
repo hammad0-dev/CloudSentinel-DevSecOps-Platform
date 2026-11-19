@@ -1,0 +1,15 @@
+{
+  "name": "cloudsentinel-test-node-express",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Intentionally vulnerable CloudSentinel test fixture. Do not deploy outside isolated staging.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "lodash": "4.17.15",
+    "mysql": "2.18.1"
+  }
+}
