@@ -1,0 +1,98 @@
+# Module 11 FE-3: Prometheus + Alertmanager + Grafana (small), scraping the CloudSentinel /metrics endpoint.
+# helm upgrade --install kps prometheus-community/kube-prometheus-stack -n monitoring \
+#   -f k8s/monitoring/kube-prometheus-stack-values.yaml
+# Only the three rules below are installed (default rule bundle disabled to keep it small).
+defaultRules:
+  create: false
+
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }
+
+prometheusOperator:
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 128Mi }
+
+kube-state-metrics:
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits: { memory: 128Mi }
+
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { memory: 64Mi }
+
+prometheus:
+  prometheusSpec:
+    retention: 3d
+    scrapeInterval: 30s
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { memory: 768Mi }
+    # CloudSentinel backend. Replace the target with where the API listens as seen from the cluster
+    # (e.g. host.docker.internal:3000 for kind/Docker Desktop, host.minikube.internal:3000 for minikube).
+    additionalScrapeConfigs:
+      - job_name: cloudsentinel-backend
+        metrics_path: /metrics
+        # authorization: { type: Bearer, credentials: <METRICS_TOKEN> }   # if METRICS_TOKEN is set
+        static_configs:
+          - targets: ["host.docker.internal:3000"]
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 10m, memory: 32Mi }
+      limits: { memory: 64Mi }
+  config:
+    route:
+      receiver: "null"
+      group_by: [alertname, namespace]
+      routes:
+        - receiver: "null"
+          matchers: [alertname = "Watchdog"]
+    receivers:
+      - name: "null"
+      # Add a webhook/email/Slack receiver here and route severity=~"critical|warning" to it.
+
+grafana:
+  adminPassword: change-me
+  resources:
+    requests: { cpu: 25m, memory: 96Mi }
+    limits: { memory: 192Mi }
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+
+additionalPrometheusRulesMap:
+  cloudsentinel:
+    groups:
+      - name: cloudsentinel.rules
+        rules:
+          - alert: PodCrashLooping
+            expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff", namespace=~"cloudsentinel-p-.*|kyverno"}[5m]) >= 1
+            for: 5m
+            labels: { severity: critical }
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash-looping"
+              description: "Container {{ $labels.container }} has been in CrashLoopBackOff for 5 minutes."
+          - alert: DeploymentUnavailable
+            expr: kube_deployment_status_replicas_unavailable{namespace=~"cloudsentinel-p-.*|kyverno"} > 0
+            for: 10m
+            labels: { severity: warning }
+            annotations:
+              summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"
+              description: "{{ $value }} replica(s) unavailable for 10 minutes."
+          - alert: PipelineRunsFailing
+            expr: increase(cloudsentinel_pipeline_runs_total{status="failed"}[30m]) >= 2
+            for: 0m
+            labels: { severity: warning }
+            annotations:
+              summary: "CloudSentinel pipeline runs are failing"
+              description: "{{ $value | humanize }} failed pipeline runs in the last 30 minutes."
