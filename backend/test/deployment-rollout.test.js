@@ -10,7 +10,7 @@ function mock(p, exports) { require.cache[p] = { id:p, filename:p, loaded:true, 
 test.afterEach(() => { for (const p of [dbPath, gitPath, deploymentPath, axiosPath]) delete require.cache[p]; });
 function setup(overrides = {}) {
   const queries = [];
-  mock(dbPath, { query: async (sql, params) => { queries.push({sql,params}); if (sql.includes("INSERT INTO image_scans")) return {rows:[{id:701}],rowCount:1}; if (sql.includes("SELECT id, name")) return { rows:[{id:4,name:"Demo",repo_url:"https://example.invalid/repo.git",is_private:false}] }; return {rows:[],rowCount:1}; }});
+  mock(dbPath, { query: async (sql, params) => { queries.push({sql,params}); if (sql.includes("INSERT INTO image_scans")) return {rows:[{id:701}],rowCount:1}; if (sql.includes("INSERT INTO deployment_history")) return {rows:[{id:801}],rowCount:1}; if (sql.includes("SELECT id, name")) return { rows:[{id:4,name:"Demo",repo_url:"https://example.invalid/repo.git",is_private:false}] }; return {rows:[],rowCount:1}; }});
   mock(gitPath, {
     resolveCloneUrl: overrides.cloneUrl || (()=>"https://example.invalid/repo.git"),
     redactGitCredentials: overrides.redactGitCredentials || (value => String(value || "").replace(/(https?:\/\/)[^/\s@]*@/gi, (_match, scheme) => scheme + "***@")),
@@ -53,6 +53,51 @@ test("kubectl apply failure records FAILED and never checks rollout", async () =
   assert.equal(labels.includes("kubectl rollout restart"), false);
 });
 
+const KYVERNO_DENIAL = `kubectl server dry-run failed (exit 1): Error from server: error when creating ".cloudsentinel-rendered.json": admission webhook "validate.kyverno.svc-fail" denied the request: \n\nresource Deployment/cloudsentinel-p-4/demo was blocked due to the following policies \n\nrequire-run-as-non-root:\n  autogen-run-as-non-root: 'validation error: Running as root is not allowed.'\n`;
+
+test("Kyverno denial on server dry-run fails Deploy with the denial and never applies (FE-5)", async () => {
+  const labels = [];
+  const c = setup({ runCmd: async label => { labels.push(label); if (label === "kubectl server dry-run") throw new Error(KYVERNO_DENIAL); return undefined; } });
+  await assert.rejects(c.deployProject(4, 9, { runCmd: c.runCmd }), error => {
+    assert.equal(error.code, "KYVERNO_POLICY_BLOCKED");
+    assert.equal(error.nonRetryable, true);
+    assert.match(error.message, /^Kyverno policy blocked deployment: require-run-as-non-root\/autogen-run-as-non-root: validation error: Running as root is not allowed\.$/);
+    return true;
+  });
+  const failed = history(c.queries, "FAILED");
+  assert.equal(failed.length, 1);
+  assert.match(failed[0].params[3], /Kyverno policy blocked deployment: require-run-as-non-root/);
+  const evidence = c.queries.find(q => q.sql.includes("SET policy_validation"));
+  assert.ok(evidence, "policy validation evidence stored");
+  const stored = JSON.parse(evidence.params[0]);
+  assert.equal(stored.passed, false);
+  assert.equal(stored.blockedByPolicy, true);
+  assert.deepEqual(stored.violations.map(v => v.policy), ["require-run-as-non-root"]);
+  assert.equal(evidence.params[1], 801);
+  assert.equal(labels.includes("kubectl apply"), false);
+  assert.equal(history(c.queries, "SUCCESS").length, 0);
+});
+
+test("RBAC and server dry-run run before apply and passing evidence is stored (FE-3/FE-4)", async () => {
+  const labels = [];
+  const c = setup({ runCmd: async label => { labels.push(label); return label === "kubectl server dry-run" ? "deployment.apps/demo created (server dry run)" : undefined; } });
+  await c.deployProject(4, 9, { runCmd: c.runCmd });
+  const order = ["kubectl security dry-run", "kubectl apply rbac", "kubectl server dry-run", "kubectl apply"].map(l => labels.indexOf(l));
+  assert.ok(order.every(i => i >= 0) && order.every((v, i) => i === 0 || v > order[i - 1]), `unexpected order ${labels.join(", ")}`);
+  const evidence = c.queries.find(q => q.sql.includes("SET policy_validation"));
+  assert.equal(JSON.parse(evidence.params[0]).passed, true);
+  assert.equal(history(c.queries, "SUCCESS").length, 1);
+});
+
+test("missing policy_validation column does not fail a successful deployment", async () => {
+  const c = setup({ runCmd: async () => undefined });
+  const db = require.cache[require.resolve("../db")].exports;
+  const original = db.query;
+  db.query = async (sql, params) => { if (sql.includes("SET policy_validation")) throw new Error('column "policy_validation" does not exist'); return original(sql, params); };
+  const result = await c.deployProject(4, 9, { runCmd: c.runCmd });
+  assert.equal(result.namespace, "cloudsentinel-p-4");
+});
+
 test("CrashLoopBackOff is included in rollout failure history", async () => {
   const c = setup({ runCmd: async label => {
     if (label === "kubectl rollout status") throw new Error("rollout timed out");
@@ -71,7 +116,7 @@ test("all namespaced deployment commands target the trusted project namespace", 
   const c = setup({ runCmd: async (label, command, args) => { calls.push({label,command,args}); return undefined; } });
   const result = await c.deployProject(4, 9, { runCmd: c.runCmd });
   assert.equal(result.namespace, "cloudsentinel-p-4");
-  const requiredLabels = ["kubectl security dry-run","kubectl apply","kubectl rollout restart","kubectl rollout status","kubectl get deployment","kubectl get service"];
+  const requiredLabels = ["kubectl security dry-run","kubectl apply rbac","kubectl server dry-run","kubectl apply","kubectl rollout restart","kubectl rollout status","kubectl get deployment","kubectl get service"];
   for (const label of requiredLabels) {
     const call = calls.find(entry => entry.label === label);
     assert.ok(call, `missing ${label}`);

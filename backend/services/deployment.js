@@ -19,6 +19,8 @@ const pool = require("../db");
 const { redactGitCredentials, resolveCloneUrl, gitCloneAsync } = require("./gitHelper");
 const { assertDeploymentImage, renderManifestWithImage, validateDeploymentSecurity } = require("./kubernetesSecurity");
 const { ensureProjectNamespace, getProjectNamespace } = require("./kubernetesNamespace");
+const { SERVICE_ACCOUNT, ensureProjectRbac } = require("./kubernetesRbac");
+const { serverDryRun } = require("./kubernetesPolicy");
 const { createImageIdentity } = require("./imageIdentity");
 const { scanContainerImage } = require("./imageVulnerabilityScan");
 
@@ -82,29 +84,29 @@ function generateDockerfileContent(stack, repoDir) {
       const portMatch = startCmd.match(/PORT[= ]+(\d+)|--port[= ]+(\d+)/i);
       if (portMatch) port = parseInt(portMatch[1] || portMatch[2]);
     } catch {}
+    // Runs as the image's built-in non-root "node" user (UID/GID 1000).
     return `FROM node:22-alpine
-RUN addgroup -g 10001 app && adduser -D -u 10001 -G app app
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
-COPY --chown=10001:10001 . .
+COPY --chown=node:node . .
 ENV NODE_ENV=production PORT=${port}
 EXPOSE ${port}
-USER 10001:10001
+USER node
 CMD ["npm", "start"]
 `;
   }
 
   if (stack === "python") {
     return `FROM python:3.11-slim
-RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app
+RUN groupadd --gid 1000 app && useradd --uid 1000 --gid app --no-create-home app
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY --chown=10001:10001 . .
+COPY --chown=1000:1000 . .
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 EXPOSE 8080
-USER 10001:10001
+USER 1000:1000
 CMD ["python", "app.py"]
 `;
   }
@@ -157,9 +159,16 @@ CMD ["nginx", "-g", "daemon off;"]
 }
 
 // ─── Kubernetes Manifest Templates ────────────────────────────────────────────
+function stackUid(stack) {
+  return stack === "node" || stack === "python" ? 1000 : 10001;
+}
+
 function generateK8sManifests(projectName, imageTag, containerPort, stack = "unknown", namespace) {
   if (!/^cloudsentinel-p-[1-9]\d*$/.test(namespace || "")) throw new Error("A valid CloudSentinel project namespace is required");
   const safeAppName = projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-").slice(0, 50);
+  // UID matches the generated Dockerfile: 1000 for node/python, 10001 for java/static images.
+  const uid = stackUid(stack);
+  const owner = `project-${namespace.slice("cloudsentinel-p-".length)}`;
   const nginxMounts = stack === "unknown" ? `
             - name: nginx-cache
               mountPath: /var/cache/nginx
@@ -178,6 +187,7 @@ metadata:
   namespace: ${namespace}
   labels:
     app: ${safeAppName}
+    owner: ${owner}
     managed-by: cloudsentinel
 spec:
   replicas: 1
@@ -188,13 +198,16 @@ spec:
     metadata:
       labels:
         app: ${safeAppName}
+        owner: ${owner}
+        managed-by: cloudsentinel
     spec:
+      serviceAccountName: ${SERVICE_ACCOUNT}
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 10001
-        runAsGroup: 10001
-        fsGroup: 10001
+        runAsUser: ${uid}
+        runAsGroup: ${uid}
+        fsGroup: ${uid}
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -202,6 +215,7 @@ spec:
           image: ${imageTag}
           imagePullPolicy: Never
           securityContext:
+            runAsNonRoot: true
             privileged: false
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -240,6 +254,7 @@ metadata:
   namespace: ${namespace}
   labels:
     app: ${safeAppName}
+    owner: ${owner}
     managed-by: cloudsentinel
 spec:
   selector:
@@ -289,12 +304,24 @@ function findExistingManifests(repoDir) {
   return null;
 }
 
+// Policy dry-run evidence is stored separately so a database without migration 021
+// still records the deployment itself.
+async function recordPolicyValidation(deploymentId, policyValidation) {
+  if (!deploymentId || !policyValidation) return;
+  try {
+    await pool.query("UPDATE deployment_history SET policy_validation = $1 WHERE id = $2", [JSON.stringify(policyValidation), deploymentId]);
+  } catch (error) {
+    console.warn(`[deploy] Policy validation evidence not stored (apply migration 021): ${error.message}`);
+  }
+}
+
 // ─── Main deploy function ─────────────────────────────────────────────────────
 async function deployProject(projectId, userId, options = {}) {
   const execute = options.runCmd || runCmd;
   let cloneDir = null;
   let generatedDir = null;
   let authorizedProject = false;
+  let policyValidation = null;
   const pipelineExecutionId = options.executionId === undefined ? null : options.executionId;
   let pipelineContextValidated = pipelineExecutionId === null;
 
@@ -423,6 +450,17 @@ async function deployProject(projectId, userId, options = {}) {
     const renderedManifestPath = path.join(cloneDir, ".cloudsentinel-rendered.json");
     fs.writeFileSync(renderedManifestPath, rendered.renderedJson, "utf8");
 
+    // 8b. Least-privilege namespace RBAC (FE-3), then admission policy validation (FE-4):
+    // a server-side dry-run runs Kyverno; an Enforce-mode denial fails the stage (FE-5).
+    await ensureProjectRbac(project.id, namespace, execute, cloneDir);
+    console.log(`[deploy] Validating manifests against admission policies (server dry-run)`);
+    try {
+      policyValidation = await serverDryRun(execute, namespace, renderedManifestPath, cloneDir);
+    } catch (policyErr) {
+      policyValidation = policyErr.policyValidation || null;
+      throw policyErr;
+    }
+
     console.log(`[deploy] Applying validated manifests in ${namespace}`);
     await execute("kubectl apply", "kubectl", ["apply", "--namespace", namespace, "-f", renderedManifestPath], cloneDir, 5 * 60 * 1000);
     await execute("kubectl rollout restart", "kubectl", ["rollout", "restart", `deployment/${safeAppName}`, "--namespace", namespace], cloneDir, 60000);
@@ -514,12 +552,13 @@ async function deployProject(projectId, userId, options = {}) {
     console.log(`[deploy] Staging URL: ${stagingUrl}`);
 
     // 11. Record deployment in DB
-    await pool.query(
+    const successRecord = await pool.query(
       `INSERT INTO deployment_history
        (project_id, pipeline_execution_id, deployment_attempt, status, deployed_at, staging_url, dockerfile_source, manifest_source, app_name, image_tag)
-       VALUES ($1, $2, $3, 'SUCCESS', NOW(), $4, $5, $6, $7, $8)`,
+       VALUES ($1, $2, $3, 'SUCCESS', NOW(), $4, $5, $6, $7, $8) RETURNING id`,
       [projectId, pipelineExecutionId, imageIdentity.attempt, stagingUrl, dockerfileSource, manifestSource, safeAppName, imageTag]
     );
+    await recordPolicyValidation(successRecord?.rows?.[0]?.id, policyValidation);
 
     if(provenance?.artifact){
       const deployed=await pool.query("SELECT id FROM deployment_history WHERE project_id=$1 AND pipeline_execution_id=$2 AND status='SUCCESS' ORDER BY id DESC LIMIT 1",[projectId,pipelineExecutionId]);
@@ -544,11 +583,12 @@ async function deployProject(projectId, userId, options = {}) {
     // Record failure in DB
     if (authorizedProject && pipelineContextValidated) {
       try {
-        await pool.query(
+        const failedRecord = await pool.query(
           `INSERT INTO deployment_history (project_id, pipeline_execution_id, deployment_attempt, status, deployed_at, failure_reason)
-           VALUES ($1, $2, $3, 'FAILED', NOW(), $4)`,
+           VALUES ($1, $2, $3, 'FAILED', NOW(), $4) RETURNING id`,
           [projectId, pipelineExecutionId, Number.isInteger(options.attempt) ? options.attempt : 1, err.message || "Unknown error"]
         );
+        await recordPolicyValidation(failedRecord?.rows?.[0]?.id, policyValidation);
       } catch {}
     }
 
