@@ -1,0 +1,6 @@
+models/
+*.joblib
+*.pkl
+__pycache__/
+.pytest_cache/
+test_app.py
