@@ -9,7 +9,8 @@ async function collect({get,host,projectKey,options}){
  const scope=scopeParameter(host);
  const collected=[],keys=new Set();let total;
  for(let page=1;page<=20;page++){
-  const data=(await get(`${host}/api/issues/search?${scope}=${encodeURIComponent(projectKey)}&ps=500&p=${page}`,options)).data;
+  // Only open issues: closed/fixed ones from earlier analyses must not block the gate.
+  const data=(await get(`${host}/api/issues/search?${scope}=${encodeURIComponent(projectKey)}&resolved=false&ps=500&p=${page}`,options)).data;
   const paging=data?.paging;
   if(!Array.isArray(data?.issues)||!paging||!Number.isSafeInteger(paging.total)||paging.total<0||paging.total>10000||paging.pageIndex!==page||paging.pageSize!==500||(data.total!==undefined&&data.total!==paging.total))throw fail('SAST_ISSUE_EVIDENCE_INCOMPLETE');
   if(total!==undefined&&total!==paging.total)throw fail('SAST_ISSUE_EVIDENCE_INCOMPLETE');total=paging.total;
