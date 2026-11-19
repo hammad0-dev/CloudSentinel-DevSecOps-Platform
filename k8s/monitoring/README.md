@@ -23,8 +23,12 @@ collected. They need paid AWS services/ingestion and are excluded by LI-4 for co
 
 - `loki-values.yaml` — Loki single binary, filesystem storage, 7-day retention, 24 h max query range.
 - `promtail-values.yaml` — Promtail with the three labelled sources above.
-- `kube-prometheus-stack-values.yaml` — Prometheus, Alertmanager, Grafana (Loki datasource), scrape of
-  the backend `/metrics`, and three alert rules: `PodCrashLooping`, `DeploymentUnavailable`, `PipelineRunsFailing`.
+- `kube-prometheus-stack-values.yaml` — Prometheus, Alertmanager, scrape of the backend `/metrics`, and
+  three alert rules: `PodCrashLooping`, `DeploymentUnavailable`, `PipelineRunsFailing`. Grafana is disabled.
+
+**Grafana is off by default.** On the 6 GB Minikube node Grafana was OOMKilled. Metrics are viewed in the
+Prometheus UI; logs and alerts are in the CloudSentinel Monitoring page (`/api/monitoring/*`). To enable it on
+a bigger node, uncomment the `grafana:` block in the values file (it needs about a 384Mi memory limit).
 
 ## Install
 
@@ -38,12 +42,12 @@ helm upgrade --install promtail grafana/promtail -n monitoring -f k8s/monitoring
 helm upgrade --install kps prometheus-community/kube-prometheus-stack -n monitoring -f k8s/monitoring/kube-prometheus-stack-values.yaml
 # Backend -> Loki (LOKI_URL=http://localhost:3100 in backend/.env)
 kubectl -n monitoring port-forward svc/loki-gateway 3100:80
-# Grafana UI (admin / change-me): http://localhost:3001
-kubectl -n monitoring port-forward svc/kps-grafana 3001:80
+# Prometheus UI (targets, metrics, alert rules): http://localhost:9090
+kubectl -n monitoring port-forward svc/kps-kube-prometheus-stack-prometheus 9090:9090
 ```
 
-Before installing, edit the backend scrape target in `kube-prometheus-stack-values.yaml`
-(`host.docker.internal:3000` by default) and, for the Promtail file job, make sure the node path
+Before installing, check the backend scrape target in `kube-prometheus-stack-values.yaml`
+(`host.minikube.internal:3000` by default; use `host.docker.internal:3000` for kind/Docker Desktop) and, for the Promtail file job, make sure the node path
 `/var/log/cloudsentinel` holds `app.log` (run the API with `APP_LOG_FILE=/var/log/cloudsentinel/app.log`).
 
 ## Backend settings (`backend/.env`)
@@ -51,7 +55,7 @@ Before installing, edit the backend scrape target in `kube-prometheus-stack-valu
 | Variable | Purpose |
 |---|---|
 | `LOKI_URL` | Loki base URL for `/api/monitoring/logs` and alert context |
-| `LOKI_PUSH_URL` | Optional: push backend events straight to Loki |
+| `LOKI_PUSH_URL` | Optional: push backend events straight to Loki. Either the base URL (`http://localhost:3100`) or the full push URL (`http://localhost:3100/loki/api/v1/push`). Failed pushes log a `loki_push_failed` warn, at most once per minute. |
 | `MONITORING_ADMIN_EMAILS` | Comma list of users who see platform-wide alerts/logs; others see only their projects |
 | `METRICS_TOKEN` | Optional bearer token required on `/metrics` |
 | `K8S_SIGNALS` | `off` disables kubectl-based detection rules |

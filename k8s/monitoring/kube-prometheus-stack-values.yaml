@@ -1,4 +1,4 @@
-# Module 11 FE-3: Prometheus + Alertmanager + Grafana (small), scraping the CloudSentinel /metrics endpoint.
+# Module 11 FE-3: Prometheus + Alertmanager (Grafana off, see below), scraping the CloudSentinel /metrics endpoint.
 # helm upgrade --install kps prometheus-community/kube-prometheus-stack -n monitoring \
 #   -f k8s/monitoring/kube-prometheus-stack-values.yaml
 # Only the three rules below are installed (default rule bundle disabled to keep it small).
@@ -35,13 +35,13 @@ prometheus:
       requests: { cpu: 100m, memory: 256Mi }
       limits: { memory: 768Mi }
     # CloudSentinel backend. Replace the target with where the API listens as seen from the cluster
-    # (e.g. host.docker.internal:3000 for kind/Docker Desktop, host.minikube.internal:3000 for minikube).
+    # (host.minikube.internal:3000 for minikube, host.docker.internal:3000 for kind/Docker Desktop).
     additionalScrapeConfigs:
       - job_name: cloudsentinel-backend
         metrics_path: /metrics
         # authorization: { type: Bearer, credentials: <METRICS_TOKEN> }   # if METRICS_TOKEN is set
         static_configs:
-          - targets: ["host.docker.internal:3000"]
+          - targets: ["host.minikube.internal:3000"]
 
 alertmanager:
   alertmanagerSpec:
@@ -59,16 +59,22 @@ alertmanager:
       - name: "null"
       # Add a webhook/email/Slack receiver here and route severity=~"critical|warning" to it.
 
+# Grafana is disabled: it was OOMKilled on the 6 GB Minikube node (192Mi limit). Metrics are viewed in
+# Prometheus; logs and alerts in the CloudSentinel Monitoring page. To enable on a bigger node, replace
+# this with the block below (needs ~384Mi limit).
 grafana:
-  adminPassword: change-me
-  resources:
-    requests: { cpu: 25m, memory: 96Mi }
-    limits: { memory: 192Mi }
-  additionalDataSources:
-    - name: Loki
-      type: loki
-      access: proxy
-      url: http://loki-gateway.monitoring.svc.cluster.local
+  enabled: false
+# grafana:
+#   enabled: true
+#   adminPassword: change-me
+#   resources:
+#     requests: { cpu: 50m, memory: 256Mi }
+#     limits: { memory: 384Mi }
+#   additionalDataSources:
+#     - name: Loki
+#       type: loki
+#       access: proxy
+#       url: http://loki-gateway.monitoring.svc.cluster.local
 
 additionalPrometheusRulesMap:
   cloudsentinel:
