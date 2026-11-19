@@ -101,7 +101,10 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     const executionId = await resolvePipelineExecutionId(pool, req.user, projectId);
     const targetUrl = await require('../services/activeDastPrerequisites').baselineTarget(pool,{projectId,executionId,configuredTarget:project.rows[0].target_url});
     if (!targetUrl) return res.status(400).json({ error: "No DAST target URL configured for this project. Set one on the DAST results page first." });
-    const result = await runBaselineScan({ pool, projectId, executionId, targetUrl, userId: req.user.id });
+    const engine = require('../services/ml/engines').dastEngine(); // DAST_ENGINE=zap (default) | ml
+    const result = engine === 'ml'
+      ? await require('../services/ml/mlDastScan').runMlBaselineScan({ pool, projectId, executionId, targetUrl, userId: req.user.id })
+      : await runBaselineScan({ pool, projectId, executionId, targetUrl, userId: req.user.id });
     return res.json({ success: true, ...result });
   } catch (error) {
     console.error(`[dast project=${projectId}]`, error.message);

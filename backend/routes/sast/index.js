@@ -75,6 +75,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
   const continueAfterCompileFailure = continueOnBuildFailure();
 
   try {
+    const engine = require("../../services/ml/engines").sastEngine(); // SAST_ENGINE=sonar (default) | ml
     const projectRes = await pool.query("SELECT * FROM projects WHERE id = $1 AND user_id = $2", [pid, req.user.id]);
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
 
@@ -128,7 +129,7 @@ router.post("/scan/:projectId", auth, async (req, res) => {
       if (fs.existsSync(cloneTarget)) fs.rmSync(cloneTarget, { recursive: true, force: true });
     }
 
-    await assertSonarReachable();
+    if (engine === "sonar") await assertSonarReachable();
 
     const t0 = Date.now();
     const phase = (label) =>
@@ -137,6 +138,15 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     await gitCloneAsync(cloneUrl, cloneTarget);
     const provenance=await require('../../services/stageProvenance').prepare(pool,{projectId:pid,executionId:pipelineExecutionId,userId:req.user.id},cloneTarget);
     phase(useShallowGitClone() ? "git clone finished (shallow)" : "git clone finished (full)");
+
+    if (engine === "ml") {
+      // Same scan_history row, scan_results persistence and failure path as SonarQube.
+      const ml = await require("../../services/ml/mlSastScan").runMlSast({ pool, projectId: pid, scanHistoryId, cloneTarget, provenance, coerceIssueRow });
+      phase(`ML SAST finished (${ml.tool}, ${ml.files} files)`);
+      if (commissioningCheckout) commissioningCheckout.cleanup();
+      else if (!commissioning && !shouldKeepClone() && fs.existsSync(cloneTarget)) fs.rmSync(cloneTarget, { recursive: true, force: true });
+      return res.json({ success: true, total: ml.summary.total, summary: ml.summary, engine: "ml", tool: ml.tool });
+    }
 
     const hasPom = fs.existsSync(path.join(cloneTarget, "pom.xml"));
     if (hasPom) {

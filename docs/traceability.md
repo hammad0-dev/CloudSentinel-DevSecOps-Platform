@@ -17,3 +17,16 @@ Every change maps to an SRS requirement (Module, FE-x). One row per requirement:
 | 11 | FE-5 | Incident investigation and response | `backend/routes/monitoring.js` (`GET /alerts`, `PATCH /alerts/:id`, `GET /alerts/:id/context`, `GET /logs`), `backend/services/lokiQuery.js` (safe LogQL builder, 24 h / 1000-line bounds), `backend/services/alertStore.js` (OPEN → ACKNOWLEDGED → RESOLVED), `frontend/src/pages/MonitoringAlerts.jsx` (filters, ack/resolve with note, context panel, log search) | `backend/test/monitoring.test.js` ("transition table", "OPEN -> ACKNOWLEDGED -> RESOLVED…", "transition rejects…", "list filters are parameterised…", "buildLogQL builds…", "buildLogQL rejects injection attempts", "buildRange bounds range and limit", "monitoring routes…") |
 
 Module 11 scope: LI-4, cloud-native monitoring and log aggregation only (no SOC). Run: `cd backend && npm run test:monitoring`.
+
+### ML scan engines (plumbing, no trained models yet)
+
+The SRS module and FE numbers for SAST and DAST are not recorded in this repository; the rows below are
+marked **TBC** until they are confirmed against the SRS.
+
+| Module | Req | Requirement | Files | Tests |
+|---|---|---|---|---|
+| SAST (TBC) | FE-? (TBC) | ML SAST engine behind `SAST_ENGINE=sonar\|ml` (default `sonar`); findings persisted to `scan_history`/`scan_results` with the Sonar row shape so the gate, governance and UI are unchanged | `services-ml/ml-sast/{app.py,requirements.txt,Dockerfile,README.md}`, `backend/services/ml/{mlHttp,mlSastClient,mlSastScan,engines}.js`, `backend/routes/sast/index.js`, `backend/migrations/023_scan_engine_provenance.sql` | `backend/test/ml-engines.test.js` ("ML SAST persists findings…gate counts them", "SAST route: default flag keeps SonarQube…", "unreachable ML service fails fast…"); `services-ml/ml-sast/test_app.py` |
+| DAST (TBC) | FE-? (TBC) | ML DAST engine on the baseline DAST path behind `DAST_ENGINE=zap\|ml` (default `zap`); findings persisted to `dast_scans`/`dast_findings` with the ZAP fingerprint and the same target authorization | `services-ml/ml-dast/{app.py,requirements.txt,Dockerfile,README.md}`, `backend/services/ml/{mlHttp,mlDastClient,mlDastScan,engines}.js`, `backend/routes/dast.js`, `backend/migrations/023_scan_engine_provenance.sql` | `backend/test/ml-engines.test.js` ("ML DAST persists findings…", "ML DAST only scans the verified staging target…", "DAST route: default flag runs the ZAP baseline path…"); `services-ml/ml-dast/test_app.py` |
+| SAST/DAST (TBC) | FE-? (TBC) | Tool provenance: model name + version + SHA-256 of the model file recorded per scan (`tool_provenance`, `scan_engine`); untrained models refused by default | `backend/services/ml/engines.js` (`toolProvenance`, `requireUsableModel`), `docs/ml-architecture.md` | `backend/test/ml-engines.test.js` ("untrained models are refused…", provenance assertions in the persistence tests) |
+
+Run: `cd backend && npm run test:ml`; services: `pytest services-ml/ml-sast`, `pytest services-ml/ml-dast`.
