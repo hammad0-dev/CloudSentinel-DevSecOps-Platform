@@ -1,0 +1,7 @@
+# Extra runtime deps when MODEL_PATH is a CodeBERT folder or the CodeBERT-embedding + XGBoost model.
+# torch must come from the CPU index: pip install -r requirements-codebert.txt --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+transformers==4.46.3
+tokenizers==0.20.3
+safetensors==0.8.0
+xgboost-cpu==2.1.1
