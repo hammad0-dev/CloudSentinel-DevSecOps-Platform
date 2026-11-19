@@ -1,0 +1,55 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-run-as-non-root
+  annotations:
+    policies.kyverno.io/title: Require runAsNonRoot
+    policies.kyverno.io/category: CloudSentinel FE-1/FE-2
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: ["cloudsentinel-p-*"]
+      validate:
+        message: "Running as root is not allowed. Set securityContext.runAsNonRoot to true on the Pod or every container."
+        anyPattern:
+          - spec:
+              securityContext:
+                runAsNonRoot: true
+              =(initContainers):
+                - =(securityContext):
+                    =(runAsNonRoot): true
+              containers:
+                - =(securityContext):
+                    =(runAsNonRoot): true
+          - spec:
+              =(initContainers):
+                - securityContext:
+                    runAsNonRoot: true
+              containers:
+                - securityContext:
+                    runAsNonRoot: true
+    - name: run-as-user-not-zero
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: ["cloudsentinel-p-*"]
+      validate:
+        message: "runAsUser 0 (root) is not allowed."
+        pattern:
+          spec:
+            =(securityContext):
+              =(runAsUser): ">0"
+            =(initContainers):
+              - =(securityContext):
+                  =(runAsUser): ">0"
+            containers:
+              - =(securityContext):
+                  =(runAsUser): ">0"

@@ -1,0 +1,25 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-labels
+  annotations:
+    policies.kyverno.io/title: Require app and owner labels
+    policies.kyverno.io/category: CloudSentinel FE-1
+    policies.kyverno.io/severity: low
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: check-app-owner-labels
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: ["cloudsentinel-p-*"]
+      validate:
+        message: "The labels 'app' and 'owner' are required."
+        pattern:
+          metadata:
+            labels:
+              app: "?*"
+              owner: "?*"
