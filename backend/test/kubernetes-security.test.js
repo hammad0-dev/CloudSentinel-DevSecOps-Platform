@@ -49,8 +49,9 @@ test("generated Node image uses npm start, ownership, non-root user, and detecte
   const dir = tempRepo({ "package.json": JSON.stringify({ scripts: { start: "node server.js --port=4100" } }) });
   try {
     const dockerfile = generateDockerfileContent("node", dir);
-    assert.match(dockerfile, /COPY --chown=10001:10001/);
-    assert.match(dockerfile, /USER 10001:10001/);
+    assert.match(dockerfile, /COPY --chown=node:node/);
+    assert.match(dockerfile, /USER node\n/);
+    assert.doesNotMatch(dockerfile, /USER root|USER 0/);
     assert.match(dockerfile, /CMD \["npm", "start"\]/);
     assert.match(dockerfile, /PORT=4100/);
     assert.equal(detectContainerPort("node", dir), 4100);
@@ -61,10 +62,10 @@ test("generated Python image runs with owned files as non-root", () => {
   const dir = tempRepo();
   try {
     const dockerfile = generateDockerfileContent("python", dir);
-    assert.match(dockerfile, /useradd --uid 10001/);
-    assert.match(dockerfile, /COPY --chown=10001:10001/);
+    assert.match(dockerfile, /useradd --uid 1000 /);
+    assert.match(dockerfile, /COPY --chown=1000:1000/);
     assert.match(dockerfile, /PYTHONDONTWRITEBYTECODE=1/);
-    assert.match(dockerfile, /USER 10001:10001/);
+    assert.match(dockerfile, /USER 1000:1000/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
