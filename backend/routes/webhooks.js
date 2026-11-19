@@ -2,6 +2,7 @@ const express = require("express");
 const crypto = require("crypto");
 const pool = require("../db");
 const { runPipeline } = require("../services/orchestrator");
+const { logEvent, clientIp } = require("../services/securityLog");
 
 const router = express.Router();
 
@@ -60,6 +61,7 @@ router.post("/github", async (req, res) => {
     const signature = req.headers["x-hub-signature-256"];
 
     if (!signature) {
+      logEvent({ level: "warn", event: "webhook_signature_invalid", ip: clientIp(req), detail: { reason: "missing", delivery: req.headers["x-github-delivery"] || null } });
       return res.status(401).json({ error: "Missing signature" });
     }
     if (!Buffer.isBuffer(req.rawBody)) {
@@ -89,6 +91,11 @@ router.post("/github", async (req, res) => {
 
     if (matchingProjects.length === 0) {
       console.warn("[webhook] Signature mismatch for repository " + repositoryIdentity);
+      logEvent({
+        level: "warn", event: "webhook_signature_invalid", ip: clientIp(req),
+        projectId: projectRes.rows.length === 1 ? projectRes.rows[0].id : null,
+        detail: { reason: "mismatch", repository: repositoryIdentity, delivery: req.headers["x-github-delivery"] || null },
+      });
       return res.status(401).json({ error: "Invalid signature" });
     }
     if (matchingProjects.length > 1) {

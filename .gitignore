@@ -27,3 +27,6 @@ __pycache__/
 backups/
 .codex/
 .terraform/
+
+# Module 11 structured app log
+backend/logs/
