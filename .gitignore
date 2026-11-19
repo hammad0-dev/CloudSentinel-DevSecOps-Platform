@@ -30,3 +30,16 @@ backups/
 
 # Module 11 structured app log
 backend/logs/
+
+# ML model binaries and datasets are mounted at runtime, never committed
+services-ml/**/models/
+models/
+*.joblib
+*.pkl
+*.pickle
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.h5
+.pytest_cache/
