@@ -194,6 +194,8 @@ Optional env:
 |---|---|---|
 | `ML_DAST_MAX_PAGES` | 50 | Per-scan page budget the backend passes |
 | `ML_DAST_MAX_REQUESTS` | 500 | Per-scan request budget the backend passes |
+| `ML_DAST_SEED_PATHS` | unset | Comma-separated extra crawl start paths on the staging target, e.g. `/users?name=alice,/search?q=test` (see [DAST demo](#dast-demo)) |
+| `ML_DAST_OPENAPI_URL` | unset | Path (or same-origin URL) of an OpenAPI/Swagger JSON document on the staging target, e.g. `/openapi.json` |
 | `ML_SAST_VENV`, `ML_DAST_VENV` | – | Reuse existing venvs |
 | `DAST_ACTIVE_ENABLED` | unset | Leave unset: Active DAST is the frozen ZAP active scanner and is not part of this run |
 
@@ -225,3 +227,104 @@ were recorded as scan provenance. Minikube was at 192.168.49.2.
   are unreachable without seed URLs or an API description.
 - This is the crawler limitation documented in the ml-dast model card. Neither model was tuned for
   these fixtures.
+
+## DAST demo
+
+The goal: show the ML DAST stage finding real issues on a staging app. Two pieces make that possible:
+
+- **Crawl seeds.** ml-dast `/scan` accepts `seedPaths` and `openapiUrl` (see
+  `services-ml/ml-dast/README.md`). The backend sends them from `ML_DAST_SEED_PATHS` and
+  `ML_DAST_OPENAPI_URL`. Projects have no per-project scan settings field, so seeds apply per
+  backend instance.
+  - Both the backend and ml-dast resolve every seed against the authorized staging URL. A seed on
+    any other origin is refused before any traffic.
+  - The seeds and ml-dast's crawl coverage (`pages`, `points_found`, `points_probed`, `requests`)
+    are stored in `dast_scans.tool_provenance`.
+- **Demo target** `demo/forms-app/`, mirrored at the public repo
+  https://github.com/hammad0-dev/cloudsentinel-demo-forms. It is a Flask catalogue whose endpoints
+  are all linked from HTML:
+
+  | Endpoint | Input | Ground truth |
+  |---|---|---|
+  | `GET /search` | `q` | SQL injection (CWE-89) |
+  | `GET /search-safe` | `q` | safe |
+  | `POST /feedback` | `name` | reflected XSS (CWE-79) |
+  | `POST /feedback` | `message` | safe (not echoed) |
+  | `POST /feedback-safe` | `name`, `message` | safe |
+
+  It ships a non-root Dockerfile and hardened `k8s/` manifests. `k8s/.appname` names the
+  Deployment for the deploy stage.
+
+**Commands.** These assume the services from [Running the full ML pipeline](#running-the-full-ml-pipeline).
+
+```bash
+# 1. Pipeline run (fixture "demo-forms"; repo URL defaults to the public mirror, override with E2E_DEMO_FORMS_REPO)
+E2E_API=http://127.0.0.1:3100 node scripts/e2e-smoke.js demo-forms
+
+# 2. DAST on the same app outside the pipeline (used here because SAST blocks the pipeline first)
+cd demo/forms-app && docker build -t demo-forms:0.1.0 . && minikube image load demo-forms:0.1.0
+kubectl create namespace cs-dast-demo && kubectl -n cs-dast-demo create serviceaccount cloudsentinel-app
+kubectl -n cs-dast-demo apply -f k8s/ && kubectl -n cs-dast-demo rollout status deployment/demo-forms
+URL=http://$(minikube ip):$(kubectl -n cs-dast-demo get svc demo-forms -o jsonpath='{.spec.ports[0].nodePort}')
+#    then set it as the project's DAST target and scan through the backend (owner-configured target):
+#    PATCH /api/dast/target/<projectId> {"target_url": "$URL"};  POST /api/dast/scan/<projectId>
+# 3. Seeds for an app the crawler cannot see (JSON root), directly against ml-dast:
+curl -s -X POST 127.0.0.1:8002/scan -H 'content-type: application/json' \
+  -d '{"baseUrl":"http://192.168.49.2:31344","seedPaths":["/users?name=alice","/search?q=test"]}'
+# cleanup: kubectl delete namespace cs-dast-demo
+```
+
+**Expected output.**
+- Step 1 ends with `Gate: BLOCKED — CRITICAL security vulnerability found in SAST stage`, followed
+  by the SAST rows.
+- Step 2 returns `{"success":true,…,"summary":{"total":3,"high":3,…},"coverage":{"pages":7,"points_found":6,…}}`.
+
+### Demo results (2026-11-20)
+
+Engines: ml-sast-hybrid 2.0.0 and ml-dast-lr 1.0.0 (`ce04524f…`), threshold 0.9. No seeds were set
+for the demo app. Nothing was tuned to it; the app was written before it was scanned and was not
+changed afterwards.
+
+**Pipeline** (project 27, execution 79): **blocked at SAST** in 3 s. It was not deployed, so the
+pipeline's DAST stage did not run. That is the gate working as designed: a CRITICAL SAST finding
+stops the pipeline before deploy.
+
+| SAST (ML) finding | Line (function) | Verdict |
+|---|---|---|
+| CRITICAL SQL injection | 92 `search` | **true** |
+| HIGH XSS | 110 `feedback` | **true** |
+| HIGH XSS | 69 `page` (layout renders `body \| safe`) | true sink, shared by every page; debatable |
+| CRITICAL SQL injection | 50 `init_db` (constant DDL, parameterized `executemany`) | false alarm |
+| CRITICAL SQL injection | 101 `search_safe` (parameterized) | false alarm |
+| HIGH XSS | 73 `product_table` (autoescaped template) | false alarm |
+| HIGH XSS | 84 `index` (static HTML) | false alarm |
+| HIGH XSS | 119 `feedback_safe` (autoescaped template) | false alarm |
+
+ML SAST reports per function. It found both real bugs but also flagged both safe twins and three
+other functions: 5 of 8 findings are false alarms.
+
+**ML DAST outside the pipeline.** Same image and manifests, deployed to namespace `cs-dast-demo` at
+`http://192.168.49.2:31989`. The scan ran through the backend runner (`dast_scans` 31,
+`owner_configured_target`) with the pipeline budgets (50 pages, 500 requests). It took **14.9 s**:
+7 pages, 6 injection points, 289 requests.
+
+| Endpoint, parameter | Ground truth | ML DAST | Result |
+|---|---|---|---|
+| `GET /search` `q` | SQLi | HIGH CWE-89, payload `test') OR 1=2-- -`, evidence "status 500 (baseline 200)" | **true finding** |
+| `POST /feedback` `name` | XSS | HIGH CWE-79, `'><svg onload=…>` reflected unencoded | **true finding** |
+| `POST /feedback-safe` `name` | safe | HIGH CWE-79, payload `javascript:cs…()` "reflected unencoded" in text context | **false alarm** |
+| `GET /search-safe` `q` | safe | none | true negative |
+| `POST /feedback` `message`, `POST /feedback-safe` `message` | safe | none | true negatives |
+
+The scan found both real vulnerabilities, missed nothing, and raised 1 false alarm in 3 findings.
+The false alarm is a payload with no HTML special characters: escaping leaves it unchanged, so it
+looks "reflected unencoded" even though it is harmless in a text context.
+
+**Seeds on a real staging app.** This was a direct ml-dast call against the node-express staging
+app (NodePort 31344), whose `/` returns JSON:
+
+| Seeds | Coverage | Findings |
+|---|---|---|
+| none | 1 page, 0 points, 1 request | none (nothing tested) |
+| `/users?name=alice`, `/search?q=test` | 3 pages, 2 points, 97 requests, 4.8 s | CWE-89 `GET /users` `name` (0.9995), CWE-79 `GET /search` `q` (0.9993), both true and matching that app's SAST findings |
+| `http://example.com/x` | none | HTTP 400 `target refused: host 'example.com' is not in the allowlist`, no traffic |
