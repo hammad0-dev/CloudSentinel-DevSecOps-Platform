@@ -19,17 +19,37 @@ def load_payloads(classes=("CWE-89", "CWE-79"), path=PAYLOADS_PATH):
     return [p for p in json.loads(Path(path).read_text())["payloads"] if p["class"] in classes]
 
 
+# Response headers kept for the passive checks (v2). Only baseline-type requests store them.
+HEADERS = ("content-security-policy", "x-frame-options", "x-content-type-options", "referrer-policy",
+           "strict-transport-security", "access-control-allow-origin", "access-control-allow-credentials")
+CORS_ORIGIN = "http://{M}.invalid"
+
+
+def header_snapshot(resp):
+    h = {k: resp.headers[k] for k in HEADERS if k in resp.headers}
+    try:
+        cookies = resp.raw.headers.getlist("Set-Cookie")
+    except AttributeError:
+        cookies = [resp.headers["set-cookie"]] if "set-cookie" in resp.headers else []
+    if cookies:
+        h["set-cookie"] = [c[:300] for c in cookies]
+    return h
+
+
 def new_marker():
     return "cs" + secrets.token_hex(5)
 
 
-def snapshot(resp, elapsed):
-    return {"status": resp.status_code, "ctype": resp.headers.get("content-type", ""), "body": resp.text[:BODY_LIMIT],
+def snapshot(resp, elapsed, headers=False):
+    snap = {"status": resp.status_code, "ctype": resp.headers.get("content-type", ""), "body": resp.text[:BODY_LIMIT],
             "elapsed": round(elapsed, 4), "location": resp.headers.get("location", ""),
             "nosniff": resp.headers.get("x-content-type-options", "").lower() == "nosniff"}
+    if headers:
+        snap["headers"] = header_snapshot(resp)
+    return snap
 
 
-def send(client, point, value):
+def send(client, point, value, headers=False, extra_headers=None):
     params = dict(point.params)
     path = point.path
     if point.location == "path":
@@ -50,30 +70,45 @@ def send(client, point, value):
     from urllib.parse import quote
     if point.location == "path":
         path = "/".join(quote(s, safe="") if i else s for i, s in enumerate(path.split("/")))
+    if extra_headers:
+        kw["headers"] = extra_headers
     resp, elapsed = client.request(point.method, path, **kw)
-    return snapshot(resp, elapsed)
+    return snapshot(resp, elapsed, headers)
 
 
-def probe_point(client, point, payloads):
-    """Return the raw records for one point: base1, base2, probe, then one per payload."""
+def probe_point(client, point, payloads, v2=False):
+    """Return the raw records for one point: base1, base2, probe, then one per payload.
+
+    v2: baselines store response headers, one extra "cors" request carries a foreign Origin, and
+    payloads marked "repeat" are sent twice (elapsed2) so a one-off slow response is not a delay."""
     original = dict(point.params).get(point.param, "1") or "1"
     records = {"point": {"method": point.method, "path": point.path, "param": point.param, "location": point.location,
                          "template": point.template, "params": list(point.params)}, "responses": []}
     for kind in ("base1", "base2"):
-        records["responses"].append({"kind": kind, "value": original, **send(client, point, original)})
+        records["responses"].append({"kind": kind, "value": original, **send(client, point, original, headers=v2)})
     marker = new_marker()
     records["responses"].append({"kind": "probe", "marker": marker, "value": marker, **send(client, point, marker)})
+    if v2:
+        marker = new_marker()
+        origin = CORS_ORIGIN.replace("{M}", marker)
+        records["responses"].append({"kind": "cors", "marker": marker, "value": original, "origin": origin,
+                                     **send(client, point, original, headers=True, extra_headers={"Origin": origin})})
     for p in payloads:
         marker = new_marker()
         raw = p["value"].replace("{M}", marker)
         value = original + raw if p["mode"] == "append" else raw
-        records["responses"].append({"kind": "payload", "payload_id": p["id"], "marker": marker, "value": value, **send(client, point, value)})
+        rec = {"kind": "payload", "payload_id": p["id"], "marker": marker, "value": value, **send(client, point, value)}
+        if v2 and p.get("repeat"):
+            rec["elapsed2"] = send(client, point, value)["elapsed"]
+        records["responses"].append(rec)
     return records
 
 
 def point_rows(records, payloads):
     """Feature dicts for every payload response of one point (same order as payload records)."""
     by_kind = {r["kind"]: r for r in records["responses"] if r["kind"] != "payload"}
+    peers = {r["payload_id"]: (by_id_all[r["payload_id"]], r) for r in records["responses"]
+             if r["kind"] == "payload" and r["payload_id"] in (by_id_all := {p["id"]: p for p in payloads})}
     by_id = {p["id"]: p for p in payloads}
     resp_by_pid = {r["payload_id"]: r for r in records["responses"] if r["kind"] == "payload"}
     rows = []
@@ -85,6 +120,6 @@ def point_rows(records, payloads):
         if p.get("pair"):
             other = next((q for q in payloads if q.get("pair") == p["pair"] and q["id"] != p["id"]), None)
             pair = resp_by_pid.get(other["id"]) if other else None
-        feats = row_features(p, records["point"]["location"], r, r["marker"], by_kind["base1"], by_kind["base2"], by_kind["probe"], pair)
+        feats = row_features(p, records["point"]["location"], r, r["marker"], by_kind["base1"], by_kind["base2"], by_kind["probe"], pair, peers=peers)
         rows.append((p, r, feats))
     return rows
