@@ -432,6 +432,57 @@ test("ML DAST v2 classes persist and normalize: rule findings are vulnerabilitie
   } finally { stageProvenance.binding = binding; await svc.close(); }
 });
 
+// ---- ml-dast v3 classes: stored XSS (rule) and the CSRF heuristic ----
+const V3_FINDINGS = [
+  { alert: "Cross Site Scripting (Persistent)", attack_type: "stored_xss", severity: "HIGH", endpoint: "http://192.168.49.2:31281/guestbook", method: "POST", param: "message", request_payload: "cs1'\"<i>cs1</i>", response_details: "[rule-based] marker submitted to POST /guestbook [message] came back unescaped in a later page: /guestbook", cwe_id: 79, solution: "Encode stored values.", confidence: 1, engine: "rule" },
+  { alert: "Absence of Anti-CSRF Tokens (heuristic)", attack_type: "csrf_heuristic", severity: "LOW", endpoint: "http://192.168.49.2:31281/settings", method: "POST", param: "", request_payload: "", response_details: "[rule-based heuristic, medium confidence] POST form on /settings has no anti-CSRF token field and session cookie sid has no SameSite=Lax/Strict", cwe_id: 352, solution: "Add a token.", confidence: 0.5, engine: "rule" },
+];
+
+test("ML DAST v3 classes: stored XSS is a HIGH vulnerability, the CSRF heuristic a LOW review item", async () => {
+  const svc = await mockService({ info: TRAINED("ml-dast-lr"), findings: V3_FINDINGS });
+  const db = dastDb();
+  const binding = stageProvenance.binding;
+  stageProvenance.binding = async () => null;
+  try {
+    const out = await runMlBaselineScan({ pool: db.pool, projectId: 11, executionId: 23, targetUrl: db.stagingUrl, userId: 3, client: createMlDastClient({ url: svc.url }) });
+    assert.deepEqual(out.summary, { total: 2, high: 1, medium: 0, low: 1, informational: 0 });
+    const scanRow = db.scans[0];
+    const by = Object.fromEntries(db.findings.map((f) => [f.attack_type, normalize("DAST", f, { project_id: 11, scan_id: scanRow.id, detailTable: "dast_findings", mode: "BASELINE" })]));
+    assert.deepEqual([by.stored_xss.severity, by.stored_xss.classification, by.stored_xss.references[0]], ["HIGH", "VULNERABILITY", "CWE-79"]);
+    assert.ok(by.stored_xss.mappings.some((m) => m.id === "A03:2021"), "stored XSS maps to OWASP A03:2021 like reflected XSS");
+    assert.deepEqual([by.csrf_heuristic.severity, by.csrf_heuristic.classification, by.csrf_heuristic.references[0]], ["LOW", "HOTSPOT_REVIEW", "CWE-352"]);
+  } finally { stageProvenance.binding = binding; await svc.close(); }
+});
+
+test("passive checks and the CSRF heuristic are clamped to LOW/INFO whatever severity arrives", () => {
+  const scan = { project_id: 11, scan_id: 1, detailTable: "dast_findings", mode: "BASELINE" };
+  for (const [attack, sev] of [["csrf_heuristic", "HIGH"], ["csrf_heuristic", "CRITICAL"], ["passive_missing_csp", "MEDIUM"], ["passive_cookie_no_httponly", "HIGH"]]) {
+    assert.equal(normalize("DAST", { id: 1, alert: "x", attack_type: attack, severity: sev, endpoint: "http://h/", method: "GET" }, scan).severity, "LOW", `${attack} ${sev}`);
+  }
+  assert.equal(normalize("DAST", { id: 2, alert: "x", attack_type: "passive_missing_nosniff", severity: "INFORMATIONAL", endpoint: "http://h/" }, scan).severity, "INFO");
+  assert.equal(normalize("DAST", { id: 3, alert: "x", attack_type: "stored_xss", severity: "HIGH", endpoint: "http://h/" }, scan).severity, "HIGH", "only passive/heuristic are clamped");
+});
+
+test("compliance: a CSRF heuristic (HOTSPOT_REVIEW) is not an unresolved vulnerability", () => {
+  const src = require("fs").readFileSync(require.resolve("../services/governance/complianceResult"), "utf8");
+  assert.match(src, /!\['HOTSPOT_REVIEW','UNCLASSIFIED_REVIEW'\]\.includes\(f\.classification\)/);
+});
+
+test("security gate: HIGH stored XSS, passive and heuristic DAST rows never block the pipeline", async () => {
+  const { checkCriticalFindings } = require("../services/orchestrator");
+  const db = require("../db");
+  const calls = [];
+  const realQuery = db.query;
+  // even if the database held HIGH/CRITICAL DAST rows, the DAST stages are not gated: no query is made
+  db.query = async (...a) => { calls.push(a); return { rows: [{ critical: 5, high: 9 }] }; };
+  try {
+    for (const stage of ["DAST", "ACTIVE_DAST"]) {
+      assert.deepEqual(await checkCriticalFindings(11, 23, stage), { evidenceFound: true, hasCritical: false, evidenceConsistent: true }, stage);
+    }
+    assert.equal(calls.length, 0, "the gate never reads DAST findings");
+  } finally { db.query = realQuery; }
+});
+
 test("security gate: DAST findings never block the pipeline; only SAST, Dependency and IaC are gated", async () => {
   const { checkCriticalFindings } = require("../services/orchestrator");
   const gate = await checkCriticalFindings(11, 23, "DAST");

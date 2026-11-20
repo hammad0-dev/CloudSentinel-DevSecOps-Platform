@@ -42,8 +42,13 @@ function normalize(source,row,scan) {
   if(Number(row.cwe_id)>0)references=[`CWE-${row.cwe_id}`];
   // ml-dast v2 passive rule checks (missing headers, cookie flags, CORS) are configuration findings.
   if(/^passive_/.test(String(row.attack_type||'')))classification='MISCONFIGURATION';
+  // ml-dast v3: the CSRF heuristic (medium confidence) needs human review; stored_xss stays a VULNERABILITY.
+  if(String(row.attack_type||'')==='csrf_heuristic')classification='HOTSPOT_REVIEW';
  }
- const f={source,identity:clean(identity),title:clean(title)||'Unnamed finding',description:clean(description),severity:severity(row.severity),location:clean(location),remediation:clean(remediation)||'Review scanner evidence and apply the relevant vendor mitigation.',references:[...new Set(references.map(r=>clean(r).toUpperCase()))],classification};
+ let sev=severity(row.severity);
+ // ml-dast passive checks and the CSRF heuristic are LOW/INFO by contract; never trust a higher label.
+ if(source==='DAST'&&(/^passive_/.test(String(row.attack_type||''))||row.attack_type==='csrf_heuristic')&&!['LOW','INFO'].includes(sev))sev='LOW';
+ const f={source,identity:clean(identity),title:clean(title)||'Unnamed finding',description:clean(description),severity:sev,location:clean(location),remediation:clean(remediation)||'Review scanner evidence and apply the relevant vendor mitigation.',references:[...new Set(references.map(r=>clean(r).toUpperCase()))],classification};
  // Severity, timestamps and unstable row IDs deliberately do not form identity.
  f.fingerprint=crypto.createHash('sha256').update(JSON.stringify([scan.project_id,source,f.identity,f.location])).digest('hex');
  f.mappings=mapFinding(f);
