@@ -89,23 +89,33 @@ def reflection_context(body, marker):
     return "text"
 
 
-def specials_kept(body, payload, marker, window=40):
-    """Fraction of the payload's special characters that appear raw next to a marker occurrence."""
-    specials = {c for c in payload if c in SPECIAL}
-    if not specials:
+def specials_kept(body, payload, marker):
+    """How much of the payload's special characters survive unencoded, in place, around the marker.
+
+    The payload text before and after the marker is compared character by character with the
+    response at the same offsets, so the page's own markup next to the reflection does not count
+    and encoded characters (which change length) do not line up. Returns (fraction kept, angle
+    brackets kept, quote kept), best over all marker occurrences.
+    """
+    k = payload.find(marker)
+    if k < 0:
         return 0.0, 0, 0
-    best = 0.0
-    angle = quote_k = 0
+    prefix, suffix = payload[:k], payload[k + len(marker):]
+    positions = [("p", j, c) for j, c in enumerate(prefix) if c in SPECIAL] + [("s", j, c) for j, c in enumerate(suffix) if c in SPECIAL]
+    if not positions:
+        return 0.0, 0, 0
+    best, angle, quote_k = 0.0, 0, 0
     start = 0
     while True:
         i = body.find(marker, start)
         if i < 0:
             break
-        seg = body[max(0, i - window): i + len(marker) + window]
-        kept = {c for c in specials if c in seg}
-        best = max(best, len(kept) / len(specials))
-        angle |= int("<" in specials and "<" in seg and ">" in seg)
-        quote_k |= int(bool({'"', "'"} & specials & kept))
+        before = body[max(0, i - len(prefix)): i].rjust(len(prefix), "\0")
+        after = body[i + len(marker): i + len(marker) + len(suffix)].ljust(len(suffix), "\0")
+        kept = [c for side, j, c in positions if (before[j] if side == "p" else after[j]) == c]
+        best = max(best, len(kept) / len(positions))
+        angle |= int("<" in kept and (">" in kept or ">" not in {c for _, _, c in positions}))
+        quote_k |= int(bool({'"', "'"} & set(kept)))
         start = i + 1
     return best, angle, quote_k
 

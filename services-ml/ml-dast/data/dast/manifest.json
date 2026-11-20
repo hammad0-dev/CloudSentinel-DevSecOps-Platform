@@ -125,7 +125,7 @@
    "share": 0.0
   },
   "app_predictability": {
-   "rf_5fold_accuracy": 0.561,
+   "rf_5fold_accuracy": 0.554,
    "majority_baseline": 0.282
   },
   "signal_rates_pos_vs_neg": {
@@ -187,7 +187,7 @@
      ],
      "angle_kept": [
       null,
-      0.109
+      0.0
      ],
      "ctx_text": [
       null,
@@ -257,7 +257,7 @@
      ],
      "angle_kept": [
       0.688,
-      0.184
+      0.043
      ],
      "ctx_text": [
       0.25,
@@ -327,7 +327,7 @@
      ],
      "angle_kept": [
       0.688,
-      0.381
+      0.244
      ],
      "ctx_text": [
       0.25,
@@ -397,7 +397,7 @@
      ],
      "angle_kept": [
       0.688,
-      0.204
+      0.072
      ],
      "ctx_text": [
       0.167,
