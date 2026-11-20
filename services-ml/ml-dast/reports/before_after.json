@@ -1,0 +1,647 @@
+{
+ "kind": "lr",
+ "n_common": 78,
+ "only_before": [],
+ "only_after": [
+  "juice-shop|GET|/ftp/{file}|file",
+  "labexpress|GET|/api/items-safe|q",
+  "labexpress|GET|/link-safe|url",
+  "labexpress|GET|/link|url",
+  "labexpress|GET|/next-safe|next",
+  "labexpress|GET|/next|next",
+  "labexpress|GET|/upstream-safe|sku",
+  "labfastapi|GET|/api/orders-safe|item",
+  "labfastapi|GET|/carrier-safe|code",
+  "labfastapi|GET|/link-safe|url",
+  "labfastapi|GET|/link|url",
+  "labfastapi|GET|/notfound-safe|page",
+  "labflask|GET|/api/items-safe|q",
+  "labflask|GET|/link-safe|url",
+  "labflask|GET|/link|url",
+  "labflask|GET|/lookup-safe|name",
+  "labflask|GET|/next-safe|next",
+  "labflask|GET|/next|next",
+  "labflask|GET|/notfound-safe|page",
+  "labflask|POST|/find-safe|q",
+  "labflask|POST|/find|q",
+  "nodegoat|GET|/learn|url",
+  "vulnerable-node|GET|/download|file",
+  "vulnerable-node|GET|/orders|sort",
+  "vulnerable-node|GET|/products/{id}|id",
+  "vulnerable-node|GET|/search|q#CWE-79",
+  "vulnerable-node|GET|/search|q#CWE-89",
+  "vulnerable-node|POST|/contact|email",
+  "vulnerable-node|POST|/contact|message",
+  "vulnerable-node|POST|/login/auth|password",
+  "vulnerable-node|POST|/login/auth|returnurl",
+  "vulnerable-node|POST|/login/auth|username",
+  "vulnerable-node|POST|/tools/ping|host"
+ ],
+ "all": {
+  "metrics": {
+   "before": {
+    "n": 78,
+    "macro_f1": 0.8582198762078842,
+    "per_class": {
+     "safe": {
+      "precision": 0.9444444444444444,
+      "recall": 0.7906976744186046,
+      "f1": 0.8607594936708861,
+      "support": 43,
+      "tp": 34,
+      "fp": 2,
+      "fn": 9
+     },
+     "CWE-89": {
+      "precision": 0.8,
+      "recall": 0.8888888888888888,
+      "f1": 0.8421052631578948,
+      "support": 18,
+      "tp": 16,
+      "fp": 4,
+      "fn": 2
+     },
+     "CWE-79": {
+      "precision": 0.7727272727272727,
+      "recall": 1.0,
+      "f1": 0.8717948717948718,
+      "support": 17,
+      "tp": 17,
+      "fp": 5,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      34,
+      4,
+      5
+     ],
+     [
+      2,
+      16,
+      0
+     ],
+     [
+      0,
+      0,
+      17
+     ]
+    ],
+    "binary": {
+     "precision": 0.7857142857142857,
+     "recall": 0.9428571428571428
+    }
+   },
+   "after": {
+    "n": 78,
+    "macro_f1": 0.8310731529036105,
+    "per_class": {
+     "safe": {
+      "precision": 0.8604651162790697,
+      "recall": 0.8604651162790697,
+      "f1": 0.8604651162790697,
+      "support": 43,
+      "tp": 37,
+      "fp": 6,
+      "fn": 6
+     },
+     "CWE-89": {
+      "precision": 0.8571428571428571,
+      "recall": 1.0,
+      "f1": 0.923076923076923,
+      "support": 18,
+      "tp": 18,
+      "fp": 3,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.7857142857142857,
+      "recall": 0.6470588235294118,
+      "f1": 0.7096774193548386,
+      "support": 17,
+      "tp": 11,
+      "fp": 3,
+      "fn": 6
+     }
+    },
+    "confusion": [
+     [
+      37,
+      3,
+      3
+     ],
+     [
+      0,
+      18,
+      0
+     ],
+     [
+      6,
+      0,
+      11
+     ]
+    ],
+    "binary": {
+     "precision": 0.8285714285714286,
+     "recall": 0.8285714285714286
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 78,
+   "macro_f1": {
+    "before": {
+     "mean": 0.8561319804442002,
+     "ci95": [
+      0.777523598248236,
+      0.9335593646513768
+     ]
+    },
+    "after": {
+     "mean": 0.8252827041287706,
+     "ci95": [
+      0.7321111469198954,
+      0.9036905046833171
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.6956521739130435,
+      0.9500000000000001
+     ],
+     "CWE-79": [
+      0.7407407407407407,
+      0.9743589743589743
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.8148148148148148,
+      1.0
+     ],
+     "CWE-79": [
+      0.5,
+      0.8501785714285712
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": 0.030849276315429847,
+     "ci95": [
+      -0.06596581167643797,
+      0.12758219992320877
+     ]
+    }
+   }
+  }
+ },
+ "own": {
+  "metrics": {
+   "before": {
+    "n": 53,
+    "macro_f1": 0.7752483352138227,
+    "per_class": {
+     "safe": {
+      "precision": 0.9259259259259259,
+      "recall": 0.7352941176470589,
+      "f1": 0.819672131147541,
+      "support": 34,
+      "tp": 25,
+      "fp": 2,
+      "fn": 9
+     },
+     "CWE-89": {
+      "precision": 0.7142857142857143,
+      "recall": 0.8333333333333334,
+      "f1": 0.7692307692307692,
+      "support": 12,
+      "tp": 10,
+      "fp": 4,
+      "fn": 2
+     },
+     "CWE-79": {
+      "precision": 0.5833333333333334,
+      "recall": 1.0,
+      "f1": 0.7368421052631579,
+      "support": 7,
+      "tp": 7,
+      "fp": 5,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      25,
+      4,
+      5
+     ],
+     [
+      2,
+      10,
+      0
+     ],
+     [
+      0,
+      0,
+      7
+     ]
+    ],
+    "binary": {
+     "precision": 0.6538461538461539,
+     "recall": 0.8947368421052632
+    }
+   },
+   "after": {
+    "n": 53,
+    "macro_f1": 0.8718813690350693,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.8235294117647058,
+      "f1": 0.9032258064516129,
+      "support": 34,
+      "tp": 28,
+      "fp": 0,
+      "fn": 6
+     },
+     "CWE-89": {
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.888888888888889,
+      "support": 12,
+      "tp": 12,
+      "fp": 3,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.7,
+      "recall": 1.0,
+      "f1": 0.8235294117647058,
+      "support": 7,
+      "tp": 7,
+      "fp": 3,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      28,
+      3,
+      3
+     ],
+     [
+      0,
+      12,
+      0
+     ],
+     [
+      0,
+      0,
+      7
+     ]
+    ],
+    "binary": {
+     "precision": 0.76,
+     "recall": 1.0
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 53,
+   "macro_f1": {
+    "before": {
+     "mean": 0.767424615203466,
+     "ci95": [
+      0.629184907147702,
+      0.8806844642414637
+     ]
+    },
+    "after": {
+     "mean": 0.8674860688905119,
+     "ci95": [
+      0.7443306551310939,
+      0.9601870304025477
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.5383333333333333,
+      0.9333333333333333
+     ],
+     "CWE-79": [
+      0.42857142857142855,
+      0.9232142857142855
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.7368421052631579,
+      1.0
+     ],
+     "CWE-79": [
+      0.5,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.10006145368704568,
+     "ci95": [
+      -0.20273788441130988,
+      -1.3683634373329631e-05
+     ]
+    }
+   }
+  }
+ },
+ "third-party": {
+  "metrics": {
+   "before": {
+    "n": 25,
+    "macro_f1": 1.0,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 9,
+      "tp": 9,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 6,
+      "tp": 6,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 10,
+      "tp": 10,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      9,
+      0,
+      0
+     ],
+     [
+      0,
+      6,
+      0
+     ],
+     [
+      0,
+      0,
+      10
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 1.0
+    }
+   },
+   "after": {
+    "n": 25,
+    "macro_f1": 0.7738095238095238,
+    "per_class": {
+     "safe": {
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.7499999999999999,
+      "support": 9,
+      "tp": 9,
+      "fp": 6,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 6,
+      "tp": 6,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 0.4,
+      "f1": 0.5714285714285715,
+      "support": 10,
+      "tp": 4,
+      "fp": 0,
+      "fn": 6
+     }
+    },
+    "confusion": [
+     [
+      9,
+      0,
+      0
+     ],
+     [
+      0,
+      6,
+      0
+     ],
+     [
+      6,
+      0,
+      4
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.625
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 25,
+   "macro_f1": {
+    "before": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "after": {
+     "mean": 0.7658631501054354,
+     "ci95": [
+      0.6103896103896104,
+      0.9111554748941318
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      1.0,
+      1.0
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      1.0,
+      1.0
+     ],
+     "CWE-79": [
+      0.19954545454545455,
+      0.8571428571428571
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": 0.23413684989456468,
+     "ci95": [
+      0.08884452510586814,
+      0.38961038961038963
+     ]
+    }
+   }
+  }
+ },
+ "errors": {
+  "before": [
+   [
+    "labexpress|GET|/book/{id}|id",
+    "CWE-89",
+    "safe"
+   ],
+   [
+    "labexpress|GET|/dns-safe|host",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labexpress|GET|/dns|host",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labfastapi|GET|/api/status|item",
+    "CWE-89",
+    "safe"
+   ],
+   [
+    "labfastapi|GET|/note-safe|text",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/calc|x",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/greet-safe|name",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/ping|host",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/profile-safe|color",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/slow|n",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/widget-safe|cb",
+    "safe",
+    "CWE-79"
+   ]
+  ],
+  "after": [
+   [
+    "labfastapi|GET|/docs-link-safe|topic",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/calc|x",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/ping|host",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/profile-safe|color",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/slow|n",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/widget-safe|cb",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "nodegoat|POST|/profile|address",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|bankAcc",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|bankRouting",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|dob",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|lastName",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|ssn",
+    "CWE-79",
+    "safe"
+   ]
+  ]
+ }
+}

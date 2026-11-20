@@ -1,0 +1,165 @@
+{
+ "apps": [
+  "labflask",
+  "labexpress",
+  "labfastapi",
+  "juice-shop",
+  "nodegoat",
+  "vulpy-bad",
+  "vulpy-good",
+  "vulnerable-node"
+ ],
+ "engine": "rule (deterministic, not ML)",
+ "active": {
+  "CWE-78": {
+   "known": [
+    "labflask|GET|/ping|host",
+    "labexpress|GET|/dns|host",
+    "vulnerable-node|POST|/tools/ping|host"
+   ],
+   "found": [
+    "labflask|GET|/ping|host",
+    "labexpress|GET|/dns|host"
+   ],
+   "missed": [
+    "vulnerable-node|POST|/tools/ping|host"
+   ],
+   "false_alarms": [],
+   "safe_units": 107
+  },
+  "CWE-22": {
+   "known": [
+    "labflask|GET|/download|file",
+    "labexpress|GET|/file|name",
+    "juice-shop|GET|/ftp/{file}|file",
+    "vulnerable-node|GET|/download|file"
+   ],
+   "found": [
+    "labflask|GET|/download|file",
+    "labexpress|GET|/file|name",
+    "vulnerable-node|GET|/download|file"
+   ],
+   "missed": [
+    "juice-shop|GET|/ftp/{file}|file"
+   ],
+   "false_alarms": [],
+   "safe_units": 106
+  },
+  "CWE-601": {
+   "known": [
+    "labflask|GET|/next|next",
+    "labexpress|GET|/next|next",
+    "nodegoat|GET|/learn|url",
+    "vulnerable-node|POST|/login/auth|returnurl"
+   ],
+   "found": [
+    "labflask|GET|/next|next",
+    "labexpress|GET|/next|next",
+    "nodegoat|GET|/learn|url"
+   ],
+   "missed": [
+    "vulnerable-node|POST|/login/auth|returnurl"
+   ],
+   "false_alarms": [],
+   "safe_units": 106
+  }
+ },
+ "passive": {
+  "missing-csp": {
+   "known": [
+    "labflask",
+    "labexpress",
+    "labfastapi",
+    "juice-shop",
+    "nodegoat",
+    "vulpy-bad",
+    "vulnerable-node"
+   ],
+   "found": [
+    "labflask",
+    "labexpress",
+    "labfastapi",
+    "juice-shop",
+    "nodegoat",
+    "vulpy-bad",
+    "vulnerable-node"
+   ],
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  },
+  "missing-nosniff": {
+   "known": [
+    "labflask",
+    "labexpress",
+    "labfastapi",
+    "nodegoat",
+    "vulpy-bad",
+    "vulpy-good",
+    "vulnerable-node"
+   ],
+   "found": [
+    "labflask",
+    "labexpress",
+    "labfastapi",
+    "nodegoat",
+    "vulpy-bad",
+    "vulpy-good",
+    "vulnerable-node"
+   ],
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  },
+  "missing-frame-protection": {
+   "known": [
+    "labflask",
+    "labexpress",
+    "labfastapi",
+    "nodegoat",
+    "vulpy-bad",
+    "vulpy-good",
+    "vulnerable-node"
+   ],
+   "found": [
+    "labflask",
+    "labexpress",
+    "labfastapi",
+    "nodegoat",
+    "vulpy-bad",
+    "vulpy-good",
+    "vulnerable-node"
+   ],
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  },
+  "cookie-no-httponly": {
+   "known": [],
+   "found": [],
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 6
+  },
+  "cookie-no-samesite": {
+   "known": [
+    "nodegoat",
+    "vulnerable-node"
+   ],
+   "found": [
+    "nodegoat",
+    "vulnerable-node"
+   ],
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 4
+  },
+  "cors-any-origin": {
+   "known": [],
+   "found": [],
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 8
+  }
+ }
+}

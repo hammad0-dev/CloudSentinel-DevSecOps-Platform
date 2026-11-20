@@ -1,0 +1,142 @@
+{
+ "labflask": {
+  "pages_crawled": 32,
+  "points_found": 31,
+  "points_probed": 31,
+  "gt_params_listed": 31,
+  "gt_params_found": 31,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 2407,
+  "rows": 1953,
+  "seconds": 188
+ },
+ "labexpress": {
+  "pages_crawled": 29,
+  "points_found": 24,
+  "points_probed": 24,
+  "gt_params_listed": 24,
+  "gt_params_found": 24,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 1903,
+  "rows": 1512,
+  "seconds": 185
+ },
+ "nodegoat": {
+  "pages_crawled": 6,
+  "points_found": 17,
+  "points_probed": 14,
+  "gt_params_listed": 14,
+  "gt_params_found": 14,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /profile [website]",
+   "POST /signup [password]",
+   "POST /signup [verify]"
+  ],
+  "requests": 1115,
+  "rows": 882,
+  "seconds": 159
+ },
+ "vulpy-bad": {
+  "pages_crawled": 3,
+  "points_found": 6,
+  "points_probed": 4,
+  "gt_params_listed": 4,
+  "gt_params_found": 4,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /user/create [email]",
+   "POST /user/login [otp]"
+  ],
+  "requests": 395,
+  "rows": 252,
+  "seconds": 17
+ },
+ "vulpy-good": {
+  "pages_crawled": 3,
+  "points_found": 6,
+  "points_probed": 4,
+  "gt_params_listed": 4,
+  "gt_params_found": 4,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /user/create [email]",
+   "POST /user/login [otp]"
+  ],
+  "requests": 291,
+  "rows": 252,
+  "seconds": 14
+ },
+ "labfastapi": {
+  "pages_crawled": 22,
+  "points_found": 19,
+  "points_probed": 18,
+  "gt_params_listed": 18,
+  "gt_params_found": 18,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "GET /docs [topic]"
+  ],
+  "requests": 1318,
+  "rows": 1134,
+  "seconds": 141
+ },
+ "juice-shop": {
+  "pages_crawled": 1,
+  "points_found": 5,
+  "points_probed": 5,
+  "gt_params_listed": 6,
+  "gt_params_found": 5,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/rest/track-order/{id}",
+    "id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 361,
+  "rows": 315,
+  "seconds": 17
+ },
+ "vulnerable-node": {
+  "pages_crawled": 45,
+  "points_found": 10,
+  "points_probed": 10,
+  "gt_params_listed": 15,
+  "gt_params_found": 10,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/categories/{slug}",
+    "slug"
+   ],
+   [
+    "GET",
+    "/labs/docs/{file}",
+    "file"
+   ],
+   [
+    "GET",
+    "/login",
+    "error"
+   ],
+   [
+    "GET",
+    "/login",
+    "returnurl"
+   ],
+   [
+    "GET",
+    "/orders/{id}",
+    "id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 1003,
+  "rows": 598,
+  "seconds": 59
+ }
+}
