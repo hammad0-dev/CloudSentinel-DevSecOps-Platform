@@ -4,8 +4,12 @@ CloudSentinel can run SAST and the baseline DAST stage on trained ML services in
 and ZAP. Targets are Python and Node.js apps only. SonarQube and ZAP remain the default until the ML
 engines pass evaluation.
 
-- **ml-sast** has a trained model (`ml-sast-rf` 1.0.0). It is function-level, scores about 0.50
-  held-out macro-F1, and is not yet good enough to replace SonarQube as the gate. See
+- **ml-sast** has a trained model: `ml-sast-hybrid` 2.0.0 (`models/release_v2/`). It combines a
+  function-level Random Forest with a **rule-based** secrets detector for CWE-798. On a fresh set of
+  three apps, scored once, it reaches 0.59 macro-F1 against 0.50 for v1 (`ml-sast-rf` 1.0.0), but
+  that difference is not statistically significant. Vulnerable precision is about 0.32, so it is not
+  yet good enough to replace SonarQube as the gate. Rule-based findings are marked: rule suffix
+  `.rule`, and `/model-info` → `components.secrets.type: "rule-based"`. See
   [ml-sast-model-card.md](ml-sast-model-card.md).
 - **ml-dast** has no trained model yet.
 
