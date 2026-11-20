@@ -7,7 +7,7 @@
  },
  "version": "2",
  "derived_from": "payloads.json (v1, frozen with DVNA; never edited). All v1 payloads are kept unchanged.",
- "v2_additions": "time payloads: sleep/repeat/dose (sleep-0 controls); quote-parity partners (sq-par-*); CWE-78 rule payloads (computed output {M}1337, sleep dose); CWE-22 rule payloads (/etc/passwd signature)",
+ "v2_additions": "time payloads: sleep/repeat/dose (sleep-0 controls); quote-parity partners (sq-par-*); CWE-78 rule payloads (computed output {M}1337, sleep dose); CWE-22 rule payloads (/etc/passwd signature); CWE-601 rule payloads (scheme-less //{M}.invalid/: .invalid never resolves, no '://' so the URL guard allows them)",
  "payloads": [
   {
    "id": "sq-err-1",
@@ -526,6 +526,22 @@
    "family": "traversal",
    "mode": "append",
    "value": "/../../../../../../../../etc/passwd",
+   "rule": true
+  },
+  {
+   "id": "or-pr-1",
+   "class": "CWE-601",
+   "family": "redirect",
+   "mode": "replace",
+   "value": "//{M}.invalid/",
+   "rule": true
+  },
+  {
+   "id": "or-bs-1",
+   "class": "CWE-601",
+   "family": "redirect",
+   "mode": "replace",
+   "value": "/\\{M}.invalid/",
    "rule": true
   }
  ]
