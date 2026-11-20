@@ -38,7 +38,7 @@ def featurize(app, gt, payloads, version="v1"):
                 if label is None:
                     continue
                 feat.write(json.dumps({"app": app, "group": meta.get("group", app), "origin": meta["origin"], "role": meta["role"],
-                                       "cluster": gt.cluster(app, point), "method": point.method, "path": point.path, "param": point.param,
+                                       "cluster": gt.cluster(app, point, p["class"]), "method": point.method, "path": point.path, "param": point.param,
                                        "location": point.location, "payload_id": p["id"], "payload_class": p["class"],
                                        "family": p["family"], "label": label, "features": f}) + "\n")
                 n += 1

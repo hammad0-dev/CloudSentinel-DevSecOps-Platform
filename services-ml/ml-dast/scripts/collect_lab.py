@@ -25,7 +25,7 @@ from dastml.crawl import InjectionPoint, crawl  # noqa: E402
 from dastml.groundtruth import GroundTruth  # noqa: E402
 from dastml.guards import GuardedClient, TargetPolicy, parse_ports  # noqa: E402
 from dastml.paths import paths, refuse_frozen  # noqa: E402
-from dastml.probe import load_payloads, point_rows, probe_point  # noqa: E402
+from dastml.probe import CORS_ORIGIN, load_payloads, new_marker, point_rows, probe_point, snapshot  # noqa: E402
 
 OUT = ROOT / "data/dast"
 # Collection-only allowlist (127.0.0.1/localhost): the lab ports. The service default is unchanged.
@@ -33,7 +33,17 @@ LAB_PORTS = parse_ports("5101-5112")
 ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22")
 
 # NodeGoat /learn's crawled link carries a URL (refused by the guards), so it is seeded with a same-site value.
-SEEDS = {"nodegoat": [InjectionPoint("GET", "/learn", "url", "query", (("url", "/dashboard"),))]}
+SEEDS = {"nodegoat": [InjectionPoint("GET", "/learn", "url", "query", (("url", "/dashboard"),))],
+         # Juice Shop's /ftp files are only listed by the SPA, never linked in HTML
+         "vulnerable-node": [InjectionPoint("GET", "/download", "file", "query", (("file", "duck.svg"),)),
+                             InjectionPoint("GET", "/orders", "sort", "query", (("sort", "created_at"),))],
+         "juice-shop": [InjectionPoint("GET", "/ftp/legal.md", "{seg2}", "path", (("{seg2}", "legal.md"),), "/ftp/{seg2}")]}
+# Passive pass (v2): a fresh, cookie-less client loads the start pages and logs in, keeping response
+# headers, so cookies set on first visit or at login are seen. Vulpy is probed unauthenticated (as in
+# v1); its login here only serves the cookie checks.
+PASSIVE_AUTH = {"vulpy-bad": [("POST", "/user/login", {"username": "admin", "password": "SuperSecret"}, False)],
+                "vulpy-good": [("POST", "/user/login", {"username": "admin", "password": "SuperSecret"}, False)],
+                "dsvw": [("GET", "/login?username=admin&password=7en8aiDoh!", None, False)]}
 JUICE_SEEDS = [
     InjectionPoint("GET", "/rest/products/search", "q", "query", (("q", "apple"),)),
     InjectionPoint("POST", "/rest/user/login", "email", "json", (("email", "jim@juice-sh.op"), ("password", "wrongpass"))),
@@ -42,12 +52,14 @@ JUICE_SEEDS = [
 ]
 
 AUTH = {
+    "vulnerable-node": [("POST", "/login/auth", {"username": "alice", "password": "alice123"}, False)],
     "dvna": [("POST", "/register", {"username": "csdast", "password": "CsDast!2026", "cpassword": "CsDast!2026", "name": "cs dast", "email": "csdast@lab.test"}, True),
              ("POST", "/login", {"username": "csdast", "password": "CsDast!2026"}, False)],
     "nodegoat": [("POST", "/login", {"userName": "user1", "password": "User1_123"}, False)],
 }
 START = {"dvna": "/app", "nodegoat": "/dashboard", "vulpy-bad": "/user/login", "vulpy-good": "/user/login"}
-EXTRA_PAGES = {"vulpy-bad": ["/user/create"], "vulpy-good": ["/user/create"], "nodegoat": ["/login", "/signup", "/profile"],
+EXTRA_PAGES = {"vulnerable-node": ["/tools/ping", "/contact", "/login", "/orders"],
+               "vulpy-bad": ["/user/create"], "vulpy-good": ["/user/create"], "nodegoat": ["/login", "/signup", "/profile"],
                "dvna": ["/app/usersearch", "/app/products", "/app/ping", "/login", "/forgotpw"]}
 
 
@@ -56,6 +68,29 @@ def login(client, app, first=False):
         if once and not first:
             continue
         client.request(method, path, data=data)
+
+
+def passive_pass(base, policy, app):
+    client = GuardedClient(base, policy)
+    snaps = []
+    for path in [START.get(app, "/")] + EXTRA_PAGES.get(app, []):
+        try:
+            resp, el = client.request("GET", path)
+            snaps.append({"kind": "page", "path": path, **snapshot(resp, el, headers=True)})
+        except Exception as exc:  # noqa: BLE001 - an unreachable page is recorded, not fatal
+            snaps.append({"kind": "error", "path": path, "error": type(exc).__name__})
+    for method, path, data, _ in AUTH.get(app, []) + PASSIVE_AUTH.get(app, []):
+        try:
+            resp, el = client.request(method, path, **({"data": data} if data else {}))
+            snaps.append({"kind": "login", "path": path, **snapshot(resp, el, headers=True)})
+        except Exception as exc:  # noqa: BLE001
+            snaps.append({"kind": "error", "path": path, "error": type(exc).__name__})
+    origin = CORS_ORIGIN.replace("{M}", new_marker())
+    resp, el = client.request("GET", START.get(app, "/"), headers={"Origin": origin})
+    snaps.append({"kind": "cors", "path": START.get(app, "/"), "origin": origin, **snapshot(resp, el, headers=True)})
+    for r in snaps:
+        r.pop("body", None)  # headers only
+    return snaps
 
 
 def main(apps, version="v1", final=False):
@@ -101,10 +136,13 @@ def main(apps, version="v1", final=False):
                     if label is None:
                         continue
                     feat.write(json.dumps({"app": app, "group": meta.get("group", app), "origin": meta["origin"], "role": meta["role"],
-                                           "cluster": gt.cluster(app, point), "method": point.method, "path": point.path, "param": point.param,
+                                           "cluster": gt.cluster(app, point, p["class"]), "method": point.method, "path": point.path, "param": point.param,
                                            "location": point.location, "payload_id": p["id"], "payload_class": p["class"],
                                            "family": p["family"], "label": label, "features": f}) + "\n")
                     rows += 1
+        if v2:
+            passive = passive_pass(base, policy, app)
+            (P["raw"] / f"{app}.passive.json").write_text(json.dumps(passive, indent=0) + "\n")
         summary[app] = {"pages_crawled": len(visited), "points_found": len(uniq), "points_probed": len(listed),
                         "gt_params_listed": len(listed_keys), "gt_params_found": len(hit), "gt_params_missed": sorted(map(list, listed_keys - hit)),
                         "unlisted_points_not_probed": unlisted[:50], "requests": client.requests_sent, "rows": rows, "seconds": round(time.time() - t0)}
