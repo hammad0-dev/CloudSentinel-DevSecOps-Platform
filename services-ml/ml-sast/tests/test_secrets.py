@@ -67,3 +67,19 @@ def test_hybrid_rules_mode_marks_rule_based_secret_and_ignores_ml_798():
     union = HybridModel(ml, ml, 0.5, {c: 0.5 for c in CLASSES[1:]}, "union").candidates(codes, ["python"] * 2)
     (cls, conf, detector), = union[1]
     assert cls == CLASSES.index("CWE-798") and abs(conf - 0.9) < 1e-6 and detector == "ml"
+
+
+def test_service_labels_rule_based_secret_findings(monkeypatch):
+    from fastapi.testclient import TestClient
+    import app as service
+    ml = Const("CWE-89", 0.9)
+    hybrid = HybridModel(ml, ml, 0.5, {c: 0.5 for c in CLASSES[1:]}, "rules")
+    monkeypatch.setattr(service, "MODEL", hybrid)
+    monkeypatch.setattr(service, "MODEL_INFO", {**service.MODEL_INFO, "status": "trained", "threshold": 0.5})
+    src = "API_TOKEN = 'abcd1234efgh5678'\n\ndef q(x):\n    cur.execute('SELECT 1 WHERE a=' + x)\n"
+    found = TestClient(service.app).post("/scan", json={"files": [{"path": "a.py", "content": src}]}).json()["findings"]
+    rules = {(f["rule"], f["line_number"]) for f in found}
+    assert ("python.hardcoded-credentials.rule", 1) in rules
+    assert ("python.sql-injection", 3) in rules
+    secret = next(f for f in found if f["cwe_id"] == 798)
+    assert secret["message"].startswith("[rule-based secrets detector]")

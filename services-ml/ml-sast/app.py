@@ -118,6 +118,10 @@ def load_model(path: Path = MODEL_PATH):
         "threshold": float(threshold) if threshold else float(meta.get("threshold", base.get("threshold") or 0.5)),
         "limitations": meta.get("limitations", []),
     }
+    if meta.get("components") or base.get("components"):
+        info["components"] = meta.get("components", base.get("components"))
+    if threshold and hasattr(model, "thresholds"):  # env override applies to every class of a hybrid
+        model.thresholds = {c: float(threshold) for c in model.thresholds}
     return model, info
 
 
@@ -145,20 +149,28 @@ def units_of(files):
     return units
 
 
+def finding(path, u, cwe_index, conf, detector="ml"):
+    cwe = CLASSES[cwe_index]
+    slug, severity, title = RULES[cwe]
+    where = "top-level code" if u.name == "<module>" else f"function '{u.name}'"
+    if detector == "rule-based":
+        msg = f"[rule-based secrets detector] {title} in {where} (rule confidence {conf:.2f})."
+        rule = f"{u.lang}.{slug}.rule"
+    else:
+        signals = explain(u.code)
+        msg = f"{title} suspected in {where} (model confidence {conf:.2f}" + (f"; signals: {', '.join(signals)}" if signals else "") + ")."
+        rule = f"{u.lang}.{slug}"
+    return Finding(rule=rule, cwe_id=int(cwe.split("-")[1]), severity=severity, message=msg,
+                   file_path=path, line_number=max(u.start_line, 1), confidence=round(conf, 4))
+
+
 def to_findings(units, proba, threshold):
     findings = []
     for (path, u), p in zip(units, proba):
         best = max(range(1, len(CLASSES)), key=lambda i: p[i])
         conf = float(p[best])
-        if conf < threshold:
-            continue
-        cwe = CLASSES[best]
-        slug, severity, title = RULES[cwe]
-        signals = explain(u.code)
-        where = "top-level code" if u.name == "<module>" else f"function '{u.name}'"
-        msg = f"{title} suspected in {where} (model confidence {conf:.2f}" + (f"; signals: {', '.join(signals)}" if signals else "") + ")."
-        findings.append(Finding(rule=f"{u.lang}.{slug}", cwe_id=int(cwe.split("-")[1]), severity=severity, message=msg,
-                                file_path=path, line_number=max(u.start_line, 1), confidence=round(conf, 4)))
+        if conf >= threshold:
+            findings.append(finding(path, u, best, conf))
     return findings
 
 
@@ -169,8 +181,12 @@ def scan(request: ScanRequest):
     units = units_of(request.files)
     if not units:
         return {"findings": []}
+    codes, langs = [u.code for _, u in units], [u.lang for _, u in units]
     try:
-        proba = MODEL.predict_proba([u.code for _, u in units], [u.lang for _, u in units])
+        if hasattr(MODEL, "candidates"):  # v2 hybrid: ML ensemble + rule-based secrets, several findings per unit
+            cands = MODEL.candidates(codes, langs)
+            return {"findings": [finding(path, u, i, conf, det) for (path, u), cs in zip(units, cands) for i, conf, det in cs]}
+        proba = MODEL.predict_proba(codes, langs)
     except Exception as exc:  # model failure must surface, never look like a clean scan
         raise HTTPException(status_code=500, detail=f"model scan failed: {type(exc).__name__}") from exc
     return {"findings": to_findings(units, proba, MODEL_INFO["threshold"])}
