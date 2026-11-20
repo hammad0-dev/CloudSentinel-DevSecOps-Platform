@@ -1,0 +1,108 @@
+"""Collect the ml-dast feature dataset from the local lab (services-ml/ml-dast/lab).
+
+For each lab app:
+1. log in where needed;
+2. crawl (same origin, guarded), plus explicit seeds for single-page-app APIs (Juice Shop);
+3. probe ONLY injection points listed in data/dast/ground_truth.json and not on its skip list: two
+   baselines, one benign probe, then every CWE-89/CWE-79 payload;
+4. write raw records to data/dast/raw/<app>.jsonl.gz and labelled feature rows to
+   data/dast/features/<app>.jsonl.gz.
+
+DVNA (the final held-out app) is collected into the same layout. Training and tuning code never
+loads it (dastml.dataset.load excludes it unless final=True).
+
+Usage: python scripts/collect_lab.py [app ...]
+"""
+import gzip
+import json
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from dastml.crawl import InjectionPoint, crawl  # noqa: E402
+from dastml.groundtruth import GroundTruth  # noqa: E402
+from dastml.guards import GuardedClient, TargetPolicy, parse_ports  # noqa: E402
+from dastml.probe import load_payloads, point_rows, probe_point  # noqa: E402
+
+OUT = ROOT / "data/dast"
+LAB_PORTS = parse_ports("5101-5108")
+
+JUICE_SEEDS = [
+    InjectionPoint("GET", "/rest/products/search", "q", "query", (("q", "apple"),)),
+    InjectionPoint("POST", "/rest/user/login", "email", "json", (("email", "jim@juice-sh.op"), ("password", "wrongpass"))),
+    InjectionPoint("POST", "/rest/user/login", "password", "json", (("email", "jim@juice-sh.op"), ("password", "wrongpass"))),
+    InjectionPoint("GET", "/api/Products/1", "{seg3}", "path", (("{seg3}", "1"),), "/api/Products/{seg3}"),
+]
+
+AUTH = {
+    "dvna": [("POST", "/register", {"username": "csdast", "password": "CsDast!2026", "cpassword": "CsDast!2026", "name": "cs dast", "email": "csdast@lab.test"}, True),
+             ("POST", "/login", {"username": "csdast", "password": "CsDast!2026"}, False)],
+    "nodegoat": [("POST", "/login", {"userName": "user1", "password": "User1_123"}, False)],
+}
+START = {"dvna": "/app", "nodegoat": "/dashboard", "vulpy-bad": "/user/login", "vulpy-good": "/user/login"}
+EXTRA_PAGES = {"vulpy-bad": ["/user/create"], "vulpy-good": ["/user/create"], "nodegoat": ["/login", "/signup", "/profile"],
+               "dvna": ["/app/usersearch", "/app/products", "/app/ping", "/login", "/forgotpw"]}
+
+
+def login(client, app, first=False):
+    for method, path, data, once in AUTH.get(app, []):
+        if once and not first:
+            continue
+        client.request(method, path, data=data)
+
+
+def main(apps):
+    gt = GroundTruth()
+    payloads = load_payloads()
+    (OUT / "raw").mkdir(parents=True, exist_ok=True)
+    (OUT / "features").mkdir(parents=True, exist_ok=True)
+    summary = {}
+    for app in apps:
+        meta = gt.apps()[app]
+        base = f"http://127.0.0.1:{meta['port']}"
+        policy = TargetPolicy(allowed_ports=LAB_PORTS, max_pages=200, max_requests=20000, rate_per_sec=25.0,
+                              skip_paths=gt.skip_paths(app), timeout_sec=15.0)
+        client = GuardedClient(base, policy)
+        t0 = time.time()
+        login(client, app, first=True)
+        found, visited = crawl(client, START.get(app, "/"), seeds=JUICE_SEEDS if app == "juice-shop" else ())
+        for extra in EXTRA_PAGES.get(app, []):
+            more, v2 = crawl(client, extra, max_depth=0)
+            found += more
+            visited += v2
+        uniq = {p.key: p for p in found}
+        listed = [p for p in uniq.values() if gt.entry(app, p) is not None]
+        unlisted = sorted(f"{p.method} {p.path} [{p.param}]" for p in uniq.values() if gt.entry(app, p) is None)
+        listed_keys = {(e["method"], e["path"], prm) for e in gt.data["endpoints"] if e["app"] == app for prm in e["params"]}
+        hit = {(gt.entry(app, p)["method"], gt.entry(app, p)["path"], p.param if p.location != "path" else gt.entry(app, p)["params"][0]) for p in listed}
+        rows = 0
+        with gzip.open(OUT / f"raw/{app}.jsonl.gz", "wt") as raw, gzip.open(OUT / f"features/{app}.jsonl.gz", "wt") as feat:
+            for point in sorted(listed, key=lambda p: p.key):
+                login(client, app)
+                rec = probe_point(client, point, payloads)
+                rec["app"] = app
+                raw.write(json.dumps(rec) + "\n")
+                for p, r, f in point_rows(rec, payloads):
+                    label = gt.label(app, point, p["class"])
+                    if label is None:
+                        continue
+                    feat.write(json.dumps({"app": app, "group": meta.get("group", app), "origin": meta["origin"], "role": meta["role"],
+                                           "cluster": gt.cluster(app, point), "method": point.method, "path": point.path, "param": point.param,
+                                           "location": point.location, "payload_id": p["id"], "payload_class": p["class"],
+                                           "family": p["family"], "label": label, "features": f}) + "\n")
+                    rows += 1
+        summary[app] = {"pages_crawled": len(visited), "points_found": len(uniq), "points_probed": len(listed),
+                        "gt_params_listed": len(listed_keys), "gt_params_found": len(hit), "gt_params_missed": sorted(map(list, listed_keys - hit)),
+                        "unlisted_points_not_probed": unlisted[:50], "requests": client.requests_sent, "rows": rows, "seconds": round(time.time() - t0)}
+        print(app, json.dumps({k: v for k, v in summary[app].items() if k not in ("unlisted_points_not_probed",)}), flush=True)
+    path = OUT / "collection_summary.json"
+    old = json.loads(path.read_text()) if path.exists() else {}
+    old.update(summary)
+    path.write_text(json.dumps(old, indent=1) + "\n")
+
+
+if __name__ == "__main__":
+    gt_apps = list(GroundTruth().apps())
+    main(sys.argv[1:] or gt_apps)
