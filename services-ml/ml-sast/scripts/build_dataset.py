@@ -104,16 +104,21 @@ def real_rows():
     return rows, stats
 
 
-def group_split(rows, fracs=(0.7, 0.15, 0.15), seed=7):
-    """Greedy group assignment that keeps per-label proportions close to fracs."""
+def group_split(rows, fracs=(0.7, 0.15, 0.15), seed=7, fixed=None):
+    """Greedy group assignment that keeps per-label proportions close to fracs.
+    ``fixed`` (group -> split index) is honoured first; only the remaining groups are assigned."""
     groups = collections.defaultdict(collections.Counter)
     for r in rows:
         groups[r["source"]][r["label"]] += 1
     total = collections.Counter(r["label"] for r in rows)
     have = [collections.Counter() for _ in fracs]
-    order = sorted(groups, key=lambda g: (-sum(groups[g].values()), g))
-    random.Random(seed).shuffle(order[len(order) // 4:])  # keep the big groups first, randomize the tail
     assign = {}
+    for g, i in (fixed or {}).items():
+        if g in groups:
+            assign[g] = i
+            have[i].update(groups[g])
+    order = sorted((g for g in groups if g not in assign), key=lambda g: (-sum(groups[g].values()), g))
+    random.Random(seed).shuffle(order[len(order) // 4:])  # keep the big groups first, randomize the tail
     for g in order:
         best, score = 0, None
         for i, f in enumerate(fracs):
@@ -159,16 +164,80 @@ def drop_conflicts(rows):
     return out, dropped
 
 
+def shingles(code, k=5):
+    toks = re.findall(r"[A-Za-z_$][\w$]*|\d+|\S", norm(code))
+    return {" ".join(toks[i:i + k]) for i in range(max(1, len(toks) - k + 1))}
+
+
+def drop_near_duplicates_of_eval(rows, threshold=0.8):
+    """Leakage guard: drop training rows whose code is a near-duplicate (5-token shingle Jaccard >=
+    threshold) of any development-set or fresh-set unit."""
+    eval_sets = []
+    for name in ("heldout", "fresh"):
+        p = OUT / f"{name}.jsonl"
+        if p.exists():
+            eval_sets += [shingles(json.loads(line)["code"]) for line in p.open()]
+    index = collections.defaultdict(set)
+    for i, s in enumerate(eval_sets):
+        for sh in s:
+            index[sh].add(i)
+    keep, dropped = [], 0
+    for r in rows:
+        s = shingles(r["code"])
+        overlap = collections.Counter(j for sh in s for j in index.get(sh, ()))
+        if any(n / len(s | eval_sets[j]) >= threshold for j, n in overlap.items()):
+            dropped += 1
+            continue
+        keep.append(r)
+    return keep, dropped
+
+
+def osv_rows():
+    p = ROOT / "data/raw/osv/rows.jsonl"
+    if not p.exists():
+        return []
+    rows = []
+    for line in p.open():
+        r = json.loads(line)
+        for k in ("removed_lines", "added_lines"):
+            r.pop(k, None)
+        rows.append(r)
+    return rows
+
+
+def fixed_assignment():
+    """v1 repository -> split, so existing CrossVul groups keep their split when new data is added."""
+    path = OUT / "v1_group_assignment.json"
+    if path.exists():
+        return json.loads(path.read_text())
+    assign = {}
+    for i, n in enumerate(("train", "val", "test")):
+        p = OUT / f"{n}.jsonl"
+        if p.exists():
+            for line in p.open():
+                r = json.loads(line)
+                if r["origin"] == "crossvul":
+                    assign[r["source"]] = i
+    if assign:
+        path.write_text(json.dumps(assign, indent=0, sort_keys=True))
+    return assign
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--per-family", type=int, default=40)
+    ap.add_argument("--with-osv", action="store_true", help="add data/raw/osv/rows.jsonl (v2)")
     args = ap.parse_args()
+    fixed = fixed_assignment()
     real, real_stats = real_rows()
+    osv = osv_rows() if args.with_osv else []
     synth = generate(per_family=args.per_family, js_validator=js_parses)
-    real, real_drop = drop_conflicts(real)
+    real, real_drop = drop_conflicts(real + osv)
     synth, synth_drop = drop_conflicts(synth)
+    real, near_dup = drop_near_duplicates_of_eval(real)
+    real_drop["near_duplicate_of_eval_unit"] = near_dup
     # a function cannot be in two splits through real/synthetic overlap either
-    rassign, sassign = group_split(real), synthetic_split(synth)
+    rassign, sassign = group_split(real, fixed=fixed), synthetic_split(synth)
     names = ["train", "val", "test"]
     OUT.mkdir(parents=True, exist_ok=True)
     splits = {n: [] for n in names}
@@ -190,22 +259,37 @@ def main():
             t.setdefault(r["label"], collections.Counter())[r["lang"]] += 1
         return {c: dict(t.get(c, {})) for c in CLASSES}
 
-    leaks = set.intersection(*[{r["source"] for r in splits[n]} for n in names])
+    groups = {n: {r["source"] for r in splits[n]} for n in names}
+    leaks = sorted((groups["train"] & groups["val"]) | (groups["train"] & groups["test"]) | (groups["val"] & groups["test"]))
+    mpath = ROOT / "data/manifest.json"
+    previous = json.loads(mpath.read_text()) if mpath.exists() else {}
     manifest = {
         "classes": CLASSES,
         "sources": {
             "crossvul": {"zenodo_record": 4734050, "file": "dataset.zip", "sha256": "fc4ede963de65239b07b64fe0b8fe559d283c6fc742120642022b8eaa30a1bef",
-                          "cwe_map": CWE_MAP, "stats": dict(real_stats), "dropped": dict(real_drop)},
+                          "cwe_map": CWE_MAP, "stats": dict(real_stats)},
+            "real_dropped": dict(real_drop),
             "synthetic": {"generator": "sastml/synthetic.py", "per_family": args.per_family, "families": len({r["source"] for r in synth}), "dropped": dict(synth_drop)},
         },
-        "split_policy": "real: by repository (greedy, per-label 70/15/15); synthetic: by template family (one held out for test and one for val per class/language)",
-        "group_overlap_between_all_splits": sorted(leaks),
+        "split_policy": "real: by repository (greedy, per-label 70/15/15; v1 CrossVul groups keep their v1 split); synthetic: by template family "
+                        "(one held out for test and one for val per class/language); real rows that near-duplicate a development/fresh unit are dropped",
+        "group_overlap_between_splits": leaks,
         "splits": {n: {"total": len(rs), "by_origin": dict(collections.Counter(r["origin"] for r in rs)),
                        "groups": len({r["source"] for r in rs}), "by_class_lang": table(rs),
-                       "by_class_lang_real": table([r for r in rs if r["origin"] == "crossvul"])} for n, rs in splits.items()},
+                       "by_class_lang_real": table([r for r in rs if r["origin"] in ("crossvul", "osv")]),
+                       "by_class_lang_osv": table([r for r in rs if r["origin"] == "osv"])} for n, rs in splits.items()},
     }
-    (ROOT / "data/manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    print(json.dumps({n: manifest["splits"][n]["total"] for n in names}), "overlap:", len(leaks))
+    if args.with_osv:
+        manifest["sources"]["osv"] = {"dumps": ["https://storage.googleapis.com/osv-vulnerabilities/npm/all.zip", "https://storage.googleapis.com/osv-vulnerabilities/PyPI/all.zip"],
+                                      "collector": "scripts/collect_osv.py", "rows_kept": sum(1 for r in real if r["origin"] == "osv")}
+        quality = previous.get("sources", {}).get("osv", {}).get("quality")
+        if quality:
+            manifest["sources"]["osv"]["quality"] = quality
+    for k in ("heldout", "fresh"):
+        if k in previous:
+            manifest[k] = previous[k]
+    mpath.write_text(json.dumps(manifest, indent=2) + "\n")
+    print(json.dumps({n: manifest["splits"][n]["total"] for n in names}), "group overlap:", len(leaks), "dropped:", dict(real_drop))
 
 
 if __name__ == "__main__":

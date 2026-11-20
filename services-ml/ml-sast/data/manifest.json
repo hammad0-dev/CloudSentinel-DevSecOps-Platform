@@ -45,11 +45,12 @@
         "changed_pairs": 583,
         "too_long": 15,
         "missing_file": 30
-      },
-      "dropped": {
-        "duplicate": 39,
-        "conflicting_label": 184
       }
+    },
+    "real_dropped": {
+      "duplicate": 171,
+      "conflicting_label": 219,
+      "near_duplicate_of_eval_unit": 0
     },
     "synthetic": {
       "generator": "sastml/synthetic.py",
@@ -58,219 +59,347 @@
       "dropped": {
         "duplicate": 5
       }
+    },
+    "osv": {
+      "dumps": [
+        "https://storage.googleapis.com/osv-vulnerabilities/npm/all.zip",
+        "https://storage.googleapis.com/osv-vulnerabilities/PyPI/all.zip"
+      ],
+      "collector": "scripts/collect_osv.py",
+      "rows_kept": 1774,
+      "quality": {
+        "method": "manual review of 50 random kept vulnerable OSV rows (seed 2026, scripts/osv_noise_sample.py); criterion: does the pre-fix function visibly contain the labelled CWE pattern",
+        "n": 50,
+        "correct": 41,
+        "weak_sink_outside_function": 5,
+        "wrong": 4,
+        "noise_rate_strict": 0.08,
+        "noise_rate_strict_ci95": [
+          0.032,
+          0.188
+        ],
+        "noise_rate_incl_weak": 0.18,
+        "noise_rate_incl_weak_ci95": [
+          0.098,
+          0.308
+        ],
+        "reviewer": "single reviewer (Claude), not independently double-checked"
+      }
     }
   },
-  "split_policy": "real: by repository (greedy, per-label 70/15/15); synthetic: by template family (one held out for test and one for val per class/language)",
-  "group_overlap_between_all_splits": [],
+  "split_policy": "real: by repository (greedy, per-label 70/15/15; v1 CrossVul groups keep their v1 split); synthetic: by template family (one held out for test and one for val per class/language); real rows that near-duplicate a development/fresh unit are dropped",
+  "group_overlap_between_splits": [],
   "splits": {
     "train": {
-      "total": 2621,
+      "total": 3862,
       "by_origin": {
         "crossvul": 665,
+        "osv": 1241,
         "synthetic": 1956
       },
-      "groups": 96,
+      "groups": 262,
       "by_class_lang": {
         "safe": {
-          "javascript": 666,
-          "python": 783
+          "javascript": 869,
+          "python": 1201
         },
         "CWE-89": {
           "javascript": 64,
-          "python": 136
+          "python": 174
         },
         "CWE-79": {
-          "javascript": 234,
-          "python": 139
+          "javascript": 346,
+          "python": 250
         },
         "CWE-78": {
-          "python": 47,
-          "javascript": 66
+          "python": 87,
+          "javascript": 110
         },
         "CWE-22": {
-          "javascript": 63,
-          "python": 90
+          "javascript": 106,
+          "python": 234
         },
         "CWE-798": {
-          "python": 80,
+          "python": 81,
           "javascript": 40
         },
         "CWE-502": {
-          "python": 89,
+          "python": 165,
           "javascript": 40
         },
         "CWE-327": {
-          "python": 44,
-          "javascript": 40
+          "python": 51,
+          "javascript": 44
         }
       },
       "by_class_lang_real": {
         "safe": {
-          "javascript": 268,
-          "python": 65
+          "javascript": 471,
+          "python": 483
         },
         "CWE-89": {
           "javascript": 24,
-          "python": 16
+          "python": 54
         },
         "CWE-79": {
-          "javascript": 194,
-          "python": 19
+          "javascript": 306,
+          "python": 130
         },
         "CWE-78": {
-          "python": 7,
-          "javascript": 26
+          "python": 47,
+          "javascript": 70
         },
         "CWE-22": {
-          "javascript": 23,
-          "python": 10
+          "javascript": 66,
+          "python": 154
         },
-        "CWE-798": {},
+        "CWE-798": {
+          "python": 1
+        },
         "CWE-502": {
-          "python": 9
+          "python": 85
         },
         "CWE-327": {
-          "python": 4
+          "python": 11,
+          "javascript": 4
+        }
+      },
+      "by_class_lang_osv": {
+        "safe": {
+          "javascript": 203,
+          "python": 418
+        },
+        "CWE-89": {
+          "python": 38
+        },
+        "CWE-79": {
+          "javascript": 112,
+          "python": 111
+        },
+        "CWE-78": {
+          "javascript": 44,
+          "python": 40
+        },
+        "CWE-22": {
+          "javascript": 43,
+          "python": 144
+        },
+        "CWE-798": {
+          "python": 1
+        },
+        "CWE-502": {
+          "python": 76
+        },
+        "CWE-327": {
+          "javascript": 4,
+          "python": 7
         }
       }
     },
     "val": {
-      "total": 1219,
+      "total": 1485,
       "by_origin": {
-        "crossvul": 140,
+        "crossvul": 139,
+        "osv": 267,
         "synthetic": 1079
       },
-      "groups": 53,
+      "groups": 132,
       "by_class_lang": {
         "safe": {
-          "python": 321,
-          "javascript": 308
+          "python": 403,
+          "javascript": 359
         },
         "CWE-89": {
-          "python": 43,
+          "python": 48,
           "javascript": 40
         },
         "CWE-79": {
-          "python": 50,
-          "javascript": 76
+          "python": 64,
+          "javascript": 111
         },
         "CWE-78": {
-          "javascript": 6,
-          "python": 43
+          "javascript": 17,
+          "python": 50
         },
         "CWE-22": {
-          "javascript": 45,
-          "python": 44
+          "javascript": 48,
+          "python": 80
         },
         "CWE-798": {
-          "python": 40,
+          "python": 41,
           "javascript": 40
         },
         "CWE-502": {
-          "python": 41,
+          "python": 60,
           "javascript": 41
         },
         "CWE-327": {
-          "javascript": 41,
+          "javascript": 43,
           "python": 40
         }
       },
       "by_class_lang_real": {
         "safe": {
-          "python": 21,
-          "javascript": 49
+          "python": 103,
+          "javascript": 100
         },
         "CWE-89": {
-          "python": 3
+          "python": 8
         },
         "CWE-79": {
-          "python": 10,
-          "javascript": 36
+          "python": 24,
+          "javascript": 71
         },
         "CWE-78": {
-          "javascript": 6,
-          "python": 3
+          "javascript": 17,
+          "python": 10
         },
         "CWE-22": {
-          "javascript": 5,
-          "python": 4
+          "javascript": 8,
+          "python": 40
         },
-        "CWE-798": {},
+        "CWE-798": {
+          "python": 1
+        },
         "CWE-502": {
-          "python": 1,
+          "python": 20,
           "javascript": 1
         },
         "CWE-327": {
-          "javascript": 1
+          "javascript": 3
+        }
+      },
+      "by_class_lang_osv": {
+        "safe": {
+          "javascript": 52,
+          "python": 82
+        },
+        "CWE-89": {
+          "python": 5
+        },
+        "CWE-79": {
+          "javascript": 35,
+          "python": 14
+        },
+        "CWE-78": {
+          "javascript": 11,
+          "python": 7
+        },
+        "CWE-22": {
+          "javascript": 3,
+          "python": 36
+        },
+        "CWE-798": {
+          "python": 1
+        },
+        "CWE-502": {
+          "python": 19
+        },
+        "CWE-327": {
+          "javascript": 2
         }
       }
     },
     "test": {
-      "total": 1298,
+      "total": 1564,
       "by_origin": {
         "crossvul": 138,
+        "osv": 266,
         "synthetic": 1160
       },
-      "groups": 53,
+      "groups": 136,
       "by_class_lang": {
         "safe": {
-          "javascript": 358,
-          "python": 311
+          "javascript": 408,
+          "python": 394
         },
         "CWE-89": {
           "javascript": 43,
-          "python": 40
+          "python": 46
         },
         "CWE-79": {
-          "javascript": 82,
-          "python": 45
+          "javascript": 108,
+          "python": 66
         },
         "CWE-78": {
-          "javascript": 47,
-          "python": 41
+          "javascript": 61,
+          "python": 46
         },
         "CWE-22": {
-          "python": 41,
-          "javascript": 46
+          "python": 73,
+          "javascript": 55
         },
         "CWE-798": {
           "python": 40,
           "javascript": 40
         },
         "CWE-502": {
-          "python": 44,
-          "javascript": 40
+          "python": 59,
+          "javascript": 41
         },
         "CWE-327": {
-          "python": 40,
+          "python": 44,
           "javascript": 40
         }
       },
       "by_class_lang_real": {
         "safe": {
-          "javascript": 58,
-          "python": 11
+          "javascript": 108,
+          "python": 94
         },
         "CWE-89": {
-          "javascript": 3
+          "javascript": 3,
+          "python": 6
         },
         "CWE-79": {
-          "javascript": 42,
-          "python": 5
+          "javascript": 68,
+          "python": 26
         },
         "CWE-78": {
-          "javascript": 7,
-          "python": 1
+          "javascript": 21,
+          "python": 6
         },
         "CWE-22": {
-          "python": 1,
-          "javascript": 6
+          "python": 33,
+          "javascript": 15
         },
         "CWE-798": {},
         "CWE-502": {
-          "python": 4
+          "python": 19,
+          "javascript": 1
         },
-        "CWE-327": {}
+        "CWE-327": {
+          "python": 4
+        }
+      },
+      "by_class_lang_osv": {
+        "safe": {
+          "javascript": 50,
+          "python": 83
+        },
+        "CWE-89": {
+          "python": 6
+        },
+        "CWE-79": {
+          "javascript": 26,
+          "python": 21
+        },
+        "CWE-78": {
+          "javascript": 14,
+          "python": 5
+        },
+        "CWE-22": {
+          "javascript": 9,
+          "python": 32
+        },
+        "CWE-798": {},
+        "CWE-502": {
+          "javascript": 1,
+          "python": 15
+        },
+        "CWE-327": {
+          "python": 4
+        }
       }
     }
   },

@@ -1,10 +1,11 @@
 """Train and tune the classical baselines (LR, RF, LightGBM) on train; tune on val only.
 
-Writes models/<kind>.joblib and models/<kind>.json (params, val scores, chosen threshold).
-Usage: python scripts/train_classic.py [lr rf lgbm]
+Writes $MODELS_DIR/<kind>.joblib and .json (default models/; v2 uses MODELS_DIR=models/v2).
+Usage: [MODELS_DIR=models/v2] python scripts/train_classic.py [lr rf lgbm]
 """
 import itertools
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -32,8 +33,8 @@ def cols(rows):
 def main(kinds):
     train, val = load("train"), load("val")
     (tc, tl, ty), (vc, vl, _) = cols(train), cols(val)
-    out = ROOT / "models"
-    out.mkdir(exist_ok=True)
+    out = ROOT / os.environ.get("MODELS_DIR", "models")
+    out.mkdir(parents=True, exist_ok=True)
     for kind in kinds:
         results = []
         for params in GRIDS[kind]:
