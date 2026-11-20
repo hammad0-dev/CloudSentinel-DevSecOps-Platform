@@ -1,6 +1,13 @@
 models/
+.venv/
+.hf/
+data/
+logs/
+checkpoints/
+reports/
+scripts/
+tests/
 *.joblib
 *.pkl
 __pycache__/
 .pytest_cache/
-test_app.py

@@ -1,0 +1,272 @@
+{
+  "name": "ml-sast-rf",
+  "version": "1.0.0",
+  "kind": "rf",
+  "threshold": 0.3,
+  "sha256": "f8a6c5454a158812ab4d8a6bd5d9c7dfe31046e16eb29148cf4c860d181763d4",
+  "selection": {
+    "rule": "max held-out (all) macro-F1 at the validation-chosen threshold",
+    "ranking": [
+      {
+        "model": "rf",
+        "heldout_all": 0.4981458024936286,
+        "heldout_code": 0.5494058640093595
+      },
+      {
+        "model": "lgbm",
+        "heldout_all": 0.4864206076025142,
+        "heldout_code": 0.5567655582015896
+      },
+      {
+        "model": "codebert",
+        "heldout_all": 0.4576382627339094,
+        "heldout_code": 0.5238669021604324
+      },
+      {
+        "model": "lr",
+        "heldout_all": 0.44691401530406766,
+        "heldout_code": 0.5172017161435517
+      },
+      {
+        "model": "codebert_xgb",
+        "heldout_all": 0.20001740612695668,
+        "heldout_code": 0.22067963335568969
+      }
+    ]
+  },
+  "metrics": {
+    "val_macro_f1": 0.5026692581871028,
+    "test": {
+      "n": 1298,
+      "macro_f1": 0.7501201070770315,
+      "binary": {
+        "precision": 0.7008196721311475,
+        "recall": 0.8155802861685215
+      },
+      "per_class": {
+        "safe": {
+          "precision": 0.7950530035335689,
+          "recall": 0.672645739910314,
+          "f1": 0.728744939271255,
+          "support": 669
+        },
+        "CWE-89": {
+          "precision": 0.7647058823529411,
+          "recall": 0.9397590361445783,
+          "f1": 0.8432432432432433,
+          "support": 83
+        },
+        "CWE-79": {
+          "precision": 0.5087719298245614,
+          "recall": 0.9133858267716536,
+          "f1": 0.6535211267605634,
+          "support": 127
+        },
+        "CWE-78": {
+          "precision": 0.9555555555555556,
+          "recall": 0.9772727272727273,
+          "f1": 0.9662921348314607,
+          "support": 88
+        },
+        "CWE-22": {
+          "precision": 0.574468085106383,
+          "recall": 0.6206896551724138,
+          "f1": 0.5966850828729282,
+          "support": 87
+        },
+        "CWE-798": {
+          "precision": 1.0,
+          "recall": 0.4375,
+          "f1": 0.6086956521739131,
+          "support": 80
+        },
+        "CWE-502": {
+          "precision": 0.5765765765765766,
+          "recall": 0.7619047619047619,
+          "f1": 0.6564102564102564,
+          "support": 84
+        },
+        "CWE-327": {
+          "precision": 1.0,
+          "recall": 0.9,
+          "f1": 0.9473684210526315,
+          "support": 80
+        }
+      }
+    },
+    "test_real": {
+      "n": 138,
+      "macro_f1": 0.36572263696330526,
+      "binary": {
+        "precision": 0.509090909090909,
+        "recall": 0.8115942028985508
+      },
+      "per_class": {
+        "safe": {
+          "precision": 0.5357142857142857,
+          "recall": 0.21739130434782608,
+          "f1": 0.30927835051546393,
+          "support": 69
+        },
+        "CWE-89": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        },
+        "CWE-79": {
+          "precision": 0.40816326530612246,
+          "recall": 0.851063829787234,
+          "f1": 0.5517241379310345,
+          "support": 47
+        },
+        "CWE-78": {
+          "precision": 0.6,
+          "recall": 0.75,
+          "f1": 0.6666666666666666,
+          "support": 8
+        },
+        "CWE-22": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7
+        },
+        "CWE-798": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "CWE-502": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "support": 4
+        },
+        "CWE-327": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      }
+    },
+    "heldout_all": {
+      "n": 440,
+      "macro_f1": 0.4981458024936286,
+      "binary": {
+        "precision": 0.3090909090909091,
+        "recall": 0.3541666666666667
+      },
+      "per_class": {
+        "safe": {
+          "precision": 0.9194805194805195,
+          "recall": 0.9030612244897959,
+          "f1": 0.9111969111969112,
+          "support": 392
+        },
+        "CWE-89": {
+          "precision": 0.1875,
+          "recall": 0.5,
+          "f1": 0.2727272727272727,
+          "support": 6
+        },
+        "CWE-79": {
+          "precision": 0.08695652173913043,
+          "recall": 0.4,
+          "f1": 0.14285714285714285,
+          "support": 5
+        },
+        "CWE-78": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 2
+        },
+        "CWE-22": {
+          "precision": 0.2,
+          "recall": 1.0,
+          "f1": 0.3333333333333333,
+          "support": 1
+        },
+        "CWE-798": {
+          "precision": 1.0,
+          "recall": 0.045454545454545456,
+          "f1": 0.08695652173913043,
+          "support": 22
+        },
+        "CWE-502": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "support": 4
+        },
+        "CWE-327": {
+          "precision": 0.6666666666666666,
+          "recall": 0.5,
+          "f1": 0.5714285714285714,
+          "support": 8
+        }
+      }
+    },
+    "heldout_code": {
+      "n": 435,
+      "macro_f1": 0.5494058640093595,
+      "binary": {
+        "precision": 0.2830188679245283,
+        "recall": 0.3488372093023256
+      },
+      "per_class": {
+        "safe": {
+          "precision": 0.9267015706806283,
+          "recall": 0.9030612244897959,
+          "f1": 0.9147286821705426,
+          "support": 392
+        },
+        "CWE-89": {
+          "precision": 0.1875,
+          "recall": 0.5,
+          "f1": 0.2727272727272727,
+          "support": 6
+        },
+        "CWE-79": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "CWE-78": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 2
+        },
+        "CWE-22": {
+          "precision": 0.2,
+          "recall": 1.0,
+          "f1": 0.3333333333333333,
+          "support": 1
+        },
+        "CWE-798": {
+          "precision": 1.0,
+          "recall": 0.045454545454545456,
+          "f1": 0.08695652173913043,
+          "support": 22
+        },
+        "CWE-502": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6666666666666666,
+          "support": 4
+        },
+        "CWE-327": {
+          "precision": 0.6666666666666666,
+          "recall": 0.5,
+          "f1": 0.5714285714285714,
+          "support": 8
+        }
+      }
+    }
+  }
+}
