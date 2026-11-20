@@ -2,7 +2,12 @@
 
 CloudSentinel can run SAST and the baseline DAST stage on trained ML services instead of SonarQube
 and ZAP. Targets are Python and Node.js apps only. SonarQube and ZAP remain the default until the ML
-engines pass evaluation. This change is plumbing only: there are no trained models yet.
+engines pass evaluation.
+
+- **ml-sast** has a trained model (`ml-sast-rf` 1.0.0). It is function-level, scores about 0.50
+  held-out macro-F1, and is not yet good enough to replace SonarQube as the gate. See
+  [ml-sast-model-card.md](ml-sast-model-card.md).
+- **ml-dast** has no trained model yet.
 
 ## Selection
 
