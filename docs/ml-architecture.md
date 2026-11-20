@@ -328,3 +328,68 @@ app (NodePort 31344), whose `/` returns JSON:
 | none | 1 page, 0 points, 1 request | none (nothing tested) |
 | `/users?name=alice`, `/search?q=test` | 3 pages, 2 points, 97 requests, 4.8 s | CWE-89 `GET /users` `name` (0.9995), CWE-79 `GET /search` `q` (0.9993), both true and matching that app's SAST findings |
 | `http://example.com/x` | none | HTTP 400 `target refused: host 'example.com' is not in the allowlist`, no traffic |
+
+## ML DAST v2: more classes (rules) and the error-analysis model
+
+`ml-dast-lr` 2.0.0 (`services-ml/ml-dast/models/release_v2/`, gitignored) keeps the ML part for SQL
+injection and reflected XSS and adds **deterministic rules, not machine learning**, for OS command
+injection (CWE-78), path traversal (CWE-22), open redirect (CWE-601), and passive checks (CSP,
+`nosniff`, framing, session cookie HttpOnly/SameSite, CORS). Details and every number are in
+[`docs/ml-dast-model-card.md`](ml-dast-model-card.md); the rules are in
+`services-ml/ml-dast/dastml/rules.py`.
+
+**Run it** (same pipeline as above; only the model directory changes):
+
+```bash
+ML_DAST_MODEL_DIR=services-ml/ml-dast/models/release_v2 scripts/run-ml-dast.sh --minikube &
+cd backend && PORT=3100 SAST_ENGINE=ml DAST_ENGINE=ml ML_SAST_URL=http://127.0.0.1:8001 ML_DAST_URL=http://127.0.0.1:8002 node server.js &
+cd .. && E2E_API=http://127.0.0.1:3100 node scripts/e2e-smoke.js node python-clean demo-forms
+```
+
+**How the backend handles the new classes:**
+- **Storage:** findings arrive in the same `dast_findings` contract, under `alert`, `attack_type`, `cwe_id`
+  and `severity`.
+- **Labels:** rule findings start `response_details` with `[rule-based`; passive findings have `attack_type`
+  `passive_*`.
+- **Governance:** CWE-78/22/601 normalize as DAST `VULNERABILITY` (OWASP A03 and A01 from the existing
+  registry). Passive checks normalize as `MISCONFIGURATION` with LOW or INFO severity, so they never count
+  as verified vulnerabilities.
+- **Gate:** the security gate never blocks on DAST findings, whatever their severity. Only SAST,
+  Dependency and IaC gate the pipeline; `backend/test/ml-engines.test.js` pins this.
+
+| Env | Default | Meaning |
+|---|---|---|
+| `ML_DAST_MODEL_DIR` | `services-ml/ml-dast/models/release` (v1) | Point at `models/release_v2` for v2 |
+| `ML_DAST_SEED_PATHS`, `ML_DAST_OPENAPI_URL` | unset | Crawl seeds (see DAST demo); they pass the same guards |
+| `ML_ALLOW_UNTRAINED` | unset | The backend still refuses an untrained model unless set |
+
+**Results summary.** Full tables are in the model card.
+
+| Evaluation | Result |
+|---|---|
+| Leave-one-app-out, ML (7 groups, 111 endpoint-params) | 0.827 [0.744, 0.894]: SQLi F1 0.90 [0.80, 0.98], XSS F1 0.71 [0.54, 0.85] |
+| Same 78 endpoint-params, v1 → v2 | 0.858 → 0.831, −0.031 [−0.128, +0.066]: not significant; third-party −0.234 [−0.390, −0.089] |
+| ZAP on the same endpoint-params (ML classes) | ZAP 0.937 vs 0.827: ZAP significantly better (−0.112 [−0.202, −0.028]) |
+| Rules on training apps | CWE-78 2 of 3, CWE-22 3 of 4, CWE-601 3 of 4, 0 false alarms; passive 23 of 23 instances, 0 false alarms |
+| New frozen held-out DSVW (once) | ML 0.608 [0.368, 1.000]: XSS 2 of 2, SQLi **0 of 3**; rules 3 of 3; passive 5 of 5 |
+
+### e2e with the v2 model (2026-11-21)
+
+Engines: ml-sast-hybrid 2.0.0 and ml-dast-lr **2.0.0** (`5dc397d0b6c4…`, threshold 0.9). Executions 80 to 82.
+
+| Stage | node-express (vulnerable) | python-clean | demo-forms (vulnerable) |
+|---|---|---|---|
+| SAST (ML) | 3 s: C1 H2 | 2 s: 0 | 2 s: C3 H5 |
+| Dependency / IaC | not run | 12 s L1 / 4 s 0 | not run |
+| Image | not run | 7 s: H48 M110 L67 (not gating) | not run |
+| Deploy | not run | success, `http://192.168.49.2:32707` | not run |
+| DAST (ML v2) | not run | 1 finding: **INFORMATIONAL** `X-Content-Type-Options Header Missing` (passive rule). Crawl: 1 page, 0 injection points, 3 requests | not run |
+| **Gate** | **Blocked at SAST** (CRITICAL) | **Passed**, COMPLETED in 78 s | **Blocked at SAST** (CRITICAL) |
+
+**What this shows:**
+- The clean fixture still passes every stage. The vulnerable fixtures are still blocked.
+- The new passive finding is stored, normalized as a LOW/INFO misconfiguration, and does not gate.
+- Only `nosniff` fires on python-clean, because the HTML-only checks (CSP, framing) do not apply to its
+  JSON root.
+- The DAST stage still finds no injection points on the JSON fixtures without seeds, as in the earlier e2e.
+
