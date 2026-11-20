@@ -1,0 +1,106 @@
+# ml-dast LAB: deliberately vulnerable apps for building the DAST training/evaluation data.
+# LAB ONLY. Every port is published on 127.0.0.1 only; nothing here may be exposed or deployed.
+# The crawler/payload sender refuses any target outside the allowlist in
+# services-ml/ml-dast/dastml/guards.py (127.0.0.1 / localhost, ports 5101-5108 by default).
+#
+# Ground truth: services-ml/ml-dast/data/dast/GROUND_TRUTH.md and ground_truth.json.
+# Third-party sources (NodeGoat, vulpy) are copied at pinned commits into lab/vendor/ (gitignored)
+# by lab/fetch-vendor.sh.
+#
+#   cd services-ml/ml-dast/lab && ./fetch-vendor.sh && docker compose up -d --build
+name: mldast-lab
+
+x-lab: &lab
+  restart: "no"
+  networks: [lab]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  # ---- apps I own (exact ground truth, vulnerable + safe twins) ----
+  labflask:
+    <<: *lab
+    build: ./labflask
+    image: mldast-lab/labflask:1
+    ports: ["127.0.0.1:5101:8080"]
+    mem_limit: 128m
+
+  labexpress:
+    <<: *lab
+    build: ./labexpress
+    image: mldast-lab/labexpress:1
+    environment: { DATABASE_URL: "postgres://lab:lab@labexpress-db:5432/lab" }
+    depends_on: [labexpress-db]
+    ports: ["127.0.0.1:5102:8080"]
+    mem_limit: 128m
+  labexpress-db:
+    <<: *lab
+    image: postgres:15-alpine
+    environment: { POSTGRES_USER: lab, POSTGRES_PASSWORD: lab, POSTGRES_DB: lab }
+    mem_limit: 192m
+
+  labfastapi:
+    <<: *lab
+    build: ./labfastapi
+    image: mldast-lab/labfastapi:1
+    environment: { DB_HOST: labfastapi-db, DB_PASSWORD: lab }
+    depends_on: [labfastapi-db]
+    ports: ["127.0.0.1:5103:8080"]
+    mem_limit: 160m
+  labfastapi-db:
+    <<: *lab
+    image: mysql:5.7
+    command: ["--performance-schema=OFF", "--innodb-buffer-pool-size=32M"]
+    environment: { MYSQL_ROOT_PASSWORD: labroot, MYSQL_DATABASE: lab, MYSQL_USER: lab, MYSQL_PASSWORD: lab }
+    mem_limit: 320m
+
+  # ---- third-party vulnerable apps ----
+  juice-shop:
+    <<: *lab
+    image: bkimminich/juice-shop:latest   # already local; digest recorded in data/dast/manifest.json
+    ports: ["127.0.0.1:5104:3000"]
+    mem_limit: 512m
+
+  dvna:                                   # FINAL HELD-OUT APP: never used for training or tuning
+    <<: *lab
+    image: appsecco/dvna:latest
+    environment: { MYSQL_USER: dvna, MYSQL_PASSWORD: passw0rd, MYSQL_DATABASE: dvna, MYSQL_HOST: dvna-db, MYSQL_PORT: "3306" }
+    depends_on: [dvna-db]
+    ports: ["127.0.0.1:5105:9090"]
+    mem_limit: 256m
+  dvna-db:
+    <<: *lab
+    image: mysql:5.7
+    command: ["--performance-schema=OFF", "--innodb-buffer-pool-size=32M"]
+    environment: { MYSQL_ROOT_PASSWORD: dvnaroot, MYSQL_DATABASE: dvna, MYSQL_USER: dvna, MYSQL_PASSWORD: passw0rd }
+    mem_limit: 320m
+
+  nodegoat:
+    <<: *lab
+    build: ./vendor/NodeGoat
+    image: mldast-lab/nodegoat:c5cb68a
+    environment: { MONGODB_URI: "mongodb://nodegoat-db:27017/nodegoat", NODE_ENV: development }
+    depends_on: [nodegoat-db]
+    command: sh -c "until nc -z nodegoat-db 27017; do sleep 1; done && node artifacts/db-reset.js && npm start"
+    ports: ["127.0.0.1:5106:4000"]
+    mem_limit: 256m
+  nodegoat-db:
+    <<: *lab
+    image: mongo:4.4
+    mem_limit: 256m
+
+  vulpy-bad:
+    <<: *lab
+    build: { context: ./vendor/vulpy, dockerfile: ../../vulpy.Dockerfile, args: { VARIANT: bad } }
+    image: mldast-lab/vulpy-bad:5249cc8
+    ports: ["127.0.0.1:5107:5000"]
+    mem_limit: 128m
+  vulpy-good:
+    <<: *lab
+    build: { context: ./vendor/vulpy, dockerfile: ../../vulpy.Dockerfile, args: { VARIANT: good } }
+    image: mldast-lab/vulpy-good:5249cc8
+    ports: ["127.0.0.1:5108:5000"]
+    mem_limit: 128m
+
+networks:
+  lab:
+    internal: false   # published ports need a non-internal network; the apps get no outbound use

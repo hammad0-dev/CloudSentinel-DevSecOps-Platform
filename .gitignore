@@ -62,3 +62,17 @@ services-ml/ml-sast/.hf/
 !services-ml/ml-sast/data/fresh/labels.json
 !services-ml/ml-sast/data/fresh/FREEZE.json
 !services-ml/ml-sast/data/osv_noise_check.json
+
+# ml-dast training workspace: venv, lab data, models, logs, vendored lab sources
+services-ml/ml-dast/.venv/
+services-ml/ml-dast/logs/
+services-ml/ml-dast/models/
+services-ml/ml-dast/lab/vendor/
+services-ml/ml-dast/data/**
+!services-ml/ml-dast/data/
+!services-ml/ml-dast/data/dast/
+!services-ml/ml-dast/data/dast/GROUND_TRUTH.md
+!services-ml/ml-dast/data/dast/ground_truth.json
+!services-ml/ml-dast/data/dast/manifest.json
+!services-ml/ml-dast/data/dast/payloads/
+!services-ml/ml-dast/data/dast/payloads/**
