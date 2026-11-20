@@ -30,7 +30,7 @@ from dastml.probe import CORS_ORIGIN, load_payloads, new_marker, point_rows, pro
 OUT = ROOT / "data/dast"
 # Collection-only allowlist (127.0.0.1/localhost): the lab ports. The service default is unchanged.
 LAB_PORTS = parse_ports("5101-5112")
-ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22")
+ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22", "CWE-601")
 
 # NodeGoat /learn's crawled link carries a URL (refused by the guards), so it is seeded with a same-site value.
 SEEDS = {"nodegoat": [InjectionPoint("GET", "/learn", "url", "query", (("url", "/dashboard"),))],

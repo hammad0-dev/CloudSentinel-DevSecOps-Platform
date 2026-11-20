@@ -117,13 +117,17 @@ services:
       JWT_SECRET: lab-only-not-a-secret
       DEBUG_ERRORS: "1"
       NODE_ENV: development
-    depends_on: [vn-db, vn-mongo]
+    depends_on:
+      vn-db: { condition: service_healthy }
+      vn-mongo: { condition: service_started }
+    dns: ["127.0.0.1"]   # no external resolver: the app cannot fetch internet hosts (service names still resolve)
     ports: ["127.0.0.1:5110:3000"]
     mem_limit: 256m
   vn-db:
     <<: *lab
     image: postgres:16-alpine
     environment: { POSTGRES_USER: nodebazaar, POSTGRES_PASSWORD: nodebazaar, POSTGRES_DB: nodebazaar }
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U nodebazaar -d nodebazaar"], interval: 3s, timeout: 3s, retries: 20 }
     mem_limit: 192m
   vn-mongo:
     <<: *lab

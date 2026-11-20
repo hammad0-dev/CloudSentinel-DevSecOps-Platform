@@ -1890,6 +1890,12 @@
    "date": "2026-11-20",
    "change": "vulnerable-node added as a third-party training app (rank 8)",
    "evidence": "per-entry notes; read from source before collection"
+  },
+  {
+   "date": "2026-11-21",
+   "change": "vulpy-good missing-csp True -> False; vulpy-bad/good cookie checks -> not evaluable (None)",
+   "evidence": "good/csp.txt has two uncommented directives (the earlier reading looked at bad/csp.txt only); libsession.create + Werkzeug TypeError on bytes cookie values (lab container logs)",
+   "prompted_by": "the passive rule output disagreed with the ground truth; corrected only after re-reading the source (disclosed)"
   }
  ],
  "passive": {
@@ -1951,19 +1957,21 @@
    "missing-csp": true,
    "missing-nosniff": true,
    "missing-frame-protection": true,
-   "cookie-no-httponly": true,
-   "cookie-no-samesite": true,
+   "cookie-no-httponly": null,
+   "cookie-no-samesite": null,
    "cors-any-origin": false,
-   "evidence": "bad/vulpy.py @ 5249cc8 lines 25-51: CSP only if csp.txt has an uncommented line (every line is commented); bad/libsession.py line 7: response.set_cookie('vulpy_session', ...) without httponly/samesite; no CORS"
+   "evidence": "bad/vulpy.py @ 5249cc8 lines 25-51: CSP only if csp.txt has an uncommented line (every line is commented); bad/libsession.py line 7: response.set_cookie('vulpy_session', ...) without httponly/samesite; no CORS",
+   "cookie_note": "not evaluable in the lab: libsession.create passes a bytes value to set_cookie (base64 / Fernet output), which the Werkzeug version in the lab image rejects (TypeError in werkzeug/http.py dump_cookie), so login returns 500 and no session cookie is ever set"
   },
   "vulpy-good": {
-   "missing-csp": true,
+   "missing-csp": false,
    "missing-nosniff": true,
    "missing-frame-protection": true,
-   "cookie-no-httponly": true,
-   "cookie-no-samesite": true,
+   "cookie-no-httponly": null,
+   "cookie-no-samesite": null,
    "cors-any-origin": false,
-   "evidence": "good/vulpy.py @ 5249cc8 lines 43-51 (same CSP logic, csp.txt all commented); good/libsession.py line 32: set_cookie('vulpy_session', fernet.encrypt(...)) without httponly/samesite; no CORS"
+   "evidence": "good/vulpy.py @ 5249cc8 lines 25-51 + good/csp.txt: two lines are active (script-src 'self' 'nonce-...'; style-src 'self' 'unsafe-inline'), so a CSP header is sent; it has no frame-ancestors (framing unprotected). good/libsession.py line 32: set_cookie(fernet.encrypt(...)) without httponly/samesite, but see cookie_note; no CORS",
+   "cookie_note": "not evaluable in the lab: libsession.create passes a bytes value to set_cookie (base64 / Fernet output), which the Werkzeug version in the lab image rejects (TypeError in werkzeug/http.py dump_cookie), so login returns 500 and no session cookie is ever set"
   },
   "vulnerable-node": {
    "missing-csp": true,

@@ -25,12 +25,18 @@ HEADERS = ("content-security-policy", "x-frame-options", "x-content-type-options
 CORS_ORIGIN = "http://{M}.invalid"
 
 
-def header_snapshot(resp):
-    h = {k: resp.headers[k] for k in HEADERS if k in resp.headers}
+def _set_cookies(resp):
     try:
-        cookies = resp.raw.headers.getlist("Set-Cookie")
+        return list(resp.raw.headers.getlist("Set-Cookie"))
     except AttributeError:
-        cookies = [resp.headers["set-cookie"]] if "set-cookie" in resp.headers else []
+        return [resp.headers["set-cookie"]] if "set-cookie" in resp.headers else []
+
+
+def header_snapshot(resp):
+    """Security headers of the final response, plus Set-Cookie from every hop of a same-origin
+    redirect chain (a session cookie is often set on the 302, not on the page it leads to)."""
+    h = {k: resp.headers[k] for k in HEADERS if k in resp.headers}
+    cookies = [c for hop in getattr(resp, "cs_hops", []) for c in _set_cookies(hop)] + _set_cookies(resp)
     if cookies:
         h["set-cookie"] = [c[:300] for c in cookies]
     return h

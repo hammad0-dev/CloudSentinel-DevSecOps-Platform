@@ -196,11 +196,14 @@ class GuardedClient:
         kw.pop("allow_redirects", None)
         kw.setdefault("timeout", self.policy.timeout_sec)
         started = time.monotonic()
+        hops = []  # earlier responses of a same-origin redirect chain (their Set-Cookie headers matter)
         for _ in range(self.policy.max_redirects + 1):
             self._throttle()
             resp = self.session.request(method, url, allow_redirects=False, **kw)
+            resp.cs_hops = list(hops)
             if resp.status_code not in (301, 302, 303, 307, 308) or "location" not in resp.headers:
                 return resp, time.monotonic() - started
+            hops.append(resp)
             try:
                 url = self.check_url(resp.headers["location"])
             except GuardError:

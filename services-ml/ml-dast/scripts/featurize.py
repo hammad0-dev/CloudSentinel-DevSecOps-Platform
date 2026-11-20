@@ -15,7 +15,7 @@ from dastml.paths import paths, refuse_frozen  # noqa: E402
 from dastml.probe import load_payloads, point_rows  # noqa: E402
 
 OUT = ROOT / "data/dast"
-ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22")
+ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22", "CWE-601")
 
 
 def point_of(rec):
