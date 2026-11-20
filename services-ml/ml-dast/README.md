@@ -49,10 +49,30 @@ Every request goes through `GuardedClient`:
 | Rate limit | 20 requests/s | `ML_DAST_RATE_PER_SEC` |
 | Proxy settings from the environment | ignored | – |
 | Never-attack paths | lab skip list (`ground_truth.json`) | detector policy |
+| Never-attack parameters (v2): a (path, parameter) pair, e.g. DSVW `/?object=` | lab skip list (`ground_truth_v2.json`) | detector policy (`skip_params`) |
+| No URL-carrying parameters (v2): a query or body value with `scheme://` (raw or %-encoded) is refused, so a crawled link can never make the target fetch another host | always | – |
 
 A target outside the allowlist gets **HTTP 400 before any traffic is sent**. To scan the pipeline's
 staging deployment, set the allowlist to the staging host and NodePort range. The backend also
 authorizes the target first (the verified staging deployment). Don't expose this service's port.
+
+## v2: rule-based classes and passive checks
+
+A v2 model (`models/release_v2/`, built by `scripts/train_final_v2.py`; `data_version: "v2"` in the
+artifact) adds deterministic **rules (not machine learning)** to the same scan (`dastml/rules.py`):
+
+| Class | Evidence | Severity |
+|---|---|---|
+| CWE-78 OS command injection | the shell computes `{M}1337` from `{M}$((7*191))`, or `;sleep 2` is ≥ 1.6 s slower than `;sleep 0` (sent twice) | HIGH |
+| CWE-22 path traversal | `/etc/passwd` content (`root:x:0:0:`) not in the baseline | HIGH |
+| CWE-601 open redirect | 3xx `Location` to `{M}.invalid` (scheme-less payload; header read, redirect never followed) | MEDIUM |
+| Passive: CSP, `nosniff`, framing, session cookie HttpOnly/SameSite, CORS echo | headers of up to 10 crawled pages (cookie-less re-request, every redirect hop) and one foreign-`Origin` request | LOW / INFO, never gate-blocking |
+
+Rule findings carry `response_details` starting `[rule-based`, `confidence` 1.0, and passive ones have
+`attack_type` `passive_*` (the backend classifies them as `MISCONFIGURATION`). When the CWE-78 rule
+confirms command injection on a parameter, the ML SQLi score on that parameter yields to it (quote
+parity also fires for shell quoting). v1 artifacts keep the exact v1 behaviour. Point the service at a
+v2 model with `ML_DAST_MODEL_DIR=services-ml/ml-dast/models/release_v2 scripts/run-ml-dast.sh`.
 
 ## Untrained mode
 
@@ -68,6 +88,11 @@ defaults to the same path with `.json`. The SHA-256 of the model file is reporte
 and the backend records it as scan provenance. Model files are gitignored and mounted at runtime.
 
 ## Lab, data and reproduction
+
+v2 data lives beside the frozen v1 files (never edited): `data/dast/ground_truth_v2.json`,
+`payloads/payloads_v2.json`, `raw_v2/`, `features_v2/`; the v2 held-out app DSVW is frozen in
+`data/dast/FREEZE_v2.json`. Scripts take `--data v2`; see the model card for the v2 reproduction steps.
+
 
 Everything runs from `services-ml/ml-dast/`. The `.venv/`, `data/dast/{raw,features}/`, `models/`,
 `logs/` and `lab/vendor/` directories are gitignored.

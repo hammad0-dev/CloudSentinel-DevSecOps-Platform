@@ -1,0 +1,578 @@
+{
+ "apps": [
+  "dsvw"
+ ],
+ "zap_sources": {
+  "dsvw": "v2 scan"
+ },
+ "n_common_clusters": 12,
+ "ml_classes": {
+  "all": {
+   "ml": {
+    "n": 12,
+    "macro_f1": 0.6078431372549019,
+    "per_class": {
+     "safe": {
+      "precision": 0.7,
+      "recall": 1.0,
+      "f1": 0.8235294117647058,
+      "support": 7,
+      "tp": 7,
+      "fp": 3,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3,
+      "tp": 0,
+      "fp": 0,
+      "fn": 3
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      7,
+      0,
+      0
+     ],
+     [
+      3,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      2
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.4
+    }
+   },
+   "zap": {
+    "n": 12,
+    "macro_f1": 0.24561403508771928,
+    "per_class": {
+     "safe": {
+      "precision": 0.5833333333333334,
+      "recall": 1.0,
+      "f1": 0.7368421052631579,
+      "support": 7,
+      "tp": 7,
+      "fp": 5,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3,
+      "tp": 0,
+      "fp": 0,
+      "fn": 3
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 2,
+      "tp": 0,
+      "fp": 0,
+      "fn": 2
+     }
+    },
+    "confusion": [
+     [
+      7,
+      0,
+      0
+     ],
+     [
+      3,
+      0,
+      0
+     ],
+     [
+      2,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.0,
+     "recall": 0.0
+    }
+   }
+  },
+  "own": {
+   "ml": {
+    "n": 0,
+    "macro_f1": 0.0,
+    "per_class": {
+     "safe": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.0,
+     "recall": 0.0
+    }
+   },
+   "zap": {
+    "n": 0,
+    "macro_f1": 0.0,
+    "per_class": {
+     "safe": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.0,
+     "recall": 0.0
+    }
+   }
+  },
+  "third-party": {
+   "ml": {
+    "n": 12,
+    "macro_f1": 0.6078431372549019,
+    "per_class": {
+     "safe": {
+      "precision": 0.7,
+      "recall": 1.0,
+      "f1": 0.8235294117647058,
+      "support": 7,
+      "tp": 7,
+      "fp": 3,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3,
+      "tp": 0,
+      "fp": 0,
+      "fn": 3
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      7,
+      0,
+      0
+     ],
+     [
+      3,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      2
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.4
+    }
+   },
+   "zap": {
+    "n": 12,
+    "macro_f1": 0.24561403508771928,
+    "per_class": {
+     "safe": {
+      "precision": 0.5833333333333334,
+      "recall": 1.0,
+      "f1": 0.7368421052631579,
+      "support": 7,
+      "tp": 7,
+      "fp": 5,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3,
+      "tp": 0,
+      "fp": 0,
+      "fn": 3
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 2,
+      "tp": 0,
+      "fp": 0,
+      "fn": 2
+     }
+    },
+    "confusion": [
+     [
+      7,
+      0,
+      0
+     ],
+     [
+      3,
+      0,
+      0
+     ],
+     [
+      2,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.0,
+     "recall": 0.0
+    }
+   }
+  }
+ },
+ "bootstrap": {
+  "all": {
+   "n_clusters": 12,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.590639225000283,
+     "ci95": [
+      0.3684210526315789,
+      1.0
+     ]
+    },
+    "zap": {
+     "mean": 0.26024612981729683,
+     "ci95": [
+      0.16666666666666666,
+      0.45454545454545453
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.0,
+      0.0
+     ],
+     "CWE-79": [
+      0.0,
+      1.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.0,
+      0.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": 0.33039309518298615,
+     "ci95": [
+      0.0,
+      0.44052807486630996
+     ]
+    }
+   }
+  },
+  "own": {
+   "n_clusters": 0,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "zap": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.0,
+      0.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.0,
+      0.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    }
+   }
+  },
+  "third-party": {
+   "n_clusters": 12,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.590639225000283,
+     "ci95": [
+      0.3684210526315789,
+      1.0
+     ]
+    },
+    "zap": {
+     "mean": 0.26024612981729683,
+     "ci95": [
+      0.16666666666666666,
+      0.45454545454545453
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.0,
+      0.0
+     ],
+     "CWE-79": [
+      0.0,
+      1.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.0,
+      0.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": 0.33039309518298615,
+     "ci95": [
+      0.0,
+      0.44052807486630996
+     ]
+    }
+   }
+  }
+ },
+ "rules": {
+  "CWE-78": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 11,
+   "zap_missed": [
+    "dsvw|GET|/|domain"
+   ]
+  },
+  "CWE-22": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 11,
+   "zap_missed": [
+    "dsvw|GET|/|path"
+   ]
+  },
+  "CWE-601": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 11,
+   "zap_missed": [
+    "dsvw|GET|/|redir"
+   ]
+  }
+ },
+ "passive": {
+  "missing-csp": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 1,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 0
+  },
+  "missing-nosniff": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 1,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 0
+  },
+  "missing-frame-protection": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 1,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 0
+  },
+  "cookie-no-httponly": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 0
+  },
+  "cookie-no-samesite": {
+   "known": 1,
+   "ml_dast_found": 1,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 0
+  },
+  "cors-any-origin": {
+   "known": 0,
+   "ml_dast_found": 0,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  }
+ }
+}
