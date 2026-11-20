@@ -275,7 +275,7 @@
     }
   },
   "heldout": {
-    "policy": "never used for training or tuning; labels by sink line in data/heldout/labels.json (see LABELS.md)",
+    "role": "development set (tuning allowed since v2)",
     "apps": {
       "NodeGoat": {
         "repo": "https://github.com/OWASP/NodeGoat",
@@ -287,9 +287,9 @@
           "server.js"
         ],
         "units": {
-          "safe": 60,
+          "safe": 59,
           "excluded": 3,
-          "CWE-798": 2,
+          "CWE-798": 3,
           "CWE-79": 1
         }
       },
@@ -341,11 +341,11 @@
           "pygoat/settings.py"
         ],
         "units": {
-          "safe": 190,
+          "safe": 182,
           "CWE-502": 3,
-          "excluded": 6,
+          "excluded": 7,
           "CWE-327": 5,
-          "CWE-798": 13,
+          "CWE-798": 20,
           "CWE-78": 1,
           "CWE-89": 1,
           "CWE-22": 1,
@@ -355,6 +355,94 @@
     },
     "template_sink_units": 5,
     "total_units": 455,
-    "excluded_units": 15
+    "excluded_units": 16,
+    "freeze": {
+      "labels_sha256": "dea032d701f1caa5091eb522964ab176d0640fdfd5fb1e5b844a07da3f2a4dd2",
+      "rows_sha256": "80910c07affae71abdbee7b2f545881c305f88b377dc37fbe017870d7c7ba1cc",
+      "sources_sha256": "e4171e10c03e34f05a5f2208c48dedc1e2555b19f88fbb8572490fd7034da38f",
+      "n_files": 115,
+      "commits": {
+        "NodeGoat": "c5cb68a7084e4ae7dcc60e6a98768720a81841e8",
+        "dvna": "9ba473add536f66ac9007966acb2a775dd31277a",
+        "vulpy": "5249cc8b05a1c37f6b2f757b1cf16a509c327122",
+        "pygoat": "2aa4cc14f251e4a780e94e200aed6b36a5b15c21"
+      }
+    }
+  },
+  "fresh": {
+    "role": "fresh held-out set, scored exactly once",
+    "apps": {
+      "django.nV": {
+        "repo": "https://github.com/nVisium/django.nV",
+        "commit": "a48901f106da4888417339b7b44b8ed56b64c63f",
+        "lang": "python",
+        "include": [
+          "taskManager/"
+        ],
+        "units": {
+          "safe": 45,
+          "CWE-22": 1,
+          "CWE-327": 1,
+          "CWE-89": 1,
+          "excluded": 3,
+          "CWE-79": 2
+        }
+      },
+      "dvws-node": {
+        "repo": "https://github.com/snoopysecurity/dvws-node",
+        "commit": "4221c04f132960a0ccca4bf5aa5f3a9f53172778",
+        "lang": "javascript",
+        "include": [
+          "src/"
+        ],
+        "units": {
+          "safe": 141,
+          "CWE-22": 3,
+          "excluded": 10,
+          "CWE-502": 2,
+          "CWE-78": 1,
+          "CWE-89": 2
+        }
+      },
+      "vulnerable-node": {
+        "repo": "https://github.com/cr0hn/vulnerable-node",
+        "commit": "d68f2a3c9277ece2c2feb9976052033bdecd7fbe",
+        "lang": "javascript",
+        "include": [
+          "routes/",
+          "model/",
+          "middleware/",
+          "db/",
+          "config.js",
+          "server.js",
+          "sast/seeds/"
+        ],
+        "units": {
+          "safe": 91,
+          "excluded": 24,
+          "CWE-22": 3,
+          "CWE-78": 2,
+          "CWE-79": 4,
+          "CWE-89": 5,
+          "CWE-798": 4,
+          "CWE-327": 3,
+          "CWE-502": 1
+        }
+      }
+    },
+    "template_sink_units": 3,
+    "total_units": 349,
+    "excluded_units": 37,
+    "freeze": {
+      "labels_sha256": "127ca0d8fc5414332f00446e44cff6d160f239d3a58df22de95fd9e9c57a1420",
+      "rows_sha256": "9505c51558ead1852d4c959ad5d7046f871942c832d9a5bc712df9f7d74003e6",
+      "sources_sha256": "63bf7c68417be995ef55e35adcee30251f6d2116d501b2fb43b430ba67cda8f3",
+      "n_files": 79,
+      "commits": {
+        "django.nV": "a48901f106da4888417339b7b44b8ed56b64c63f",
+        "dvws-node": "4221c04f132960a0ccca4bf5aa5f3a9f53172778",
+        "vulnerable-node": "d68f2a3c9277ece2c2feb9976052033bdecd7fbe"
+      }
+    }
   }
 }
