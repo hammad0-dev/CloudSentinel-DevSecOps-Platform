@@ -94,6 +94,12 @@ def test_url_attribute_context_and_html_specials():
     tag = {"id": "xs-tag-1", "class": "CWE-79", "family": "tag", "value": "<b>{M}</b>"}
     f = row_features(tag, "query", _resp(f"<p><b>{m}</b></p>"), m, BASE, BASE, probe)
     assert f["html_specials_payload"] == 1.0 and f["html_specials_kept_frac"] == 1.0
+    assert f["raw_reflected_dangerous"] == 1.0
+    uri = row_features(p, "query", _resp(f"<p>javascript:{m}()</p>"), m, BASE, BASE, probe)
+    assert uri["payload_raw_reflected"] == 1.0 and uri["raw_reflected_dangerous"] == 0.0, "harmless in a text context"
+    href = row_features(p, "query", _resp(f'<a href="javascript:{m}()">x</a>'), m, BASE, BASE, probe)
+    assert href["ctx_url_attr"] == 1.0 and href["raw_reflected_dangerous"] == 1.0, "executes in href"
+    assert "payload_raw_reflected" not in FEATURE_NAMES_V2 and "raw_reflected_dangerous" in FEATURE_NAMES_V2
 
 
 def _group_row(payloads, responses, pid):

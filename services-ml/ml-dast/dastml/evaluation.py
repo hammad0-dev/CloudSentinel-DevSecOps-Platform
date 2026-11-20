@@ -80,13 +80,18 @@ def bootstrap_endpoints(systems, n=1000, seed=0, origin=None):
     keys = [k for k in keys if origin is None or next(iter(systems.values()))[k][2] == origin]
     rng = np.random.default_rng(seed)
     scores = {s: [] for s in systems}
+    per_class = {s: {c: [] for c in CLASSES[1:]} for s in systems}
     for _ in range(n):
         pick = rng.integers(0, len(keys), len(keys))
         for s, cl in systems.items():
             ks = [keys[i] for i in pick]
-            scores[s].append(prf([cl[k][0] for k in ks], [cl[k][1] for k in ks])["macro_f1"])
+            m = prf([cl[k][0] for k in ks], [cl[k][1] for k in ks])
+            scores[s].append(m["macro_f1"])
+            for c in CLASSES[1:]:
+                per_class[s][c].append(m["per_class"][c]["f1"])
     ci = lambda a: [float(np.percentile(a, 2.5)), float(np.percentile(a, 97.5))]
-    out = {"n_clusters": len(keys), "macro_f1": {s: {"mean": float(np.mean(v)), "ci95": ci(v)} for s, v in scores.items()}, "differences": {}}
+    out = {"n_clusters": len(keys), "macro_f1": {s: {"mean": float(np.mean(v)), "ci95": ci(v)} for s, v in scores.items()},
+           "per_class_f1_ci95": {s: {c: ci(v) for c, v in d.items()} for s, d in per_class.items()}, "differences": {}}
     names = list(systems)
     for i in range(len(names)):
         for j in range(i + 1, len(names)):

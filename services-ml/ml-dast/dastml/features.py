@@ -50,12 +50,17 @@ FEATURE_NAMES = (
 #   time_slow_*      : slowdowns only (a faster response is not evidence of a sleep).
 #   dose_*           : the sleep-N payload (sent twice, the faster one counts) against its sleep-0 control.
 #   parity_*         : an odd quote breaks the response and the doubled quote restores the baseline.
+#   raw_reflected_dangerous: (iteration 2, after the first v2 LOAO still showed the javascript: false
+#                      alarms) the payload came back raw AND either kept HTML-special characters in place
+#                      or starts a URL attribute. A linear model cannot build this AND from the parts.
 NEW_FEATURES = ["html_specials_payload", "html_specials_kept_frac", "ctx_url_attr",
                 "time_slow_delta", "time_slow_ratio_log", "dose_present", "dose_gap", "dose_confirmed",
-                "parity_present", "parity_odd_breaks", "parity_even_restores", "parity_flip"]
+                "parity_present", "parity_odd_breaks", "parity_even_restores", "parity_flip", "raw_reflected_dangerous"]
 ALL_FEATURES = FEATURE_NAMES + NEW_FEATURES
-# v2 drops the signed timing features (a speed-up must not count toward SQLi) in favour of time_slow_*.
-FEATURE_NAMES_V2 = [f for f in FEATURE_NAMES if f not in ("time_delta", "time_ratio_log")] + NEW_FEATURES
+# v2 drops the signed timing features (a speed-up must not count toward SQLi) in favour of time_slow_*,
+# and the raw-reflection / special-character features that count harmless characters (parentheses,
+# slashes) in favour of raw_reflected_dangerous and html_specials_kept_frac.
+FEATURE_NAMES_V2 = [f for f in FEATURE_NAMES if f not in ("time_delta", "time_ratio_log", "payload_raw_reflected", "specials_kept_frac")] + NEW_FEATURES
 LOCATION_FEATURES = [f"loc_{l}" for l in LOCATIONS]
 HTML_SPECIAL = "<>\"'`"
 URL_ATTR = re.compile(r"(?:href|src|action|formaction|data|poster|xlink:href)\s*=\s*[\"']?\s*$", re.I)
@@ -237,6 +242,7 @@ def row_features(payload, location, resp, marker, base1, base2, probe, pair=None
         f["html_specials_payload"] = float(any(c in sent for c in HTML_SPECIAL))
         f["html_specials_kept_frac"] = specials_kept(body, sent, marker, HTML_SPECIAL)[0]
         f["ctx_url_attr"] = url_attr_context(body, sent, marker) if kind == "html" else 0.0
+        f["raw_reflected_dangerous"] = float(bool(f["payload_raw_reflected"]) and (f["html_specials_kept_frac"] > 0 or f["ctx_url_attr"] > 0))
     else:
         f["ctx_none"] = 1.0
     f["time_slow_delta"] = max(0.0, f["time_delta"])
