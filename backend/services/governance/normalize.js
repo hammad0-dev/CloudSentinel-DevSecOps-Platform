@@ -40,6 +40,8 @@ function normalize(source,row,scan) {
   identity=row.plugin_id||row.attack_type||row.alert||'unknown';title=row.alert;description=row.alert;
   location=`${row.method||'GET'} ${safeEndpoint(row.endpoint)} ${row.param||''}`.trim();remediation=row.solution;
   if(Number(row.cwe_id)>0)references=[`CWE-${row.cwe_id}`];
+  // ml-dast v2 passive rule checks (missing headers, cookie flags, CORS) are configuration findings.
+  if(/^passive_/.test(String(row.attack_type||'')))classification='MISCONFIGURATION';
  }
  const f={source,identity:clean(identity),title:clean(title)||'Unnamed finding',description:clean(description),severity:severity(row.severity),location:clean(location),remediation:clean(remediation)||'Review scanner evidence and apply the relevant vendor mitigation.',references:[...new Set(references.map(r=>clean(r).toUpperCase()))],classification};
  // Severity, timestamps and unstable row IDs deliberately do not form identity.

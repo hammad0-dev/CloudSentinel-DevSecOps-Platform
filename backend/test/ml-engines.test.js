@@ -399,6 +399,45 @@ test("ML DAST sends configured seeds to ml-dast and records them and the crawl c
   } finally { stageProvenance.binding = binding; await svc.close(); }
 });
 
+// ---- ml-dast v2 classes: rule-based CWE-78/22/601 and passive checks ----
+const V2_FINDINGS = [
+  { alert: "Remote OS Command Injection", attack_type: "os_command_injection", severity: "HIGH", endpoint: "http://192.168.49.2:31281/ping", method: "GET", param: "host", request_payload: ";echo cs1$((7*191))", response_details: "[rule-based] shell computed cs1$((7*191)) -> cs11337", cwe_id: 78, solution: "Use an argument list.", confidence: 1 },
+  { alert: "Path Traversal", attack_type: "path_traversal", severity: "HIGH", endpoint: "http://192.168.49.2:31281/download", method: "GET", param: "file", request_payload: "../../etc/passwd", response_details: "[rule-based] /etc/passwd content", cwe_id: 22, solution: "Contain paths.", confidence: 1 },
+  { alert: "External Redirect", attack_type: "open_redirect", severity: "MEDIUM", endpoint: "http://192.168.49.2:31281/next", method: "GET", param: "next", request_payload: "//cs1.invalid/", response_details: "[rule-based] 302 to //cs1.invalid/", cwe_id: 601, solution: "Allowlist redirects.", confidence: 1 },
+  { alert: "Content Security Policy (CSP) Header Not Set", attack_type: "passive_missing_csp", severity: "LOW", endpoint: "http://192.168.49.2:31281", method: "GET", param: "", request_payload: "", response_details: "[rule-based passive check] 3 of 3 HTML responses", cwe_id: 693, solution: "Send a CSP.", confidence: 1 },
+  { alert: "X-Content-Type-Options Header Missing", attack_type: "passive_missing_nosniff", severity: "INFORMATIONAL", endpoint: "http://192.168.49.2:31281", method: "GET", param: "", request_payload: "", response_details: "[rule-based passive check] missing", cwe_id: 693, solution: "nosniff", confidence: 1 },
+  { alert: "Cookie without SameSite Attribute", attack_type: "passive_cookie_no_samesite", severity: "LOW", endpoint: "http://192.168.49.2:31281", method: "GET", param: "", request_payload: "", response_details: "[rule-based passive check] cookie 'sid'", cwe_id: 1275, solution: "SameSite=Lax", confidence: 1 },
+];
+
+test("ML DAST v2 classes persist and normalize: rule findings are vulnerabilities, passive checks LOW/INFO misconfigurations", async () => {
+  const svc = await mockService({ info: TRAINED("ml-dast-lr"), findings: V2_FINDINGS });
+  const db = dastDb();
+  const binding = stageProvenance.binding;
+  stageProvenance.binding = async () => null;
+  try {
+    const out = await runMlBaselineScan({ pool: db.pool, projectId: 11, executionId: 23, targetUrl: db.stagingUrl, userId: 3, client: createMlDastClient({ url: svc.url }) });
+    assert.deepEqual(out.summary, { total: 6, high: 2, medium: 1, low: 2, informational: 1 });
+    const scanRow = db.scans[0];
+    const byType = Object.fromEntries(db.findings.map((f) => [f.attack_type, normalize("DAST", f, { project_id: 11, scan_id: scanRow.id, detailTable: "dast_findings", mode: "BASELINE" })]));
+    assert.deepEqual([byType.os_command_injection.severity, byType.os_command_injection.classification, byType.os_command_injection.references[0]], ["HIGH", "VULNERABILITY", "CWE-78"]);
+    assert.ok(byType.os_command_injection.mappings.some((m) => m.id === "A03:2021"), "CWE-78 maps to OWASP A03:2021 Injection");
+    assert.ok(byType.path_traversal.mappings.some((m) => m.id === "A01:2021"), "CWE-22 maps to A01:2021");
+    assert.ok(byType.open_redirect.mappings.some((m) => m.id === "A01:2021"), "CWE-601 maps to A01:2021");
+    for (const t of ["passive_missing_csp", "passive_missing_nosniff", "passive_cookie_no_samesite"]) {
+      assert.equal(byType[t].classification, "MISCONFIGURATION", t);
+      assert.ok(["LOW", "INFO"].includes(byType[t].severity), t);
+    }
+    assert.equal(byType.passive_missing_nosniff.severity, "INFO");
+    assert.ok(db.findings.filter((f) => f.cwe_id === 78 || f.cwe_id === 22 || f.cwe_id === 601).every((f) => f.response_details.startsWith("[rule-based]")));
+  } finally { stageProvenance.binding = binding; await svc.close(); }
+});
+
+test("security gate: DAST findings never block the pipeline; only SAST, Dependency and IaC are gated", async () => {
+  const { checkCriticalFindings } = require("../services/orchestrator");
+  const gate = await checkCriticalFindings(11, 23, "DAST");
+  assert.deepEqual(gate, { evidenceFound: true, hasCritical: false, evidenceConsistent: true });
+});
+
 // ---- routes: the flag default keeps the old engine ----
 const dbPath = require.resolve("../db");
 let routePool = { query: async () => ({ rows: [] }) };
