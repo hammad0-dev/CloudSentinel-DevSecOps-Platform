@@ -56,8 +56,9 @@ def true_labels(rows, pred_idx):
     return np.array([CLASSES.index(l) for l in y])
 
 
-def metrics(rows, proba, threshold=None):
-    pred = decide(proba, threshold)
+def metrics(rows, proba, threshold=None, pred=None):
+    """Metrics from probabilities (+ decision rule) or from explicit predicted class indices."""
+    pred = decide(proba, threshold) if pred is None else np.asarray(pred)
     y = true_labels(rows, pred)
     labels = list(range(len(CLASSES)))
     p, r, f, s = precision_recall_fscore_support(y, pred, labels=labels, zero_division=0)
@@ -74,6 +75,32 @@ def metrics(rows, proba, threshold=None):
         },
         "per_class": {CLASSES[i]: {"precision": float(p[i]), "recall": float(r[i]), "f1": float(f[i]), "support": int(s[i])} for i in labels},
         "confusion": confusion_matrix(y, pred, labels=labels).tolist(),
+    }
+
+
+def bootstrap(rows, preds, n=1000, seed=0):
+    """95% intervals of macro-F1 and per-class F1 for each system (dict name -> pred indices), plus
+    pairwise macro-F1 differences, resampling units with replacement."""
+    rng = np.random.default_rng(seed)
+    names = list(preds)
+    macro = {k: [] for k in names}
+    per_class = {k: {c: [] for c in CLASSES} for k in names}
+    for _ in range(n):
+        idx = rng.integers(0, len(rows), len(rows))
+        sub = [rows[i] for i in idx]
+        for k in names:
+            m = metrics(sub, None, pred=np.asarray(preds[k])[idx])
+            macro[k].append(m["macro_f1"])
+            for c in CLASSES:
+                if m["per_class"][c]["support"]:
+                    per_class[k][c].append(m["per_class"][c]["f1"])
+    ci = lambda a: [float(np.percentile(a, 2.5)), float(np.percentile(a, 97.5))] if len(a) else None
+    return {
+        "resamples": n,
+        "macro_f1": {k: {"point": metrics(rows, None, pred=preds[k])["macro_f1"], "ci95": ci(macro[k])} for k in names},
+        "per_class_f1_ci95": {k: {c: ci(v) for c, v in per_class[k].items()} for k in names},
+        "differences": {f"{a} - {b}": {"mean": float(np.mean(np.subtract(macro[a], macro[b]))), "ci95": ci(np.subtract(macro[a], macro[b]))}
+                        for i, a in enumerate(names) for b in names[i + 1:]},
     }
 
 

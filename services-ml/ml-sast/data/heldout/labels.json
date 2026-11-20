@@ -74,6 +74,16 @@
     {"app": "pygoat", "file": "dockerized_labs/sec_misconfig/app.py", "match": "os.environ[\"JWT_SECRET\"] = \"jwt_signing_key_very_secret\"", "cwe": "CWE-798", "ref": "hardcoded JWT secret written to env"},
     {"app": "pygoat", "file": "dockerized_labs/software_integrity_lab/app.py", "match": "app.config[\"SECRET_KEY\"] = \"your-secret-key-here\"", "cwe": "CWE-798", "ref": "hardcoded Flask SECRET_KEY"},
     {"app": "pygoat", "file": "dockerized_labs/sensitive_data_exposure/sensitive_data_lab/settings.py", "match": "SECRET_KEY = \"django-insecure-key-for-demonstration-only\"", "cwe": "CWE-798", "ref": "hardcoded Django SECRET_KEY"},
-    {"app": "pygoat", "file": "pygoat/settings.py", "match": "SECRET_KEY = \"lr66%-a!$km5ed@n5ug!tya5bv!0(yqwa1tn!q%0%3m2nh%oml\"", "cwe": "CWE-798", "ref": "hardcoded Django SECRET_KEY"}
+    {"app": "pygoat", "file": "pygoat/settings.py", "match": "SECRET_KEY = \"lr66%-a!$km5ed@n5ug!tya5bv!0(yqwa1tn!q%0%3m2nh%oml\"", "cwe": "CWE-798", "ref": "hardcoded Django SECRET_KEY"},
+
+    {"app": "NodeGoat", "file": "config/env/test.js", "match": "zapApiKey: \"v9dn0balpqas1pcc281tn5ood1\"", "cwe": "CWE-798", "ref": "v2 correction: hardcoded ZAP API key (same as development.js), missed in v1 labelling"},
+    {"app": "pygoat", "file": "dockerized_labs/broken_auth_lab/app.py", "match": "app.secret_key = \"your-secret-key-here\"", "cwe": "CWE-798", "ref": "v2 correction: hardcoded Flask secret_key (file comment says 'Vulnerable: Hardcoded secret key')"},
+    {"app": "pygoat", "file": "dockerized_labs/crypto_failure_lab/app.py", "match": "app.secret_key = \"crypto_failure_lab_secret_key\"", "cwe": "CWE-798", "ref": "v2 correction: hardcoded Flask secret_key"},
+    {"app": "pygoat", "file": "dockerized_labs/insecure_design_lab/app.py", "match": "app.secret_key = \"your-secret-key-here\"", "cwe": "CWE-798", "ref": "v2 correction: hardcoded Flask secret_key"},
+    {"app": "pygoat", "file": "dockerized_labs/insufficient_logging_lab/app.py", "match": "app.secret_key = \"your-secret-key-here\"", "cwe": "CWE-798", "ref": "v2 correction: hardcoded Flask secret_key and user password"},
+    {"app": "pygoat", "file": "dockerized_labs/ssrf_lab/app.py", "match": "app.secret_key = \"your_secret_key_here\"", "cwe": "CWE-798", "ref": "v2 correction: hardcoded Flask secret_key"},
+    {"app": "pygoat", "file": "dockerized_labs/sec_misconfig/app.py", "match": "def get_token():", "cwe": "CWE-798", "ref": "v2 correction: JWT signed with hardcoded secret = \"secret123\""},
+    {"app": "pygoat", "file": "dockerized_labs/sec_misconfig/app.py", "match": "def verify_token():", "cwe": "CWE-798", "ref": "v2 correction: JWT verified with hardcoded secret = \"secret123\""},
+    {"app": "pygoat", "file": "introduction/tests.py", "match": "\"password1\": \"Sup3r-Secret-pw!\"", "exclude": "ambiguous", "ref": "v2 correction: test fixture password, not a deployed secret"}
   ]
 }

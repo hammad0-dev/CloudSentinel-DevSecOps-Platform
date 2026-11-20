@@ -1,0 +1,10 @@
+{
+ "decided_before_fresh_scoring": true,
+ "selected": "models/hybrid_step4.joblib (tag step4)",
+ "candidates": {
+  "step2_hybrid": {"trained_on": "v1 data", "dev_macro_f1": 0.637, "dev_ci95": [0.532, 0.755], "dev_vuln_p_r": [0.34, 0.84], "test_macro_f1": 0.769, "test_real_macro_f1": 0.406},
+  "step4_hybrid": {"trained_on": "v2 data (CrossVul + OSV + synthetic)", "dev_macro_f1": 0.642, "dev_ci95": [0.549, 0.737], "dev_vuln_p_r": [0.52, 0.88], "test_macro_f1": 0.721, "test_real_macro_f1": 0.487}
+ },
+ "rule": "highest development macro-F1; real-code test split (test_real) and vulnerable precision as tie-breakers since the dev difference (+0.005) is far inside the CI",
+ "note": "test/test_real are the v2 split (v1 group assignment frozen, OSV groups added); step2 beats step4 on the synthetic-heavy full test split"
+}
