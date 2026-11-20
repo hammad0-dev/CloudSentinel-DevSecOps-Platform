@@ -117,6 +117,7 @@ def main():
         for o in ("all", "own", "third-party"):
             confusion_png(result["systems"][kind]["endpoint"][o]["confusion"], f"{kind} LOAO endpoint-param ({o})", REPORTS / f"confusion_{kind}_{o}.png")
     result["bootstrap"] = {o or "all": bootstrap_endpoints(pooled, origin=o) for o in (None, "own", "third-party")}
+    (REPORTS / "loao_clusters.json").write_text(json.dumps({k: {c: list(v) for c, v in cl.items()} for k, cl in pooled.items()}, indent=0) + "\n")
     result["seconds"] = round(time.time() - t0)
     (REPORTS / "loao.json").write_text(json.dumps(result, indent=1) + "\n")
     write_md(result)
