@@ -32,6 +32,8 @@ OUT = ROOT / "data/dast"
 LAB_PORTS = parse_ports("5101-5112")
 ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22")
 
+# NodeGoat /learn's crawled link carries a URL (refused by the guards), so it is seeded with a same-site value.
+SEEDS = {"nodegoat": [InjectionPoint("GET", "/learn", "url", "query", (("url", "/dashboard"),))]}
 JUICE_SEEDS = [
     InjectionPoint("GET", "/rest/products/search", "q", "query", (("q", "apple"),)),
     InjectionPoint("POST", "/rest/user/login", "email", "json", (("email", "jim@juice-sh.op"), ("password", "wrongpass"))),
@@ -56,7 +58,7 @@ def login(client, app, first=False):
         client.request(method, path, data=data)
 
 
-def main(apps, version="v1"):
+def main(apps, version="v1", final=False):
     P = paths(version)
     v2 = version != "v1"
     gt = GroundTruth(P["ground_truth"])
@@ -68,13 +70,16 @@ def main(apps, version="v1"):
         if v2:
             refuse_frozen(app)  # v1 DVNA files are frozen; v2 never collects DVNA
         meta = gt.apps()[app]
+        if v2 and meta["role"] != "train_loao" and not final:
+            raise SystemExit(f"refused: {app} is {meta['role']}; it is collected once, only by scripts/eval_final_v2.py")
         base = f"http://127.0.0.1:{meta['port']}"
         policy = TargetPolicy(allowed_ports=LAB_PORTS, max_pages=200, max_requests=20000, rate_per_sec=25.0,
-                              skip_paths=gt.skip_paths(app), timeout_sec=15.0)
+                              skip_paths=gt.skip_paths(app), skip_params=gt.skip_params(app), timeout_sec=15.0)
         client = GuardedClient(base, policy)
         t0 = time.time()
         login(client, app, first=True)
-        found, visited = crawl(client, START.get(app, "/"), seeds=JUICE_SEEDS if app == "juice-shop" else ())
+        seeds = (JUICE_SEEDS if app == "juice-shop" else []) + (SEEDS.get(app, []) if v2 else [])
+        found, visited = crawl(client, START.get(app, "/"), seeds=seeds)
         for extra in EXTRA_PAGES.get(app, []):
             more, v2 = crawl(client, extra, max_depth=0)
             found += more

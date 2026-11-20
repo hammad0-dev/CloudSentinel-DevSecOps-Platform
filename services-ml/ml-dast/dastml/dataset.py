@@ -21,7 +21,7 @@ def load(final=False, classes=CLASSES, directory=FEATURES_DIR, relabel=None):
         with gzip.open(path, "rt") as fh:
             for line in fh:
                 r = json.loads(line)
-                if (r["role"] == "final_heldout") != final:
+                if r["role"].startswith("final_heldout") != final:  # DVNA (v1) and DSVW (v2) never train
                     continue
                 if r["payload_class"] not in classes:
                     continue

@@ -96,6 +96,24 @@
    "role": "train_loao",
    "group": "vulpy",
    "source": "fportantier/vulpy 5249cc8 good/ (MIT)"
+  },
+  "dsvw": {
+   "port": 5109,
+   "lang": "python",
+   "framework": "Python http.server + SQLite (single file)",
+   "origin": "third-party",
+   "role": "final_heldout_v2",
+   "source": "stamparm/DSVW @ 9ca3c9acf3defa0a6148d40e5f5cebeb5dcbb908 (Unlicense)",
+   "source_sha256": "d293763e697d042667d3ff1629c4d5564d50c139cc13bbdea24c59bf2bbef93a",
+   "auth": {
+    "login": "GET /login",
+    "fields": [
+     "username",
+     "password"
+    ],
+    "user": "admin",
+    "password_from": "USERS_XML in dsvw.py line 9"
+   }
   }
  },
  "endpoints": [
@@ -1038,6 +1056,176 @@
    "params": [],
    "in": "none",
    "vuln": []
+  },
+  {
+   "app": "nodegoat",
+   "method": "GET",
+   "path": "/learn",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "res.redirect(req.query.url), app/routes/index.js @ c5cb68a lines 70-73; redirect only, never fetched; rule class"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 22: 'WHERE id=' + params['id'] (numeric, boolean/time/UNION); errors return a text/plain traceback (not XSS: text/plain)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/login",
+   "params": [
+    "password"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 61: \"' AND password='\" + password + \"'\" (string)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/login",
+   "params": [
+    "username"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 61/63: username is reduced to \\w characters before use and before it is echoed: safe for SQLi and XSS"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "comment"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 42: INSERT ... VALUES(NULL, '%s', ...) % comment; the response does not echo it (stored XSS only, line 46)",
+   "unknown": [
+    "CWE-79"
+   ]
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "v"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 25: v inserted raw into the HTML footer (reflected, HTML body)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "tmpl"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 55: tmpl.format(...) inserted raw into HTML (reflected XSS; the format-string/SSTI aspect is not a class here)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "domain"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-78"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 31: subprocess.run('nslookup ' + domain, shell=True); output returned as text/plain"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "path"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 29: open(os.path.abspath(path)) returned as text/plain (also SSRF for '://' values, which the guards never send)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "redir"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 53/70: Location header = redir, unvalidated"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 35: XPath (not SQL) injection; surname output, name not reflected",
+   "unknown": [
+    "CWE-89"
+   ]
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "charset"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 74: charset goes into the Content-Type header (CRLF header injection, CWE-113, not a class here); not in the body"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/users.json",
+   "params": [
+    "callback"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 59: JSONP callback reflected in application/javascript (not reflected HTML XSS as defined here)",
+   "unknown": [
+    "CWE-79"
+   ]
   }
  ],
  "skip": [
@@ -1050,11 +1238,6 @@
    "app": "nodegoat",
    "path": "/research",
    "reason": "SSRF: fetches a URL from the request"
-  },
-  {
-   "app": "nodegoat",
-   "path": "/learn",
-   "reason": "open redirect to an external URL"
   },
   {
    "app": "nodegoat",
@@ -1189,6 +1372,30 @@
    "app": "juice-shop",
    "path": "/rest/user/reset-password",
    "reason": "changes passwords"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "object",
+   "reason": "pickle.loads of the parameter (line 27): remote code execution"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "include",
+   "reason": "exec of a fetched/opened file (lines 47-51): code execution and outbound fetch"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "xml",
+   "reason": "XXE with network entity resolution (line 33): outbound fetch"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "size",
+   "reason": "allocates size*size characters (line 38): denial of service"
   }
  ],
  "derived_from": "ground_truth.json (v1, frozen with DVNA; byte-identical, never edited)",
@@ -1198,6 +1405,22 @@
    "change": "nodegoat POST /signup firstName, lastName: CWE-79 -> safe (not reflected)",
    "evidence": "app/routes/session.js @ c5cb68a lines 200-204, 249-252; app/views/signup.html lines 80, 86",
    "prompted_by": "error analysis of the v1 leave-one-app-out false negatives (disclosed); verified from source, not from model output"
+  },
+  {
+   "date": "2026-11-20",
+   "change": "nodegoat GET /learn moved from skip to an open-redirect (CWE-601) instance",
+   "evidence": "app/routes/index.js @ c5cb68a lines 70-73 (redirect only, no server-side fetch)"
   }
- ]
+ ],
+ "passive": {
+  "dsvw": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": true,
+   "cookie-no-samesite": true,
+   "cors-any-origin": false,
+   "evidence": "dsvw.py @ 9ca3c9a line 69-75: the only headers sent are Location, Set-Cookie (SESSIONID=...; path=/, line 62: no HttpOnly, no SameSite), Connection, X-XSS-Protection: 0 and Content-Type; no CSP, X-Frame-Options, X-Content-Type-Options or Access-Control-*"
+  }
+ }
 }

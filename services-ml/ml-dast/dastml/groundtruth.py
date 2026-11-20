@@ -21,7 +21,15 @@ class GroundTruth:
         return self.data["apps"]
 
     def skip_paths(self, app):
-        return tuple(s["path"] for s in self.data["skip"] if s["app"] == app)
+        return tuple(s["path"] for s in self.data["skip"] if s["app"] == app and "param" not in s)
+
+    def skip_params(self, app):
+        """(path, parameter) pairs that are never requested (endpoints sharing a path, e.g. DSVW)."""
+        return tuple((s["path"], s["param"]) for s in self.data["skip"] if s["app"] == app and "param" in s)
+
+    def passive(self, app):
+        """{check: bool} passive-check ground truth read from the app's source, or {}."""
+        return {k: v for k, v in self.data.get("passive", {}).get(app, {}).items() if isinstance(v, bool)}
 
     def entry(self, app, point):
         """The ground-truth entry for this point, or None if it is not listed."""
