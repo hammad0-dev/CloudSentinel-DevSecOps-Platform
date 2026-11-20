@@ -1,0 +1,35 @@
+{
+ "decided_before_final_heldout": true,
+ "family": "lr",
+ "candidates": {
+  "lr": {
+   "loao_all": 0.8705532455532455,
+   "loao_ci95": [
+    0.7898367223403092,
+    0.9453207812963911
+   ],
+   "loao_third_party": 0.9280303030303031,
+   "loao_own": 0.8328431372549018
+  },
+  "rf": {
+   "loao_all": 0.6432963135549342,
+   "loao_ci95": [
+    0.5240063065218207,
+    0.7473727227327907
+   ],
+   "loao_third_party": 0.3830227743271222,
+   "loao_own": 0.7877336003051106
+  },
+  "lgbm": {
+   "loao_all": 0.7743464052287582,
+   "loao_ci95": [
+    0.6723350730189234,
+    0.8620979620842558
+   ],
+   "loao_third_party": 0.8773892773892774,
+   "loao_own": 0.7239057239057239
+  }
+ },
+ "rule": "highest pooled leave-one-app-out endpoint-param macro-F1 over all 6 training groups; hyperparameters and threshold then chosen by inner LOAO over all 6 groups",
+ "note": "LR is also best on third-party apps; RF fails NodeGoat XSS (0.0) in LOAO. LR and LightGBM often chose the top of the threshold grid (0.9); the grid was not widened after seeing outer results."
+}
