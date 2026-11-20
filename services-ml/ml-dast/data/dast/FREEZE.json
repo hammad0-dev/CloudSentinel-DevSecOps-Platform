@@ -1,0 +1,17 @@
+{
+ "app": "dvna",
+ "role": "final_heldout",
+ "frozen_at": "2026-11-20",
+ "features_sha256": "70d3d335e9c8dedc7270b5efc7e2ce1d21e71e03f5936fd7f97943698ad0cd8d",
+ "raw_sha256": "1850852464f2009728269e5b1c7aabc28113341a77dcc7c2a02c32d0d441712c",
+ "ground_truth_sha256": "9bfb36c6716edd7ca7fee8973704b6b732ab46d578ca02cf7254a5c0f3c371d6",
+ "payloads_sha256": "531a5c22f18f4ef38568694f4df309688d1b630ebae84f44e3e844608430704b",
+ "rule": "DVNA rows are excluded by dastml.dataset.load() unless final=True; scored exactly once by scripts/eval_final.py",
+ "history": [
+  {
+   "date": "2026-11-20",
+   "change": "re-featurized from unchanged raw records after fixing specials_kept (page markup next to a reflection was counted as kept payload characters); DVNA not yet scored",
+   "old_features_sha256": "bbb74c13903616c6114131591811aace15c691701ce3ff1fa857c4ad725746df"
+  }
+ ]
+}

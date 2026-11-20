@@ -1,0 +1,832 @@
+{
+ "dataset": {
+  "apps": {
+   "juice-shop": {
+    "origin": "third-party",
+    "group": "juice-shop",
+    "rows": 176,
+    "rows_by_label": {
+     "safe": 120,
+     "CWE-89": 56
+    },
+    "clusters_by_label": {
+     "safe": 4,
+     "CWE-89": 2
+    },
+    "clusters_total": 4
+   },
+   "labexpress": {
+    "origin": "own",
+    "group": "labexpress",
+    "rows": 792,
+    "rows_by_label": {
+     "safe": 648,
+     "CWE-79": 32,
+     "CWE-89": 112
+    },
+    "clusters_by_label": {
+     "safe": 18,
+     "CWE-79": 2,
+     "CWE-89": 4
+    },
+    "clusters_total": 18
+   },
+   "labfastapi": {
+    "origin": "own",
+    "group": "labfastapi",
+    "rows": 572,
+    "rows_by_label": {
+     "CWE-89": 112,
+     "safe": 428,
+     "CWE-79": 32
+    },
+    "clusters_by_label": {
+     "CWE-89": 4,
+     "safe": 13,
+     "CWE-79": 2
+    },
+    "clusters_total": 13
+   },
+   "labflask": {
+    "origin": "own",
+    "group": "labflask",
+    "rows": 968,
+    "rows_by_label": {
+     "safe": 808,
+     "CWE-79": 48,
+     "CWE-89": 112
+    },
+    "clusters_by_label": {
+     "safe": 22,
+     "CWE-79": 3,
+     "CWE-89": 4
+    },
+    "clusters_total": 22
+   },
+   "nodegoat": {
+    "origin": "third-party",
+    "group": "nodegoat",
+    "rows": 572,
+    "rows_by_label": {
+     "safe": 380,
+     "CWE-79": 192
+    },
+    "clusters_by_label": {
+     "safe": 13,
+     "CWE-79": 12
+    },
+    "clusters_total": 13
+   },
+   "vulpy-bad": {
+    "origin": "third-party",
+    "group": "vulpy",
+    "rows": 176,
+    "rows_by_label": {
+     "CWE-89": 112,
+     "safe": 64
+    },
+    "clusters_by_label": {
+     "CWE-89": 4,
+     "safe": 4
+    },
+    "clusters_total": 4
+   },
+   "vulpy-good": {
+    "origin": "third-party",
+    "group": "vulpy",
+    "rows": 176,
+    "rows_by_label": {
+     "safe": 176
+    },
+    "clusters_by_label": {
+     "safe": 4
+    },
+    "clusters_total": 4
+   }
+  },
+  "note": "DVNA (final held-out) excluded; counts only are recorded for it in collection_summary.json",
+  "total": {
+   "rows": 3432,
+   "rows_by_label": {
+    "safe": 2624,
+    "CWE-89": 504,
+    "CWE-79": 304
+   },
+   "clusters": 78,
+   "positive_clusters": {
+    "CWE-89": 18,
+    "CWE-79": 19
+   },
+   "imbalance_safe_per_positive": 3.25
+  },
+  "label_conflicts": {
+   "identical_vectors_with_different_labels": 0,
+   "rows_affected": 0,
+   "share": 0.0
+  },
+  "app_predictability": {
+   "rf_5fold_accuracy": 0.554,
+   "majority_baseline": 0.282
+  },
+  "signal_rates_pos_vs_neg": {
+   "juice-shop": {
+    "CWE-89": {
+     "sql_err_new": [
+      0.196,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      0.707,
+      0.0
+     ],
+     "time_over_1s": [
+      0.0,
+      0.0
+     ],
+     "status_changed": [
+      0.446,
+      0.5
+     ],
+     "payload_raw_reflected": [
+      0.0,
+      0.0
+     ],
+     "angle_kept": [
+      0.0,
+      0.0
+     ],
+     "ctx_text": [
+      0.018,
+      0.0
+     ],
+     "ct_html": [
+      0.643,
+      0.5
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      null,
+      0.047
+     ],
+     "pair_diff_over_noise": [
+      null,
+      0.0
+     ],
+     "time_over_1s": [
+      null,
+      0.0
+     ],
+     "status_changed": [
+      null,
+      0.328
+     ],
+     "payload_raw_reflected": [
+      null,
+      0.0
+     ],
+     "angle_kept": [
+      null,
+      0.0
+     ],
+     "ctx_text": [
+      null,
+      0.109
+     ],
+     "ct_html": [
+      null,
+      0.656
+     ]
+    }
+   },
+   "labexpress": {
+    "CWE-89": {
+     "sql_err_new": [
+      0.054,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      0.274,
+      0.006
+     ],
+     "time_over_1s": [
+      0.027,
+      0.023
+     ],
+     "status_changed": [
+      0.161,
+      0.214
+     ],
+     "payload_raw_reflected": [
+      0.0,
+      0.005
+     ],
+     "angle_kept": [
+      0.0,
+      0.0
+     ],
+     "ctx_text": [
+      0.009,
+      0.005
+     ],
+     "ct_html": [
+      1.0,
+      0.929
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      0.0,
+      0.012
+     ],
+     "pair_diff_over_noise": [
+      0.0,
+      0.0
+     ],
+     "time_over_1s": [
+      0.0,
+      0.0
+     ],
+     "status_changed": [
+      0.0,
+      0.309
+     ],
+     "payload_raw_reflected": [
+      1.0,
+      0.066
+     ],
+     "angle_kept": [
+      0.688,
+      0.043
+     ],
+     "ctx_text": [
+      0.25,
+      0.137
+     ],
+     "ct_html": [
+      1.0,
+      0.938
+     ]
+    }
+   },
+   "labfastapi": {
+    "CWE-89": {
+     "sql_err_new": [
+      0.161,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      0.142,
+      0.02
+     ],
+     "time_over_1s": [
+      0.027,
+      0.0
+     ],
+     "status_changed": [
+      0.259,
+      0.111
+     ],
+     "payload_raw_reflected": [
+      0.0,
+      0.012
+     ],
+     "angle_kept": [
+      0.0,
+      0.0
+     ],
+     "ctx_text": [
+      0.018,
+      0.008
+     ],
+     "ct_html": [
+      0.75,
+      0.667
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      0.0,
+      0.034
+     ],
+     "pair_diff_over_noise": [
+      0.0,
+      0.0
+     ],
+     "time_over_1s": [
+      0.0,
+      0.0
+     ],
+     "status_changed": [
+      0.0,
+      0.142
+     ],
+     "payload_raw_reflected": [
+      1.0,
+      0.341
+     ],
+     "angle_kept": [
+      0.688,
+      0.244
+     ],
+     "ctx_text": [
+      0.25,
+      0.125
+     ],
+     "ct_html": [
+      1.0,
+      0.636
+     ]
+    }
+   },
+   "labflask": {
+    "CWE-89": {
+     "sql_err_new": [
+      0.089,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      0.076,
+      0.01
+     ],
+     "time_over_1s": [
+      0.0,
+      0.002
+     ],
+     "status_changed": [
+      0.286,
+      0.278
+     ],
+     "payload_raw_reflected": [
+      0.0,
+      0.008
+     ],
+     "angle_kept": [
+      0.0,
+      0.0
+     ],
+     "ctx_text": [
+      0.009,
+      0.006
+     ],
+     "ct_html": [
+      1.0,
+      0.889
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      0.0,
+      0.01
+     ],
+     "pair_diff_over_noise": [
+      0.0,
+      0.0
+     ],
+     "time_over_1s": [
+      0.0,
+      0.0
+     ],
+     "status_changed": [
+      0.0,
+      0.293
+     ],
+     "payload_raw_reflected": [
+      1.0,
+      0.125
+     ],
+     "angle_kept": [
+      0.688,
+      0.072
+     ],
+     "ctx_text": [
+      0.167,
+      0.112
+     ],
+     "ct_html": [
+      1.0,
+      0.895
+     ]
+    }
+   },
+   "nodegoat": {
+    "CWE-89": {
+     "sql_err_new": [
+      null,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      null,
+      0.0
+     ],
+     "time_over_1s": [
+      null,
+      0.0
+     ],
+     "status_changed": [
+      null,
+      0.0
+     ],
+     "payload_raw_reflected": [
+      null,
+      0.027
+     ],
+     "angle_kept": [
+      null,
+      0.0
+     ],
+     "ctx_text": [
+      null,
+      0.0
+     ],
+     "ct_html": [
+      null,
+      1.0
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      0.0,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      0.0,
+      0.0
+     ],
+     "time_over_1s": [
+      0.0,
+      0.0
+     ],
+     "status_changed": [
+      0.0,
+      0.0
+     ],
+     "payload_raw_reflected": [
+      0.833,
+      0.0
+     ],
+     "angle_kept": [
+      0.573,
+      0.0
+     ],
+     "ctx_text": [
+      0.016,
+      0.0
+     ],
+     "ct_html": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "vulpy-bad": {
+    "CWE-89": {
+     "sql_err_new": [
+      0.0,
+      null
+     ],
+     "pair_diff_over_noise": [
+      0.661,
+      null
+     ],
+     "time_over_1s": [
+      0.0,
+      null
+     ],
+     "status_changed": [
+      0.268,
+      null
+     ],
+     "payload_raw_reflected": [
+      0.0,
+      null
+     ],
+     "angle_kept": [
+      0.0,
+      null
+     ],
+     "ctx_text": [
+      0.0,
+      null
+     ],
+     "ct_html": [
+      1.0,
+      null
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      null,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      null,
+      0.0
+     ],
+     "time_over_1s": [
+      null,
+      0.0
+     ],
+     "status_changed": [
+      null,
+      0.5
+     ],
+     "payload_raw_reflected": [
+      null,
+      0.0
+     ],
+     "angle_kept": [
+      null,
+      0.0
+     ],
+     "ctx_text": [
+      null,
+      0.0
+     ],
+     "ct_html": [
+      null,
+      1.0
+     ]
+    }
+   },
+   "vulpy-good": {
+    "CWE-89": {
+     "sql_err_new": [
+      null,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      null,
+      0.0
+     ],
+     "time_over_1s": [
+      null,
+      0.0
+     ],
+     "status_changed": [
+      null,
+      0.0
+     ],
+     "payload_raw_reflected": [
+      null,
+      0.0
+     ],
+     "angle_kept": [
+      null,
+      0.0
+     ],
+     "ctx_text": [
+      null,
+      0.0
+     ],
+     "ct_html": [
+      null,
+      1.0
+     ]
+    },
+    "CWE-79": {
+     "sql_err_new": [
+      null,
+      0.0
+     ],
+     "pair_diff_over_noise": [
+      null,
+      0.0
+     ],
+     "time_over_1s": [
+      null,
+      0.0
+     ],
+     "status_changed": [
+      null,
+      0.0
+     ],
+     "payload_raw_reflected": [
+      null,
+      0.0
+     ],
+     "angle_kept": [
+      null,
+      0.0
+     ],
+     "ctx_text": [
+      null,
+      0.0
+     ],
+     "ct_html": [
+      null,
+      1.0
+     ]
+    }
+   }
+  },
+  "rule_based_reference_endpoint_level": {
+   "juice-shop": {
+    "CWE-89": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "CWE-79": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "labexpress": {
+    "CWE-89": {
+     "tp": 4,
+     "fp": 3,
+     "fn": 0
+    },
+    "CWE-79": {
+     "tp": 2,
+     "fp": 2,
+     "fn": 0
+    }
+   },
+   "labfastapi": {
+    "CWE-89": {
+     "tp": 4,
+     "fp": 1,
+     "fn": 0
+    },
+    "CWE-79": {
+     "tp": 2,
+     "fp": 2,
+     "fn": 0
+    }
+   },
+   "labflask": {
+    "CWE-89": {
+     "tp": 2,
+     "fp": 3,
+     "fn": 2
+    },
+    "CWE-79": {
+     "tp": 3,
+     "fp": 4,
+     "fn": 0
+    }
+   },
+   "nodegoat": {
+    "CWE-89": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "CWE-79": {
+     "tp": 10,
+     "fp": 0,
+     "fn": 2
+    }
+   },
+   "vulpy-bad": {
+    "CWE-89": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 2
+    },
+    "CWE-79": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "vulpy-good": {
+    "CWE-89": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "CWE-79": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "ALL": {
+    "CWE-89": {
+     "tp": 14,
+     "fp": 7,
+     "fn": 4
+    },
+    "CWE-79": {
+     "tp": 17,
+     "fp": 8,
+     "fn": 2
+    }
+   }
+  }
+ },
+ "feature_names": [
+  "payload_sqli",
+  "payload_xss",
+  "family_error",
+  "family_boolean",
+  "family_union",
+  "family_time",
+  "family_tag",
+  "family_attr",
+  "family_script",
+  "family_evasion",
+  "family_template",
+  "loc_query",
+  "loc_form",
+  "loc_json",
+  "loc_path",
+  "status",
+  "is_2xx",
+  "is_3xx",
+  "is_4xx",
+  "is_5xx",
+  "status_changed",
+  "baseline_5xx",
+  "len_log",
+  "len_delta_rel",
+  "len_delta_over_noise",
+  "sim_baseline",
+  "baseline_self_sim",
+  "time_delta",
+  "time_ratio_log",
+  "time_over_1s",
+  "sql_err_new",
+  "sql_err_any",
+  "sql_err_families",
+  "stack_trace_new",
+  "generic_error_new",
+  "ct_html",
+  "ct_json",
+  "ct_text",
+  "ct_other",
+  "nosniff",
+  "probe_reflected",
+  "marker_reflected",
+  "payload_raw_reflected",
+  "payload_html_escaped",
+  "payload_url_encoded",
+  "specials_kept_frac",
+  "angle_kept",
+  "quote_kept",
+  "redirect_marker",
+  "ctx_none",
+  "ctx_text",
+  "ctx_attr_dq",
+  "ctx_attr_sq",
+  "ctx_attr_unquoted",
+  "ctx_script",
+  "ctx_comment",
+  "pair_present",
+  "pair_sim_true_base",
+  "pair_sim_false_base",
+  "pair_gap",
+  "pair_abs_gap",
+  "pair_sim_true_false",
+  "pair_diff_over_noise",
+  "pair_status_differs",
+  "pair_len_rel_diff"
+ ],
+ "images": {
+  "bkimminich/juice-shop:latest": {
+   "digest": "bkimminich/juice-shop@sha256:adaf6a6ca50f772dff7d2fe56972c659e81a61e0dbbe607c2b39fefd436e6153",
+   "size_mb": 119
+  },
+  "appsecco/dvna:latest": {
+   "digest": "appsecco/dvna@sha256:177e6fafc870ef1734a8b85e70e04dbaecb5a9c8eb2f5aad33a1c129273783bd",
+   "size_mb": 288
+  },
+  "mysql:5.7": {
+   "digest": "mysql@sha256:4bc6bc963e6d8443453676cae56536f4b8156d78bae03c0145cbe47c2aad73bb",
+   "size_mb": 138
+  },
+  "mongo:4.4": {
+   "digest": "mongo@sha256:4be76f674fc4b27859816811b8baa3c51830eb1dbf4ca81a51e26b79edd662ef",
+   "size_mb": 166
+  },
+  "postgres:15-alpine": {
+   "digest": "postgres@sha256:e18480a22d6e48f4d816a6696769b1ec09ac73a824c5649e49c7d8b684913f3d",
+   "size_mb": 115
+  },
+  "python:3.12-slim": {
+   "digest": null,
+   "size_mb": 0
+  },
+  "node:20-alpine": {
+   "digest": null,
+   "size_mb": 0
+  },
+  "cloudsentinel/zap-offline:verified-closure": {
+   "digest": "cloudsentinel/zap-offline@sha256:c6b328f0dd03c127670d3b6802e74c89c1350addfd44abbfd4e90c36e5894550",
+   "size_mb": 1286
+  }
+ },
+ "lab": {
+  "compose": "lab/docker-compose.yml",
+  "memory_limits_mb_total": 2784,
+  "observed_memory_mb": 490,
+  "vendored": {
+   "NodeGoat": "c5cb68a7",
+   "vulpy": "5249cc8b"
+  }
+ }
+}
