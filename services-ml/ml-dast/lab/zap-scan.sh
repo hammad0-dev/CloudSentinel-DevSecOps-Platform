@@ -4,8 +4,11 @@
 # Unauthenticated and without seed URLs: ZAP's own spider decides coverage.
 # Reports: services-ml/ml-dast/logs/zap/<app>.json; scored by scripts/zap_compare.py.
 # Usage: lab/zap-scan.sh app:port [app:port ...]   e.g. lab/zap-scan.sh labflask:8080
+# Env (optional): ZAP_OUT (report dir, default logs/zap), ZAP_CONTEXT (a ZAP .context file in lab/, e.g.
+#   zap-dsvw.context, which excludes DSVW parameters that execute code, fetch URLs or exhaust memory).
 set -uo pipefail
-OUT="$(cd "$(dirname "$0")/.." && pwd)/logs/zap"
+LAB="$(cd "$(dirname "$0")" && pwd)"
+OUT="${ZAP_OUT:-$(cd "$LAB/.." && pwd)/logs/zap}"
 IMAGE="cloudsentinel/zap-offline:verified-closure"
 mkdir -p "$OUT" && chmod 777 "$OUT"
 for t in "$@"; do

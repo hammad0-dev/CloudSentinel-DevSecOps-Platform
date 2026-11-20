@@ -1,0 +1,207 @@
+{
+ "dsvw|GET|/login|password CWE-89": {
+  "max_p": 0.882,
+  "threshold": 0.9,
+  "payload": "sq-par-s2",
+  "top": {
+   "parity_odd_breaks": [
+    1.0,
+    1.27
+   ],
+   "probe_reflected": [
+    0.0,
+    1.07
+   ],
+   "family_error": [
+    1.0,
+    0.96
+   ],
+   "parity_flip": [
+    1.0,
+    0.92
+   ],
+   "status_changed": [
+    0.0,
+    0.78
+   ],
+   "is_4xx": [
+    0.0,
+    0.65
+   ]
+  },
+  "signals": {
+   "status": 2.0,
+   "sql_err_new": 0.0,
+   "stack_trace_new": 0.0,
+   "ct_html": 1.0,
+   "ct_text": 0.0,
+   "parity_flip": 1.0,
+   "dose_confirmed": 0.0,
+   "pair_diff_over_noise": 0.0
+  }
+ },
+ "dsvw|GET|/|comment CWE-89": {
+  "max_p": 0.894,
+  "threshold": 0.9,
+  "payload": "sq-par-s2",
+  "top": {
+   "parity_odd_breaks": [
+    1.0,
+    1.27
+   ],
+   "probe_reflected": [
+    0.0,
+    1.07
+   ],
+   "family_error": [
+    1.0,
+    0.96
+   ],
+   "parity_flip": [
+    1.0,
+    0.92
+   ],
+   "status_changed": [
+    0.0,
+    0.78
+   ],
+   "is_4xx": [
+    0.0,
+    0.65
+   ]
+  },
+  "signals": {
+   "status": 2.0,
+   "sql_err_new": 0.0,
+   "stack_trace_new": 0.0,
+   "ct_html": 1.0,
+   "ct_text": 0.0,
+   "parity_flip": 1.0,
+   "dose_confirmed": 0.0,
+   "pair_diff_over_noise": 0.0
+  }
+ },
+ "dsvw|GET|/|id CWE-89": {
+  "max_p": 0.017,
+  "threshold": 0.9,
+  "payload": "sq-par-s2",
+  "top": {
+   "ct_text": [
+    1.0,
+    -5.87
+   ],
+   "is_5xx": [
+    1.0,
+    4.65
+   ],
+   "len_delta_over_noise": [
+    10.0,
+    -3.2
+   ],
+   "status_changed": [
+    1.0,
+    -2.5
+   ],
+   "sql_err_new": [
+    1.0,
+    1.62
+   ],
+   "sql_err_any": [
+    1.0,
+    1.62
+   ]
+  },
+  "signals": {
+   "status": 5.0,
+   "sql_err_new": 1.0,
+   "stack_trace_new": 1.0,
+   "ct_html": 0.0,
+   "ct_text": 1.0,
+   "parity_flip": 0.0,
+   "dose_confirmed": 0.0,
+   "pair_diff_over_noise": 0.0
+  }
+ },
+ "dsvw|GET|/|tmpl CWE-79": {
+  "max_p": 1.0,
+  "threshold": 0.9,
+  "payload": "xs-tag-3",
+  "top": {
+   "ctx_attr_unquoted": [
+    1.0,
+    4.5
+   ],
+   "ctx_none": [
+    0.0,
+    3.15
+   ],
+   "raw_reflected_dangerous": [
+    1.0,
+    2.99
+   ],
+   "angle_kept": [
+    1.0,
+    2.37
+   ],
+   "html_specials_payload": [
+    1.0,
+    -2.04
+   ],
+   "html_specials_kept_frac": [
+    1.0,
+    1.88
+   ]
+  },
+  "signals": {
+   "status": 2.0,
+   "sql_err_new": 0.0,
+   "stack_trace_new": 0.0,
+   "ct_html": 1.0,
+   "ct_text": 0.0,
+   "parity_flip": 0.0,
+   "dose_confirmed": 0.0,
+   "pair_diff_over_noise": 0.0
+  }
+ },
+ "dsvw|GET|/|v CWE-79": {
+  "max_p": 1.0,
+  "threshold": 0.9,
+  "payload": "xs-tag-3",
+  "top": {
+   "ctx_attr_unquoted": [
+    1.0,
+    4.5
+   ],
+   "ctx_none": [
+    0.0,
+    3.15
+   ],
+   "raw_reflected_dangerous": [
+    1.0,
+    2.99
+   ],
+   "angle_kept": [
+    1.0,
+    2.37
+   ],
+   "html_specials_payload": [
+    1.0,
+    -2.04
+   ],
+   "html_specials_kept_frac": [
+    1.0,
+    1.88
+   ]
+  },
+  "signals": {
+   "status": 2.0,
+   "sql_err_new": 0.0,
+   "stack_trace_new": 0.0,
+   "ct_html": 1.0,
+   "ct_text": 0.0,
+   "parity_flip": 0.0,
+   "dose_confirmed": 0.0,
+   "pair_diff_over_noise": 0.0
+  }
+ }
+}

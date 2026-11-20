@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ZAP context for the DSVW held-out scan: these parameters run code (object: pickle, include: exec),
+     fetch remote URLs (xml: external entities, include) or exhaust memory (size), so ZAP must neither
+     spider nor attack them. Same exclusions as the ml-dast parameter skip list. -->
+<configuration>
+  <context>
+    <name>dsvw</name>
+    <desc>DSVW held-out (lab only)</desc>
+    <inscope>true</inscope>
+    <incregexes>http://dsvw:8080.*</incregexes>
+    <excregexes>http://dsvw:8080/.*[?&amp;](object|include|xml|size)=.*</excregexes>
+  </context>
+</configuration>

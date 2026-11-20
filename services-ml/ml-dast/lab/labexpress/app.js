@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
   const links = ["/books?category=scifi", "/books-safe?category=scifi", "/book/1", "/book-safe/1", "/hello?name=guest", "/hello-safe?name=guest",
     "/banner?msg=welcome", "/banner-safe?msg=welcome", "/api/echo?q=hi", "/members", "/members-safe", "/lookup", "/lookup-safe",
     "/sort?by=title", "/sort-safe?by=title", "/convert?amount=3", "/dns?host=localhost", "/dns-safe?host=localhost",
-    "/file?name=guide.txt", "/file-safe?name=guide.txt"];
+    "/file?name=guide.txt", "/file-safe?name=guide.txt", "/v2"];
   res.send(page("labexpress", "<ul>" + links.map((l) => `<li><a href="${l}">${l}</a></li>`).join("") + "</ul>"));
 });
 
@@ -137,6 +137,29 @@ app.get("/file-safe", (req, res) => { // SAFE
   const p = path.resolve(FILES, path.basename(String(req.query.name || "")));
   if (!p.startsWith(FILES + path.sep)) return res.status(404).send(page("file", "<p>missing</p>"));
   fs.readFile(p, "utf8", (err, data) => err ? res.status(404).send(page("file", "<p>missing</p>")) : res.type("text/plain").send(data.slice(0, 4096)));
+});
+
+// ---------- v2 additions (B3): realistic safe endpoints, vulnerable twins where they make sense ----------
+const sameSite = (u) => typeof u === "string" && u.startsWith("/") && !u.startsWith("//") && !u.includes("\\");
+app.get("/v2", (req, res) => {
+  const links = ["/link?url=/books", "/link-safe?url=/books", "/next?next=/books", "/next-safe?next=/books", "/api/items-safe?q=Dune", "/upstream-safe?sku=A1"];
+  res.send(page("labexpress v2", "<ul>" + links.map((l) => `<li><a href="${l}">${l}</a></li>`).join("") + "</ul>"));
+});
+app.get("/link", (req, res) => res.send(page("link", `<a href="${escapeHtml(req.query.url || "/")}">continue</a>`))); // VULN CWE-79: escaped, scheme not checked
+app.get("/link-safe", (req, res) => res.send(page("link", `<a href="${escapeHtml(sameSite(req.query.url) ? req.query.url : "/")}">continue</a>`))); // SAFE
+app.get("/next", (req, res) => res.redirect(302, String(req.query.next || "/"))); // VULN CWE-601
+app.get("/next-safe", (req, res) => res.redirect(302, sameSite(req.query.next) ? req.query.next : "/")); // SAFE
+app.get("/api/items-safe", async (req, res) => { // SAFE (hard negative): validated JSON API, 400 JSON on bad input
+  const q = String(req.query.q || "");
+  if (!/^[\w ]{0,40}$/.test(q)) return res.status(400).json({ error: "invalid query" });
+  const r = await pool.query("SELECT title FROM books WHERE title ILIKE $1", [`%${q}%`]);
+  res.json({ items: r.rows.map((x) => x.title) });
+});
+const SKUS = new Set(["A1", "B2"]);
+app.get("/upstream-safe", (req, res) => { // SAFE (hard negative): unknown SKUs wait ~1.2 s for a slow upstream, whatever the input
+  const sku = String(req.query.sku || "");
+  if (SKUS.has(sku)) return res.send(page("stock", `<p>${escapeHtml(sku)}: in stock</p>`));
+  setTimeout(() => res.send(page("stock", "<p>unknown item</p>")), 1200);
 });
 
 // eslint-disable-next-line no-unused-vars

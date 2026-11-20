@@ -1,0 +1,35 @@
+{
+ "family": "lr",
+ "rule": "highest pooled LOAO endpoint-param macro-F1 (all training apps), fixed before DSVW is collected or scored",
+ "loao_macro_f1": {
+  "lr": 0.8274913018642572,
+  "rf": 0.6961538461538462,
+  "lgbm": 0.7312540610786226
+ },
+ "loao_ci95": {
+  "lr": [
+   0.744205725189228,
+   0.8943250918462388
+  ],
+  "rf": [
+   0.5916151074820875,
+   0.7782448594346658
+  ],
+  "lgbm": [
+   0.6331508508973047,
+   0.8100502593487813
+  ]
+ },
+ "apps": [
+  "juice-shop",
+  "labexpress",
+  "labfastapi",
+  "labflask",
+  "nodegoat",
+  "vulnerable-node",
+  "vulpy"
+ ],
+ "n_rows": 5468,
+ "date": "2026-11-21",
+ "feature_set_frozen_at": "iteration 2 (raw_reflected_dangerous); no feature changes after the final collection"
+}

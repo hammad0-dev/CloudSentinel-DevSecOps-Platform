@@ -54,7 +54,7 @@ def index():
     links = ["/search?q=lamp", "/search-safe?q=lamp", "/item?id=1", "/item-safe?id=1", "/greet?name=guest", "/greet-safe?name=guest",
              "/profile?color=blue", "/profile-safe?color=blue", "/widget?cb=render", "/widget-safe?cb=render", "/api/echo?msg=hi",
              "/plain?msg=hi", "/calc?x=2", "/slow?n=1", "/ping?host=127.0.0.1", "/ping-safe?host=127.0.0.1",
-             "/download?file=readme.txt", "/download-safe?file=readme.txt", "/login", "/login-safe"]
+             "/download?file=readme.txt", "/download-safe?file=readme.txt", "/login", "/login-safe", "/v2"]
     return page("labflask", "<ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in links) + "</ul>")
 
 
@@ -212,6 +212,95 @@ def download_safe():
         return page("error", "<p>not found</p>"), 404
     with open(path, errors="replace") as fh:
         return Response(fh.read(4096), mimetype="text/plain")
+
+
+# ---------- v2 additions (B3): realistic safe endpoints, and vulnerable twins where they make sense ----------
+import re  # noqa: E402
+
+from flask import redirect  # noqa: E402
+
+FIND_FORM = "<form method='post'><input name='q' value='lamp'><button>find</button></form>"
+
+
+@app.route("/find", methods=["GET", "POST"])  # VULN CWE-89: POST search form, string-built, errors swallowed (blind)
+def find():
+    if request.method == "GET":
+        return page("find", FIND_FORM)
+    try:
+        rows = db().execute("SELECT name, category FROM products WHERE category = '" + request.form.get("q", "") + "'").fetchall()
+    except sqlite3.Error:
+        rows = []
+    return page("find", rows_html(rows) if rows else "<p>nothing found</p>")
+
+
+@app.route("/find-safe", methods=["GET", "POST"])  # SAFE: parameterized
+def find_safe():
+    if request.method == "GET":
+        return page("find", FIND_FORM)
+    rows = db().execute("SELECT name, category FROM products WHERE category = ?", (request.form.get("q", ""),)).fetchall()
+    return page("find", rows_html(rows) if rows else "<p>nothing found</p>")
+
+
+@app.get("/link")  # VULN CWE-79: HTML-escaped, but the scheme is not checked (javascript: URI in href)
+def link():
+    return page("link", f'<a href="{html.escape(request.args.get("url", "/"), quote=True)}">continue</a>')
+
+
+@app.get("/link-safe")  # SAFE: only same-site relative paths, then escaped
+def link_safe():
+    url = request.args.get("url", "/")
+    if not url.startswith("/") or url.startswith("//") or "\\" in url:
+        url = "/"
+    return page("link", f'<a href="{html.escape(url, quote=True)}">continue</a>')
+
+
+@app.get("/next")  # VULN CWE-601: redirects to any value
+def next_page():
+    return redirect(request.args.get("next", "/"), code=302)
+
+
+@app.get("/next-safe")  # SAFE: same-site paths only
+def next_safe():
+    nxt = request.args.get("next", "/")
+    if not nxt.startswith("/") or nxt.startswith("//") or "\\" in nxt:
+        nxt = "/"
+    return redirect(nxt, code=302)
+
+
+@app.get("/api/items-safe")  # SAFE (hard negative): JSON API, input validated, 400 JSON on bad input (any quote count)
+def api_items_safe():
+    q = request.args.get("q", "")
+    if not re.fullmatch(r"[\w ]{0,40}", q):
+        return jsonify(error="invalid query"), 400
+    rows = db().execute("SELECT name FROM products WHERE name LIKE ?", (f"%{q}%",)).fetchall()
+    return jsonify(items=[r["name"] for r in rows])
+
+
+LOOKUP_CACHE = {"localhost": "127.0.0.1", "lab": "10.0.0.1"}
+
+
+@app.get("/lookup-safe")  # SAFE (hard negative): unknown names take ~1.2 s (slow upstream), whatever the input says
+def lookup_safe():
+    name = request.args.get("name", "localhost")
+    if name not in LOOKUP_CACHE:
+        time.sleep(1.2)
+        return page("lookup", "<p>not found</p>")
+    return page("lookup", f"<p>{html.escape(name)} = {LOOKUP_CACHE[name]}</p>")
+
+
+@app.get("/notfound-safe")  # SAFE (hard negative): 404 page that echoes the requested name, escaped
+def notfound_safe():
+    return page("not found", f"<p>No page called {html.escape(request.args.get('page', ''))}.</p>"), 404
+
+
+V2_LINKS = ["/find", "/find-safe", "/link?url=/search", "/link-safe?url=/search", "/next?next=/search", "/next-safe?next=/search",
+            "/api/items-safe?q=lamp", "/lookup-safe?name=localhost", "/notfound-safe?page=help"]
+_index = index
+
+
+@app.get("/v2")
+def index_v2():
+    return page("labflask v2", "<ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in V2_LINKS) + "</ul>")
 
 
 init()

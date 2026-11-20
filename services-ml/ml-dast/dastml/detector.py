@@ -14,8 +14,12 @@ import numpy as np
 
 from . import CLASSES
 from .crawl import crawl
-from .guards import BudgetExceeded, GuardedClient, TargetPolicy
-from .probe import load_payloads, point_rows, probe_point
+from .guards import BudgetExceeded, GuardedClient, GuardError, TargetPolicy
+from .probe import CORS_ORIGIN, PAYLOADS_PATH, load_payloads, new_marker, point_rows, probe_point, snapshot
+from .rules import active_findings, passive_findings
+
+PAYLOADS_DIR = PAYLOADS_PATH.parent
+RULE_CLASSES = ("CWE-78", "CWE-22", "CWE-601")  # deterministic rules in v2 detectors (dastml.rules), never ML
 
 ALERTS = {
     "CWE-89": ("SQL Injection", "sql_injection", "HIGH", 89,
@@ -59,7 +63,10 @@ class DastDetector:
             client.check_url(path)  # an off-origin seed refuses the whole scan before any traffic
         if openapi_url:
             client.check_url(openapi_url)
-        payloads = load_payloads(self.classes)
+        # v1 artifacts (pickled before v2) have neither attribute and keep the exact v1 behaviour.
+        v2 = getattr(self, "data_version", "v1") == "v2"
+        payload_path = PAYLOADS_DIR / getattr(self, "payloads_file", "payloads.json")
+        payloads = load_payloads(tuple(self.classes) + (RULE_CLASSES if v2 else ()), payload_path)
         self.last_scan = {}  # errors from a previous scan must not leak into this one
         seeds = list(seeds)
         if openapi_url:
@@ -69,7 +76,7 @@ class DastDetector:
         findings, probed, stopped = [], 0, None
         for point in points:
             try:
-                rec = probe_point(client, point, payloads)
+                rec = probe_point(client, point, payloads, v2=v2) if v2 else probe_point(client, point, payloads)
             except BudgetExceeded as exc:
                 stopped = str(exc)
                 break
@@ -78,7 +85,10 @@ class DastDetector:
                 self.last_scan.setdefault("errors", []).append(f"{point.method} {point.path}: {type(exc).__name__}")
                 continue
             probed += 1
-            rows = point_rows(rec, payloads)
+            endpoint = urljoin(base_url, point.path)[:500]
+            rule_findings = active_findings(rec, payloads, base_url, endpoint) if v2 else []
+            findings += rule_findings
+            rows = [r for r in point_rows(rec, payloads) if r[0]["class"] in self.classes]
             if not rows:
                 continue
             X = np.array([[f[k] for k in self.feature_names] for _, _, f in rows], dtype=np.float32)
@@ -92,12 +102,38 @@ class DastDetector:
                 best = max(idx, key=lambda i: proba[i, ci])
                 if proba[best, ci] < t:
                     continue
+                # Precedence (v2, documented): quote parity and timing also fire for shell quoting, so when
+                # the command-injection rule confirms CWE-78 on this parameter the SQLi score yields to it.
+                if cls == "CWE-89" and any(r["cwe_id"] == 78 for r in rule_findings):
+                    continue
                 p, resp, f = rows[best]
                 alert, attack, severity, cwe, solution = ALERTS[cls]
-                findings.append({"alert": alert, "attack_type": attack, "severity": severity, "endpoint": urljoin(base_url, point.path)[:500],
+                findings.append({"alert": alert, "attack_type": attack, "severity": severity, "endpoint": endpoint,
                                  "method": point.method, "param": point.param[:200], "request_payload": resp["value"][:1000],
                                  "response_details": evidence(f, resp, base)[:1000], "cwe_id": cwe, "solution": solution,
-                                 "confidence": round(float(proba[best, ci]), 4)})
+                                 "confidence": round(float(proba[best, ci]), 4), **({"engine": "ml"} if v2 else {})})
+        if v2 and stopped is None:
+            findings += self._passive(client, visited, base_url)
         self.last_scan = {"pages": len(visited), "points_found": len(points), "points_probed": probed,
                           "requests": client.requests_sent, "stopped": stopped, **({"errors": self.last_scan["errors"]} if "errors" in self.last_scan else {})}
         return findings
+
+    @staticmethod
+    def _passive(client, visited, base_url, max_pages=10):
+        """Rule-based passive checks (LOW/INFO) on up to 10 crawled pages, re-requested without the
+        session's cookies so a cookie set on first visit is seen, plus one foreign-Origin request.
+        Uses the same guarded client, so it counts against the scan's request budget."""
+        client.session.cookies.clear()
+        snaps = []
+        try:
+            for path in list(dict.fromkeys(visited))[:max_pages]:
+                resp, el = client.request("GET", path)
+                snaps.append({"kind": "page", **snapshot(resp, el, headers=True)})
+            origin = CORS_ORIGIN.replace("{M}", new_marker())
+            resp, el = client.request("GET", "/", headers={"Origin": origin})
+            snaps.append({"kind": "cors", "origin": origin, **snapshot(resp, el, headers=True)})
+        except (BudgetExceeded, GuardError):
+            pass
+        except Exception:  # an unreachable page only shortens the passive pass
+            pass
+        return passive_findings(snaps, base_url)

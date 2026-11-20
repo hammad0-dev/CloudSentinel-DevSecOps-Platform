@@ -1,0 +1,9 @@
+{
+ "attempt": 1,
+ "date": "2026-11-21",
+ "outcome": "aborted during collection: DSVW container exit 137 (killed) while the crawler followed DSVW's own time-based SQLi exploit link (RANDOMBLOB(300000000)) under a 128 MB limit",
+ "data_collected": "none (raw and feature files were empty gzip stubs, deleted)",
+ "model_outputs_computed": false,
+ "model_sha256": "5dc397d0b6c462d1ed30567920e51d2afbd7272560db6d1ebc78f887c84712eb",
+ "fix": "DSVW mem_limit 128m -> 2g; crawler, guards, model and ground truth unchanged"
+}

@@ -78,3 +78,6 @@ services-ml/ml-dast/data/**
 !services-ml/ml-dast/data/dast/payloads/**
 !services-ml/ml-dast/data/dast/FREEZE.json
 !services-ml/ml-dast/data/dast/collection_summary.json
+!services-ml/ml-dast/data/dast/ground_truth_v2.json
+!services-ml/ml-dast/data/dast/collection_summary_v2.json
+!services-ml/ml-dast/data/dast/FREEZE_v2.json

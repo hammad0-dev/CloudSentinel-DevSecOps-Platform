@@ -102,6 +102,52 @@ services:
     ports: ["127.0.0.1:5108:5000"]
     mem_limit: 128m
 
+  # vulnerable-node (cr0hn @ d68f2a3, MIT): v2 third-party training app. Its SSRF mocks (imds, vault)
+  # are NOT started; IMDS_URL/VAULT_URL point at a closed local port. /tools/fetch is skip-listed.
+  vulnerable-node:
+    <<: *lab
+    build: ./vendor/vulnerable-node
+    image: mldast-lab/vulnerable-node:d68f2a3
+    environment:
+      DATABASE_URL: postgres://nodebazaar:nodebazaar@vn-db:5432/nodebazaar
+      MONGO_URL: mongodb://vn-mongo:27017/nodebazaar
+      IMDS_URL: http://127.0.0.1:9
+      VAULT_URL: http://127.0.0.1:9
+      SESSION_SECRET: lab-only-not-a-secret
+      JWT_SECRET: lab-only-not-a-secret
+      DEBUG_ERRORS: "1"
+      NODE_ENV: development
+    depends_on:
+      vn-db: { condition: service_healthy }
+      vn-mongo: { condition: service_started }
+    dns: ["127.0.0.1"]   # no external resolver: the app cannot fetch internet hosts (service names still resolve)
+    ports: ["127.0.0.1:5110:3000"]
+    mem_limit: 256m
+  vn-db:
+    <<: *lab
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: nodebazaar, POSTGRES_PASSWORD: nodebazaar, POSTGRES_DB: nodebazaar }
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U nodebazaar -d nodebazaar"], interval: 3s, timeout: 3s, retries: 20 }
+    mem_limit: 192m
+  vn-mongo:
+    <<: *lab
+    image: mongo:7
+    command: ["--quiet", "--bind_ip_all", "--wiredTigerCacheSizeGB", "0.25"]
+    mem_limit: 384m
+
+  # v2 FINAL HELD-OUT APP (frozen in data/dast/FREEZE_v2.json): only started with --profile final-v2,
+  # only by scripts/eval_final_v2.py. dns 127.0.0.1 = no resolver, so /?domain (nslookup) cannot
+  # query the internet; the guards never send URL-carrying parameters (its /?path, /?include, /?xml
+  # would fetch them), and object/include/xml/size are on the parameter skip list.
+  dsvw:
+    <<: *lab
+    build: { context: ./vendor/DSVW, dockerfile: ../../dsvw.Dockerfile }
+    image: mldast-lab/dsvw:9ca3c9a
+    profiles: ["final-v2"]
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5109:8080"]
+    mem_limit: 2g   # its own index page links a time-based SQLi exploit (RANDOMBLOB(300000000)); 128m was OOM-killed
+
 networks:
   lab:
     internal: false   # published ports need a non-internal network; the apps get no outbound use

@@ -1,4 +1,4 @@
-from dastml.features import FEATURE_NAMES, SQL_ERRORS, reflection_context, row_features, specials_kept
+from dastml.features import ALL_FEATURES, FEATURE_NAMES, NEW_FEATURES, SQL_ERRORS, reflection_context, row_features, specials_kept
 
 
 def resp(body, status=200, ctype="text/html", elapsed=0.01):
@@ -38,7 +38,7 @@ def test_xss_row_features_raw_reflection_in_html():
     base = resp("<p>Hello guest</p>")
     probe = {**resp("<p>Hello cszz</p>"), "marker": "cszz"}
     f = row_features(p, "query", resp(f"<p>Hello <script>{m}</script></p>"), m, base, base, probe)
-    assert set(f) == set(FEATURE_NAMES)
+    assert set(f) == set(ALL_FEATURES) and set(FEATURE_NAMES) | set(NEW_FEATURES) == set(ALL_FEATURES)
     assert f["payload_raw_reflected"] == 1.0 and f["angle_kept"] == 1.0 and f["ctx_script"] == 1.0 and f["probe_reflected"] == 1.0
     g = row_features(p, "query", resp(f'{{"q": "<script>{m}</script>"}}', ctype="application/json"), m, base, base, probe)
     assert g["ct_json"] == 1.0 and g["ctx_none"] == 1.0, "JSON reflection has no HTML context"

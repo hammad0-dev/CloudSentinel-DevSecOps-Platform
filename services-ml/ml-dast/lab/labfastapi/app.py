@@ -46,7 +46,7 @@ def rows_page(title, rows, note=""):
 @app.get("/", response_class=HTMLResponse)
 def index():
     links = ["/orders?status=shipped", "/orders-safe?status=shipped", "/order?id=1", "/order-safe?id=1", "/note?text=hi", "/note-safe?text=hi",
-             "/docs-link?topic=intro", "/docs-link-safe?topic=intro", "/api/status?item=kettle", "/api/status-safe?item=kettle", "/text?msg=hi", "/report", "/report-safe"]
+             "/docs-link?topic=intro", "/docs-link-safe?topic=intro", "/api/status?item=kettle", "/api/status-safe?item=kettle", "/text?msg=hi", "/report", "/report-safe", "/v2"]
     return "<!doctype html><html><body><h3>labfastapi</h3><ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in links) + "</ul></body></html>"
 
 
@@ -160,3 +160,52 @@ def docs_link_safe(topic: str = ""):
 @app.get("/text")  # SAFE (hard negative): raw reflection as text/plain
 def text(msg: str = Query("")):
     return PlainTextResponse("echo: " + msg)
+
+
+# ---------- v2 additions (B3): realistic safe endpoints ----------
+import re  # noqa: E402
+
+T_ERR = env.from_string(LAYOUT.replace("{% block b %}{% endblock %}", "<p>No page called {{ page }}.</p>"))
+T_LINK = env.from_string(LAYOUT.replace("{% block b %}{% endblock %}", "<a href=\"{{ url }}\">continue</a>"))
+
+
+@app.get("/v2", response_class=HTMLResponse)
+def index_v2():
+    links = ["/api/orders-safe?item=kettle", "/notfound-safe?page=help", "/link?url=/orders", "/link-safe?url=/orders", "/carrier-safe?code=dhl"]
+    return "<!doctype html><html><body><h3>labfastapi v2</h3><ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in links) + "</ul></body></html>"
+
+
+@app.get("/api/orders-safe")  # SAFE (hard negative): validated JSON API, 400 JSON on bad input (any quote count)
+def api_orders_safe(item: str = ""):
+    if not re.fullmatch(r"[\w ]{0,40}", item):
+        return JSONResponse({"error": "invalid item"}, status_code=400)
+    c = conn().cursor()
+    c.execute("SELECT item, status FROM orders WHERE item LIKE %s", (f"%{item}%",))
+    return {"orders": [list(r) for r in c.fetchall()]}
+
+
+@app.get("/notfound-safe", response_class=HTMLResponse)  # SAFE (hard negative): 404 page echoing the name, autoescaped
+def notfound_safe(page: str = ""):
+    return HTMLResponse(T_ERR.render(title="not found", page=page), status_code=404)
+
+
+@app.get("/link", response_class=HTMLResponse)  # VULN CWE-79: autoescaped, but the scheme is not checked (javascript: in href)
+def link(url: str = "/"):
+    return HTMLResponse(T_LINK.render(title="link", url=url))
+
+
+@app.get("/link-safe", response_class=HTMLResponse)  # SAFE: same-site relative paths only, autoescaped
+def link_safe(url: str = "/"):
+    ok = url.startswith("/") and not url.startswith("//") and "\\" not in url
+    return HTMLResponse(T_LINK.render(title="link", url=url if ok else "/"))
+
+
+CARRIERS = {"dhl": "DHL", "ups": "UPS"}
+
+
+@app.get("/carrier-safe", response_class=HTMLResponse)  # SAFE (hard negative): unknown codes wait ~1.2 s for a slow upstream
+def carrier_safe(code: str = ""):
+    if code in CARRIERS:
+        return HTMLResponse(T_NOTE.render(title="carrier", note=CARRIERS[code]))
+    time.sleep(1.2)
+    return HTMLResponse(T_NOTE.render(title="carrier", note="unknown carrier"))

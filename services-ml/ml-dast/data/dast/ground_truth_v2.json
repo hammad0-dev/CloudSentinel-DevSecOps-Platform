@@ -1,0 +1,1986 @@
+{
+ "version": "2",
+ "label_rule": "A request/response row gets label C (a CWE) only if its (app, method, path, param) is listed below with C in 'vuln', and the payload sent was a C payload. A C payload sent to a listed parameter where C is not in 'vuln' (or to a 'safe' endpoint) is labelled 'safe'. Classes in 'unknown' and endpoints in 'exclude' are dropped. Requests to endpoints not listed here are dropped, never guessed.",
+ "classes": [
+  "safe",
+  "CWE-89",
+  "CWE-79",
+  "CWE-78",
+  "CWE-22"
+ ],
+ "phase": {
+  "CWE-89": 1,
+  "CWE-79": 1,
+  "CWE-78": 2,
+  "CWE-22": 2
+ },
+ "apps": {
+  "labflask": {
+   "port": 5101,
+   "lang": "python",
+   "framework": "Flask + SQLite",
+   "origin": "own",
+   "role": "train_loao"
+  },
+  "labexpress": {
+   "port": 5102,
+   "lang": "node",
+   "framework": "Express + PostgreSQL",
+   "origin": "own",
+   "role": "train_loao"
+  },
+  "labfastapi": {
+   "port": 5103,
+   "lang": "python",
+   "framework": "FastAPI + MySQL + Jinja2",
+   "origin": "own",
+   "role": "train_loao"
+  },
+  "juice-shop": {
+   "port": 5104,
+   "lang": "node",
+   "framework": "Express + Angular SPA + SQLite (Sequelize)",
+   "origin": "third-party",
+   "role": "train_loao",
+   "source": "bkimminich/juice-shop (MIT)",
+   "status": "verified 2026-11-20 against the running app (v20.4.0-SNAPSHOT, image sha256:adaf6a6ca50f772d...)",
+   "version": "20.4.0-SNAPSHOT"
+  },
+  "dvna": {
+   "port": 5105,
+   "lang": "node",
+   "framework": "Express + EJS + MySQL (Sequelize)",
+   "origin": "third-party",
+   "role": "final_heldout",
+   "source": "appsecco/dvna (MIT)",
+   "auth": {
+    "register": "POST /register",
+    "login": "POST /login",
+    "fields": [
+     "username",
+     "password"
+    ]
+   }
+  },
+  "nodegoat": {
+   "port": 5106,
+   "lang": "node",
+   "framework": "Express + Swig (autoescape off) + MongoDB",
+   "origin": "third-party",
+   "role": "train_loao",
+   "source": "OWASP/NodeGoat c5cb68a (Apache-2.0)",
+   "auth": {
+    "login": "POST /login",
+    "fields": [
+     "userName",
+     "password"
+    ],
+    "user": "user1",
+    "password": "User1_123"
+   }
+  },
+  "vulpy-bad": {
+   "port": 5107,
+   "lang": "python",
+   "framework": "Flask + SQLite",
+   "origin": "third-party",
+   "role": "train_loao",
+   "group": "vulpy",
+   "source": "fportantier/vulpy 5249cc8 bad/ (MIT)"
+  },
+  "vulpy-good": {
+   "port": 5108,
+   "lang": "python",
+   "framework": "Flask + SQLite",
+   "origin": "third-party",
+   "role": "train_loao",
+   "group": "vulpy",
+   "source": "fportantier/vulpy 5249cc8 good/ (MIT)"
+  },
+  "dsvw": {
+   "port": 5109,
+   "lang": "python",
+   "framework": "Python http.server + SQLite (single file)",
+   "origin": "third-party",
+   "role": "final_heldout_v2",
+   "source": "stamparm/DSVW @ 9ca3c9acf3defa0a6148d40e5f5cebeb5dcbb908 (Unlicense)",
+   "source_sha256": "d293763e697d042667d3ff1629c4d5564d50c139cc13bbdea24c59bf2bbef93a",
+   "auth": {
+    "login": "GET /login",
+    "fields": [
+     "username",
+     "password"
+    ],
+    "user": "admin",
+    "password_from": "USERS_XML in dsvw.py line 9"
+   }
+  },
+  "vulnerable-node": {
+   "port": 5110,
+   "lang": "node",
+   "framework": "Express + EJS + PostgreSQL + MongoDB",
+   "origin": "third-party",
+   "role": "train_loao",
+   "source": "cr0hn/vulnerable-node @ d68f2a3c9277ece2c2feb9976052033bdecd7fbe (MIT); also in the ml-sast fresh set (different model)",
+   "auth": {
+    "login": "POST /login/auth",
+    "fields": [
+     "username",
+     "password"
+    ],
+    "user": "alice",
+    "password_from": "db/seed-data.js line 140"
+   }
+  }
+ },
+ "endpoints": [
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/search",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "string-built LIKE; sqlite error text shown (error-based)"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/search-safe",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/item",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "numeric context, errors swallowed (boolean/blind)"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/item-safe",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "POST",
+   "path": "/login",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "generic error page on SQL error"
+  },
+  {
+   "app": "labflask",
+   "method": "POST",
+   "path": "/login-safe",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/greet",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "html_body"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/greet-safe",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/profile",
+   "params": [
+    "color"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "attr_double_quoted"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/profile-safe",
+   "params": [
+    "color"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/widget",
+   "params": [
+    "cb"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "script_string"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/widget-safe",
+   "params": [
+    "cb"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/api/echo",
+   "params": [
+    "msg"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: raw reflection in application/json"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/plain",
+   "params": [
+    "msg"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: raw reflection in text/plain + nosniff"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/calc",
+   "params": [
+    "x"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: Python traceback (non-SQL) on bad input"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/slow",
+   "params": [
+    "n"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: response time varies with input (bounded)"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/ping",
+   "params": [
+    "host"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-78"
+   ]
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/ping-safe",
+   "params": [
+    "host"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/download",
+   "params": [
+    "file"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ]
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/download-safe",
+   "params": [
+    "file"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/books",
+   "params": [
+    "category"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "PostgreSQL error text shown"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/books-safe",
+   "params": [
+    "category"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/book/{id}",
+   "params": [
+    "id"
+   ],
+   "in": "path",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "path parameter, numeric, errors hidden"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/book-safe/{id}",
+   "params": [
+    "id"
+   ],
+   "in": "path",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "POST",
+   "path": "/lookup",
+   "params": [
+    "email"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "generic 500 on SQL error"
+  },
+  {
+   "app": "labexpress",
+   "method": "POST",
+   "path": "/lookup-safe",
+   "params": [
+    "email"
+   ],
+   "in": "form",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/sort",
+   "params": [
+    "by"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "ORDER BY injection, errors hidden"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/sort-safe",
+   "params": [
+    "by"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/hello",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "html_body"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/hello-safe",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/banner",
+   "params": [
+    "msg"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "attr_single_quoted"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/banner-safe",
+   "params": [
+    "msg"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/api/echo",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: JSON reflection"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/convert",
+   "params": [
+    "amount"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: JS stack trace on bad input"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/dns",
+   "params": [
+    "host"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-78"
+   ]
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/dns-safe",
+   "params": [
+    "host"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/file",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ]
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/file-safe",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/orders",
+   "params": [
+    "status"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "MySQL error text shown"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/orders-safe",
+   "params": [
+    "status"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/order",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "numeric, errors hidden"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/order-safe",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "typed int: 422 on non-numeric input"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/api/status",
+   "params": [
+    "item"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "JSON API, generic error JSON; item also reflected in JSON (not XSS)"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/api/status-safe",
+   "params": [
+    "item"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: raw JSON reflection"
+  },
+  {
+   "app": "labfastapi",
+   "method": "POST",
+   "path": "/report",
+   "params": [
+    "region"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "MySQL error text shown"
+  },
+  {
+   "app": "labfastapi",
+   "method": "POST",
+   "path": "/report-safe",
+   "params": [
+    "region"
+   ],
+   "in": "form",
+   "vuln": []
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/note",
+   "params": [
+    "text"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "html_body (Jinja2 |safe)"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/note-safe",
+   "params": [
+    "text"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/docs-link",
+   "params": [
+    "topic"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "href attribute (Jinja2 |safe)"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/docs-link-safe",
+   "params": [
+    "topic"
+   ],
+   "in": "query",
+   "vuln": []
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/text",
+   "params": [
+    "msg"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "hard negative: text/plain reflection"
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/rest/products/search",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "verified: q inside LIKE '%..%' within two parentheses; xyz')) OR 1=1-- returns all products, OR 1=2 none; UNION column mismatch shows SQLITE_ERROR. A lone quote does NOT error (SQLite parses '%'%' as modulo)"
+  },
+  {
+   "app": "juice-shop",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "params": [
+    "email"
+   ],
+   "in": "json",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "verified: lone quote -> 500 error page; ' OR 1=1-- logs in as admin"
+  },
+  {
+   "app": "juice-shop",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "params": [
+    "password"
+   ],
+   "in": "json",
+   "vuln": [],
+   "note": "verified safe: password is hashed before the query (401 on quote)"
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/rest/track-order/{id}",
+   "params": [
+    "id"
+   ],
+   "in": "path",
+   "vuln": [],
+   "unknown": [
+    "CWE-79",
+    "CWE-89"
+   ],
+   "note": "verified: id reflected in JSON with < > / stripped; client-side rendering only, dropped"
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/api/Products/{id}",
+   "params": [
+    "id"
+   ],
+   "in": "path",
+   "vuln": [],
+   "note": "verified safe: quote -> 404 JSON"
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/rest/languages",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/rest/captcha",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/rest/admin/application-version",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/api/Quantitys",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "juice-shop",
+   "method": "GET",
+   "path": "/ftp/{file}",
+   "params": [
+    "file"
+   ],
+   "in": "path",
+   "vuln": [
+    "CWE-22"
+   ],
+   "note": "verified: package.json.bak%2500.md is served (extension check bypass); phase 2"
+  },
+  {
+   "app": "dvna",
+   "method": "POST",
+   "path": "/app/usersearch",
+   "params": [
+    "login"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "boolean/blind: 'Internal Error' vs 'User not found'; output escaped"
+  },
+  {
+   "app": "dvna",
+   "method": "POST",
+   "path": "/app/products",
+   "params": [
+    "name"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "html_body (EJS <%- searchTerm %>)",
+   "note": "Sequelize Op.like is parameterized, so not CWE-89"
+  },
+  {
+   "app": "dvna",
+   "method": "POST",
+   "path": "/app/ping",
+   "params": [
+    "address"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "note": "output escaped (<%= %>)"
+  },
+  {
+   "app": "dvna",
+   "method": "GET",
+   "path": "/app/modifyproduct",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": [],
+   "unknown": [
+    "CWE-79"
+   ]
+  },
+  {
+   "app": "dvna",
+   "method": "POST",
+   "path": "/login",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": []
+  },
+  {
+   "app": "dvna",
+   "method": "POST",
+   "path": "/forgotpw",
+   "params": [
+    "login"
+   ],
+   "in": "form",
+   "vuln": [],
+   "unknown": [
+    "CWE-79"
+   ]
+  },
+  {
+   "app": "dvna",
+   "method": "GET",
+   "path": "/app/usersearch",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "dvna",
+   "method": "GET",
+   "path": "/app/products",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "nodegoat",
+   "method": "POST",
+   "path": "/login",
+   "params": [
+    "userName"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "attr_double_quoted (Swig autoescape off)",
+   "note": "re-rendered on failed login"
+  },
+  {
+   "app": "nodegoat",
+   "method": "POST",
+   "path": "/login",
+   "params": [
+    "password"
+   ],
+   "in": "form",
+   "vuln": [],
+   "note": "never re-rendered"
+  },
+  {
+   "app": "nodegoat",
+   "method": "POST",
+   "path": "/signup",
+   "params": [
+    "userName",
+    "email"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "attr_double_quoted",
+   "note": "re-rendered when validation fails; a payload that passes validation creates a user (stored)"
+  },
+  {
+   "app": "nodegoat",
+   "method": "POST",
+   "path": "/signup",
+   "params": [
+    "firstName",
+    "lastName"
+   ],
+   "in": "form",
+   "vuln": [],
+   "note": "not reflected: handleSignup re-renders the signup page with errors = {userName, email} only (app/routes/session.js @ c5cb68a, lines 200-204 and 249-252), so firstName/lastName never reach value=\"{{firstName}}\" in app/views/signup.html; at most stored after a successful signup"
+  },
+  {
+   "app": "nodegoat",
+   "method": "POST",
+   "path": "/profile",
+   "params": [
+    "firstName",
+    "lastName",
+    "ssn",
+    "dob",
+    "address",
+    "bankAcc",
+    "bankRouting"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "context": "attr_double_quoted",
+   "note": "reflected AND stored; per-request unique markers keep stored copies from counting as reflection"
+  },
+  {
+   "app": "nodegoat",
+   "method": "GET",
+   "path": "/dashboard",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "nodegoat",
+   "method": "GET",
+   "path": "/benefits",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "vulpy-bad",
+   "method": "POST",
+   "path": "/user/login",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "str.format SQL; debug off so errors are a generic 500"
+  },
+  {
+   "app": "vulpy-bad",
+   "method": "POST",
+   "path": "/user/create",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "INSERT with % formatting"
+  },
+  {
+   "app": "vulpy-bad",
+   "method": "GET",
+   "path": "/hello/",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "vulpy-good",
+   "method": "POST",
+   "path": "/user/login",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": [],
+   "note": "parameterized"
+  },
+  {
+   "app": "vulpy-good",
+   "method": "POST",
+   "path": "/user/create",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": [],
+   "note": "calls libuser.login (parameterized), not the %-formatted user_create"
+  },
+  {
+   "app": "vulpy-good",
+   "method": "GET",
+   "path": "/hello/",
+   "params": [],
+   "in": "none",
+   "vuln": []
+  },
+  {
+   "app": "nodegoat",
+   "method": "GET",
+   "path": "/learn",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "res.redirect(req.query.url), app/routes/index.js @ c5cb68a lines 70-73; redirect only, never fetched; rule class"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "id"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 22: 'WHERE id=' + params['id'] (numeric, boolean/time/UNION); errors return a text/plain traceback (not XSS: text/plain)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/login",
+   "params": [
+    "password"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 61: \"' AND password='\" + password + \"'\" (string)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/login",
+   "params": [
+    "username"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 61/63: username is reduced to \\w characters before use and before it is echoed: safe for SQLi and XSS"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "comment"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 42: INSERT ... VALUES(NULL, '%s', ...) % comment; the response does not echo it (stored XSS only, line 46)",
+   "unknown": [
+    "CWE-79"
+   ]
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "v"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 25: v inserted raw into the HTML footer (reflected, HTML body)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "tmpl"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 55: tmpl.format(...) inserted raw into HTML (reflected XSS; the format-string/SSTI aspect is not a class here)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "domain"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-78"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 31: subprocess.run('nslookup ' + domain, shell=True); output returned as text/plain"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "path"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 29: open(os.path.abspath(path)) returned as text/plain (also SSRF for '://' values, which the guards never send)"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "redir"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "dsvw.py @ 9ca3c9a line 53/70: Location header = redir, unvalidated"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 35: XPath (not SQL) injection; surname output, name not reflected",
+   "unknown": [
+    "CWE-89"
+   ]
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/",
+   "params": [
+    "charset"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 74: charset goes into the Content-Type header (CRLF header injection, CWE-113, not a class here); not in the body"
+  },
+  {
+   "app": "dsvw",
+   "method": "GET",
+   "path": "/users.json",
+   "params": [
+    "callback"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "dsvw.py @ 9ca3c9a line 59: JSONP callback reflected in application/javascript (not reflected HTML XSS as defined here)",
+   "unknown": [
+    "CWE-79"
+   ]
+  },
+  {
+   "app": "labflask",
+   "method": "POST",
+   "path": "/find",
+   "params": [
+    "q"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "v2 (B3): string-built WHERE category = '...', errors swallowed (blind)"
+  },
+  {
+   "app": "labflask",
+   "method": "POST",
+   "path": "/find-safe",
+   "params": [
+    "q"
+   ],
+   "in": "form",
+   "vuln": [],
+   "note": "v2 (B3): parameterized"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/link",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "v2 (B3): html.escape'd into href, scheme not checked: javascript: URI executes"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/link-safe",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): same-site relative paths only, then escaped"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/next",
+   "params": [
+    "next"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "v2 (B3): redirect(next) unvalidated"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/next-safe",
+   "params": [
+    "next"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): same-site paths only"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/api/items-safe",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): validated JSON API; 400 JSON for any non-word input (quote parity does not flip)"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/lookup-safe",
+   "params": [
+    "name"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): unknown names sleep 1.2 s regardless of content (slow upstream; no dose response)"
+  },
+  {
+   "app": "labflask",
+   "method": "GET",
+   "path": "/notfound-safe",
+   "params": [
+    "page"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): 404 page echoing the name, html.escape'd"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/link",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "v2 (B3): escapeHtml'd into href, scheme not checked"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/link-safe",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): same-site relative paths only"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/next",
+   "params": [
+    "next"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "v2 (B3): res.redirect(next) unvalidated"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/next-safe",
+   "params": [
+    "next"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): same-site paths only"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/api/items-safe",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): validated JSON API, 400 JSON on bad input"
+  },
+  {
+   "app": "labexpress",
+   "method": "GET",
+   "path": "/upstream-safe",
+   "params": [
+    "sku"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): unknown SKUs wait 1.2 s regardless of content"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/api/orders-safe",
+   "params": [
+    "item"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): validated JSON API, 400 JSON on bad input"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/notfound-safe",
+   "params": [
+    "page"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): 404 page, Jinja2 autoescape"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/link",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "note": "v2 (B3): Jinja2 autoescape into href, scheme not checked"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/link-safe",
+   "params": [
+    "url"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): same-site relative paths only"
+  },
+  {
+   "app": "labfastapi",
+   "method": "GET",
+   "path": "/carrier-safe",
+   "params": [
+    "code"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "v2 (B3): unknown codes wait 1.2 s regardless of content"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/search",
+   "params": [
+    "q"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89",
+    "CWE-79"
+   ],
+   "note": "vulnerable-node @ d68f2a3 model/db.js searchProducts: ILIKE '%' + q + '%' (pg error rendered, config.debug); views/products.ejs line 14 <%- q %> (reflected raw)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "POST",
+   "path": "/login/auth",
+   "params": [
+    "username",
+    "password"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "vulnerable-node @ d68f2a3 model/db.js login: string-built; on error the message is passed to /login?error= and rendered (escaped) after the same-origin redirect"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "POST",
+   "path": "/login/auth",
+   "params": [
+    "returnurl"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-601"
+   ],
+   "note": "vulnerable-node @ d68f2a3 routes/auth.js lines 34-35: res.redirect(req.body.returnurl), but only after a successful login"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/login",
+   "params": [
+    "returnurl",
+    "error"
+   ],
+   "in": "query",
+   "vuln": [],
+   "note": "vulnerable-node @ d68f2a3 views/login.ejs uses <%= %> (escaped)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/orders",
+   "params": [
+    "sort"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-89"
+   ],
+   "note": "vulnerable-node @ d68f2a3 model/db.js ordersForUserSorted: ORDER BY ${sort} (requires login)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/products/{id}",
+   "params": [
+    "id"
+   ],
+   "in": "path",
+   "vuln": [],
+   "note": "vulnerable-node @ d68f2a3 parameterized; a non-integer id raises a pg 'invalid input syntax' error shown by the debug handler (hard negative)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/orders/{id}",
+   "params": [
+    "id"
+   ],
+   "in": "path",
+   "vuln": [],
+   "note": "vulnerable-node @ d68f2a3 parameterized (IDOR, not SQLi)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/categories/{slug}",
+   "params": [
+    "slug"
+   ],
+   "in": "path",
+   "vuln": [],
+   "note": "vulnerable-node @ d68f2a3 parameterized; heading rendered with <%= %>"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/download",
+   "params": [
+    "file"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "note": "vulnerable-node @ d68f2a3 routes/extras.js lines 14-20: path.join(IMG_DIR, file), no containment"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "GET",
+   "path": "/labs/docs/{file}",
+   "params": [
+    "file"
+   ],
+   "in": "path",
+   "vuln": [],
+   "note": "vulnerable-node @ d68f2a3 routes/progress.js lines 61-64: allowlist of doc files (safe for CWE-22)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "POST",
+   "path": "/tools/ping",
+   "params": [
+    "host"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "note": "vulnerable-node @ d68f2a3 routes/extras.js line 33: exec(`ping -c 2 \"${host}\"`) (inside double quotes: $() and backticks execute)"
+  },
+  {
+   "app": "vulnerable-node",
+   "method": "POST",
+   "path": "/contact",
+   "params": [
+    "email",
+    "message"
+   ],
+   "in": "form",
+   "vuln": [],
+   "note": "vulnerable-node @ d68f2a3 parameterized INSERT; the message is not rendered in this response (stored board only)",
+   "unknown": [
+    "CWE-79"
+   ]
+  }
+ ],
+ "skip": [
+  {
+   "app": "nodegoat",
+   "path": "/contributions",
+   "reason": "server-side eval() of input (CWE-95): payloads could crash or run code"
+  },
+  {
+   "app": "nodegoat",
+   "path": "/research",
+   "reason": "SSRF: fetches a URL from the request"
+  },
+  {
+   "app": "nodegoat",
+   "path": "/allocations/{userId}",
+   "reason": "NoSQL $where injection (out of scope); can hang the DB"
+  },
+  {
+   "app": "nodegoat",
+   "path": "/memos",
+   "reason": "stored XSS only (out of scope)"
+  },
+  {
+   "app": "nodegoat",
+   "path": "/logout",
+   "reason": "ends the session"
+  },
+  {
+   "app": "dvna",
+   "path": "/app/calc",
+   "reason": "mathjs eval (CWE-95)"
+  },
+  {
+   "app": "dvna",
+   "path": "/app/bulkproducts",
+   "reason": "XXE / deserialization"
+  },
+  {
+   "app": "dvna",
+   "path": "/app/bulkproductslegacy",
+   "reason": "deserialization (RCE)"
+  },
+  {
+   "app": "dvna",
+   "path": "/app/redirect",
+   "reason": "open redirect"
+  },
+  {
+   "app": "dvna",
+   "path": "/app/modifyproduct",
+   "method": "POST",
+   "reason": "stored XSS only"
+  },
+  {
+   "app": "dvna",
+   "path": "/app/useredit",
+   "reason": "changes the scanning user's account"
+  },
+  {
+   "app": "dvna",
+   "path": "/learn/vulnerability/{vuln}",
+   "reason": "template include by name (out of scope)"
+  },
+  {
+   "app": "dvna",
+   "path": "/logout",
+   "reason": "ends the session"
+  },
+  {
+   "app": "vulpy-bad",
+   "path": "/posts/",
+   "method": "POST",
+   "reason": "stored XSS only"
+  },
+  {
+   "app": "vulpy-bad",
+   "path": "/user/chpasswd",
+   "reason": "changes passwords"
+  },
+  {
+   "app": "vulpy-bad",
+   "path": "/mfa",
+   "reason": "account state"
+  },
+  {
+   "app": "vulpy-bad",
+   "path": "/api",
+   "reason": "API key flow, out of scope"
+  },
+  {
+   "app": "vulpy-good",
+   "path": "/posts/",
+   "method": "POST",
+   "reason": "stored content"
+  },
+  {
+   "app": "vulpy-good",
+   "path": "/user/chpasswd",
+   "reason": "changes passwords"
+  },
+  {
+   "app": "vulpy-good",
+   "path": "/mfa",
+   "reason": "account state"
+  },
+  {
+   "app": "vulpy-good",
+   "path": "/api",
+   "reason": "out of scope"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/redirect",
+   "reason": "open redirect to external allowlist"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/profile",
+   "reason": "SSTI and SSRF (image URL)"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/b2b",
+   "reason": "sandboxed eval"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/rest/products/{id}/reviews",
+   "reason": "NoSQL $where (can sleep)"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/file-upload",
+   "reason": "uploads / XXE"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/api/Users",
+   "method": "POST",
+   "reason": "creates accounts"
+  },
+  {
+   "app": "juice-shop",
+   "path": "/rest/user/reset-password",
+   "reason": "changes passwords"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "object",
+   "reason": "pickle.loads of the parameter (line 27): remote code execution"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "include",
+   "reason": "exec of a fetched/opened file (lines 47-51): code execution and outbound fetch"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "xml",
+   "reason": "XXE with network entity resolution (line 33): outbound fetch"
+  },
+  {
+   "app": "dsvw",
+   "path": "/",
+   "param": "size",
+   "reason": "allocates size*size characters (line 38): denial of service"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/tools/fetch",
+   "reason": "SSRF: server-side fetch of a URL"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/tools/regex",
+   "reason": "user-supplied regex (ReDoS)"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/tools/vault-check",
+   "reason": "talks to the vault mock"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/api/tags-filter",
+   "reason": "NoSQL injection (out of scope), $where can sleep"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/api/meta",
+   "reason": "NoSQL injection (out of scope)"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/account",
+   "reason": "mass assignment: changes role/balance"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/account/token",
+   "reason": "rotates the API token"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/preferences",
+   "reason": "prototype pollution (merge)"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/checkout",
+   "reason": "creates orders"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/products/{id}/reviews",
+   "reason": "stored XSS only (out of scope)"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/register",
+   "reason": "creates accounts"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/logout",
+   "reason": "ends the session"
+  },
+  {
+   "app": "vulnerable-node",
+   "path": "/labs/check",
+   "reason": "lab progress checker"
+  }
+ ],
+ "derived_from": "ground_truth.json (v1, frozen with DVNA; byte-identical, never edited)",
+ "changes": [
+  {
+   "date": "2026-11-20",
+   "change": "nodegoat POST /signup firstName, lastName: CWE-79 -> safe (not reflected)",
+   "evidence": "app/routes/session.js @ c5cb68a lines 200-204, 249-252; app/views/signup.html lines 80, 86",
+   "prompted_by": "error analysis of the v1 leave-one-app-out false negatives (disclosed); verified from source, not from model output"
+  },
+  {
+   "date": "2026-11-20",
+   "change": "nodegoat GET /learn moved from skip to an open-redirect (CWE-601) instance",
+   "evidence": "app/routes/index.js @ c5cb68a lines 70-73 (redirect only, no server-side fetch)"
+  },
+  {
+   "date": "2026-11-20",
+   "change": "passive-check ground truth for the 7 training apps, read from source",
+   "evidence": "per-app 'evidence' strings in passive"
+  },
+  {
+   "date": "2026-11-20",
+   "change": "B3: 20 new own-app endpoints (realistic safe negatives, and vulnerable twins for javascript: hrefs, a POST search form and redirects)",
+   "evidence": "lab/labflask/app.py, lab/labexpress/app.js, lab/labfastapi/app.py (v2 additions section); labelled when written, before collection"
+  },
+  {
+   "date": "2026-11-20",
+   "change": "vulnerable-node added as a third-party training app (rank 8)",
+   "evidence": "per-entry notes; read from source before collection"
+  },
+  {
+   "date": "2026-11-21",
+   "change": "vulpy-good missing-csp True -> False; vulpy-bad/good cookie checks -> not evaluable (None)",
+   "evidence": "good/csp.txt has two uncommented directives (the earlier reading looked at bad/csp.txt only); libsession.create + Werkzeug TypeError on bytes cookie values (lab container logs)",
+   "prompted_by": "the passive rule output disagreed with the ground truth; corrected only after re-reading the source (disclosed)"
+  }
+ ],
+ "passive": {
+  "dsvw": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": true,
+   "cookie-no-samesite": true,
+   "cors-any-origin": false,
+   "evidence": "dsvw.py @ 9ca3c9a line 69-75: the only headers sent are Location, Set-Cookie (SESSIONID=...; path=/, line 62: no HttpOnly, no SameSite), Connection, X-XSS-Protection: 0 and Content-Type; no CSP, X-Frame-Options, X-Content-Type-Options or Access-Control-*"
+  },
+  "labflask": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": false,
+   "cookie-no-samesite": false,
+   "cors-any-origin": false,
+   "evidence": "lab/labflask/app.py: no response-header code at all (no after_request/middleware/helmet); only /plain sets X-Content-Type-Options (line 161); no cookies are set; no CORS"
+  },
+  "labexpress": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": false,
+   "cookie-no-samesite": false,
+   "cors-any-origin": false,
+   "evidence": "lab/labexpress/app.js: no response-header code at all (no after_request/middleware/helmet); no cookies are set; no CORS"
+  },
+  "labfastapi": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": false,
+   "cookie-no-samesite": false,
+   "cors-any-origin": false,
+   "evidence": "lab/labfastapi/app.py: no response-header code at all (no after_request/middleware/helmet); no cookies are set; no CORS"
+  },
+  "juice-shop": {
+   "missing-csp": true,
+   "missing-nosniff": false,
+   "missing-frame-protection": false,
+   "cookie-no-httponly": false,
+   "cookie-no-samesite": false,
+   "cors-any-origin": false,
+   "evidence": "build/server.js (image v20.4.0-SNAPSHOT): helmet.noSniff() and helmet.frameguard() (lines 212-213), no helmet CSP; cors() with defaults (lines 209-210) = Access-Control-Allow-Origin * without credentials (not flagged by design); the only server cookie is i18n 'language' (line 340), not a session cookie"
+  },
+  "nodegoat": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": false,
+   "cookie-no-samesite": true,
+   "cors-any-origin": false,
+   "evidence": "server.js @ c5cb68a: the helmet block (frameguard, contentSecurityPolicy, nosniff; lines ~36-65) is commented out; express-session with the cookie options commented out (lines 78-100), so connect.sid keeps the express-session default httpOnly: true and has no SameSite; no CORS"
+  },
+  "vulpy-bad": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": null,
+   "cookie-no-samesite": null,
+   "cors-any-origin": false,
+   "evidence": "bad/vulpy.py @ 5249cc8 lines 25-51: CSP only if csp.txt has an uncommented line (every line is commented); bad/libsession.py line 7: response.set_cookie('vulpy_session', ...) without httponly/samesite; no CORS",
+   "cookie_note": "not evaluable in the lab: libsession.create passes a bytes value to set_cookie (base64 / Fernet output), which the Werkzeug version in the lab image rejects (TypeError in werkzeug/http.py dump_cookie), so login returns 500 and no session cookie is ever set"
+  },
+  "vulpy-good": {
+   "missing-csp": false,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": null,
+   "cookie-no-samesite": null,
+   "cors-any-origin": false,
+   "evidence": "good/vulpy.py @ 5249cc8 lines 25-51 + good/csp.txt: two lines are active (script-src 'self' 'nonce-...'; style-src 'self' 'unsafe-inline'), so a CSP header is sent; it has no frame-ancestors (framing unprotected). good/libsession.py line 32: set_cookie(fernet.encrypt(...)) without httponly/samesite, but see cookie_note; no CORS",
+   "cookie_note": "not evaluable in the lab: libsession.create passes a bytes value to set_cookie (base64 / Fernet output), which the Werkzeug version in the lab image rejects (TypeError in werkzeug/http.py dump_cookie), so login returns 500 and no session cookie is ever set"
+  },
+  "vulnerable-node": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": false,
+   "cookie-no-samesite": true,
+   "cors-any-origin": false,
+   "evidence": "vulnerable-node @ d68f2a3 server.js: no helmet or header middleware; express-session name nodebazaar.sid with cookie {secure: false, httpOnly: true, maxAge} (line 60), no SameSite; no CORS"
+  }
+ }
+}
