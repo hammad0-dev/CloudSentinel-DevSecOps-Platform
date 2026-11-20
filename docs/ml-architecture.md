@@ -11,7 +11,12 @@ engines pass evaluation.
   yet good enough to replace SonarQube as the gate. Rule-based findings are marked: rule suffix
   `.rule`, and `/model-info` → `components.secrets.type: "rule-based"`. See
   [ml-sast-model-card.md](ml-sast-model-card.md).
-- **ml-dast** has no trained model yet.
+- **ml-dast** has a trained model, `ml-dast-lr` 1.0.0 (SQL injection and reflected XSS). It scores 0.87
+  endpoint-param macro-F1 in leave-one-app-out over 6 lab app groups, against 0.92 for an offline ZAP
+  full scan of the same endpoints. On the frozen DVNA held-out app it found 1 of 2 vulnerable parameters.
+  ZAP stays the default. Every request passes a host/port allowlist, same-origin, budget and rate guard;
+  set `ML_DAST_ALLOWED_HOSTS` and `ML_DAST_ALLOWED_PORTS` to the staging target. See
+  [ml-dast-model-card.md](ml-dast-model-card.md).
 
 ## Selection
 
