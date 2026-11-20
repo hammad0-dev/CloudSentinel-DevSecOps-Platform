@@ -162,3 +162,66 @@ def passive_findings(responses, base_url):
                     "response_details": f"[rule-based passive check] {evidence}"[:1000], "cwe_id": cwe, "solution": solution,
                     "confidence": 1.0, "engine": "rule"})
     return out
+
+
+# ---------- v3 rules ----------
+STORED_XSS = {"alert": "Cross Site Scripting (Persistent)", "attack_type": "stored_xss", "severity": "HIGH", "cwe": 79,
+              "solution": "Encode stored values for their output context when rendering them (template auto-escaping); never mark user content as safe HTML."}
+
+
+def stored_xss_findings(stored_records, base_url):
+    """One finding per written field whose marker came back UNESCAPED (``<i>{M}</i>`` literally) in a
+    rendered HTML page (HTML content type, not a 3xx) fetched after the submission (dastml.stored)."""
+    out = []
+    for rec in stored_records:
+        raw = [h for h in rec.get("hits", []) if h.get("raw") and h.get("rendered")]
+        if not raw:
+            continue
+        pt = rec["point"]
+        sinks = ", ".join(sorted({h["page"] for h in raw}))[:300]
+        out.append({"alert": STORED_XSS["alert"], "attack_type": STORED_XSS["attack_type"], "severity": STORED_XSS["severity"],
+                    "endpoint": urljoin(base_url, pt["path"])[:500], "method": pt["method"], "param": pt["param"][:200],
+                    "request_payload": rec["value"][:1000],
+                    "response_details": f"[rule-based] marker submitted to {pt['method']} {pt['path']} [{pt['param']}] came back unescaped in a later page: {sinks}"[:1000],
+                    "cwe_id": STORED_XSS["cwe"], "solution": STORED_XSS["solution"], "confidence": 1.0, "engine": "rule"})
+    return out
+
+
+# CSRF heuristic: field names that carry an anti-CSRF token (Django, Rails, Laravel, csurf, ASP.NET, generic).
+CSRF_FIELD = re.compile(r"csrf|xsrf|authenticity_token|requestverificationtoken|^_token$|^token$|nonce", re.I)
+CSRF = {"alert": "Absence of Anti-CSRF Tokens (heuristic)", "attack_type": "csrf_heuristic", "severity": "LOW", "cwe": 352,
+        "solution": "Add a per-session anti-CSRF token to every state-changing form and verify it on the server, and set SameSite=Lax (or Strict) on the session cookie."}
+
+
+def _samesite(cookie):
+    """SameSite value of a Set-Cookie line ('' when absent)."""
+    for part in cookie.split(";")[1:]:
+        k, _, v = part.strip().partition("=")
+        if k.strip().lower() == "samesite":
+            return v.strip().lower()
+    return ""
+
+
+def csrf_findings(forms, responses, base_url):
+    """HEURISTIC, medium confidence, LOW. A state-changing (POST) form with no anti-CSRF token field,
+    in an app whose session cookie has no SameSite=Lax/Strict. forms: crawl(forms_out=...) entries;
+    responses: snapshots with "headers". It never proves the token is checked (a token field that is
+    never validated counts as protected), and GET requests that change state are out of scope."""
+    cookies = [c for r in responses if r.get("headers") is not None for c in (r["headers"].get("set-cookie") or [])]
+    unprotected = sorted({_cookie_flags(c)[0] for c in cookies
+                          if SESSION_COOKIE.search(_cookie_flags(c)[0]) and _samesite(c) not in ("lax", "strict")})
+    if not unprotected:
+        return []
+    out, seen = [], set()
+    for f in forms:
+        if f.get("method") != "POST" or f["action"] in seen:
+            continue
+        seen.add(f["action"])
+        if any(CSRF_FIELD.search(n) for n in f.get("fields", [])):
+            continue
+        out.append({"alert": CSRF["alert"], "attack_type": CSRF["attack_type"], "severity": CSRF["severity"],
+                    "endpoint": urljoin(base_url, f["action"])[:500], "method": "POST", "param": "", "request_payload": "",
+                    "response_details": (f"[rule-based heuristic, medium confidence] POST form on {f['page']} has no anti-CSRF token field "
+                                         f"and session cookie {', '.join(unprotected)} has no SameSite=Lax/Strict")[:1000],
+                    "cwe_id": CSRF["cwe"], "solution": CSRF["solution"], "confidence": 0.5, "engine": "rule"})
+    return out

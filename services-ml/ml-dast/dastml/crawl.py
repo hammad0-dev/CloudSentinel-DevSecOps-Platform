@@ -78,12 +78,16 @@ def points_from_form(page_url, form):
     return [InjectionPoint(form.method, parts.path, name, loc, pairs) for name, _ in pairs if name not in tokens]
 
 
-def crawl(client, start="/", seeds=(), max_depth=3, start_paths=()):
+def crawl(client, start="/", seeds=(), max_depth=3, start_paths=(), forms_out=None, pages_out=None):
     """BFS over same-origin HTML pages. Returns (injection points, list of visited paths).
 
     ``start_paths`` are extra pages crawled at depth 0 (configured seed paths such as
     ``/search?q=x``); like every discovered link they go through ``client.check_url``, so an
-    off-origin or skip-listed seed is never requested."""
+    off-origin or skip-listed seed is never requested.
+
+    v3 (optional): ``forms_out`` receives every form as {"page", "action", "method", "fields"} (token-only
+    forms included; the CSRF heuristic needs them) and ``pages_out`` every visited HTML page as a
+    path with its query string (the stored-XSS rule re-fetches these)."""
     seen, visited, points = set(), [], {}
     queue = deque([(start, 0)] + [(p, 0) for p in start_paths])
     for p in seeds:
@@ -115,7 +119,14 @@ def crawl(client, start="/", seeds=(), max_depth=3, start_paths=()):
             parser.feed(resp.text[:500_000])
         except Exception:
             continue
+        if pages_out is not None:
+            parts = urlsplit(norm)
+            pages_out.append(parts.path + ("?" + parts.query if parts.query else ""))
         for form in parser.forms:
+            if forms_out is not None:
+                action = urlsplit(urljoin(norm, form.action or norm))
+                forms_out.append({"page": urlsplit(norm).path, "action": action.path, "method": form.method,
+                                  "fields": [n for n, _ in form.fields]})
             for p in points_from_form(norm, form):
                 try:
                     client.check_url(p.path)
