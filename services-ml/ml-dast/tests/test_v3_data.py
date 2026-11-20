@@ -45,7 +45,10 @@ def test_v3_ground_truth_differs_from_v2_only_by_documented_changes():
     key = lambda e: (e["app"], e["method"], e["path"], tuple(e["params"]), e.get("seg"))
     old, new = {key(e): e for e in V2["endpoints"]}, {key(e): e for e in V3["endpoints"]}
     assert all(new[k] == e for k, e in old.items()), "no v2 endpoint label changes in v3"
-    assert {k[0] for k in set(new) - set(old)} <= {"sirappsec", "labflask", "labexpress", "labfastapi", "vampi", "node-api-goat", "dvpwa"}
+    added = set(new) - set(old)
+    assert {k[0] for k in added} <= {"sirappsec", "labflask", "labexpress", "labfastapi", "vampi", "node-api-goat", "dvpwa", "vulnerable-node"}
+    # the only third-party addition to a v2 training app is vulnerable-node's review form (not in v2)
+    assert {k[2] for k in added if k[0] == "vulnerable-node"} == {"/products/{id}/reviews"}
     assert V3["apps"]["dsvw"]["role"] == "train_loao" and V3["changes_v3"][0]["what"].startswith("dsvw role")
     for app, meta in V2["apps"].items():
         if app != "dsvw":
