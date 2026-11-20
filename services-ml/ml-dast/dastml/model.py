@@ -11,6 +11,9 @@ GRIDS = {
              {"n_estimators": 150, "num_leaves": 31, "learning_rate": 0.1}],
 }
 THRESHOLDS = [round(x, 2) for x in np.arange(0.2, 0.91, 0.05)]
+# v3 (F6): every v2 LR fold chose 0.9, the top of the grid, so the grid was a boundary. Fixed before
+# any v3 training; still chosen by inner leave-one-app-out only. v1/v2 runs keep THRESHOLDS.
+THRESHOLDS_V3 = [round(x, 2) for x in np.arange(0.2, 0.96, 0.05)]
 
 
 class DastModel:

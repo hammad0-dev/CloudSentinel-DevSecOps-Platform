@@ -20,16 +20,18 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from dastml import CLASSES  # noqa: E402
 from dastml.dataset import load, matrix  # noqa: E402
-from dastml.features import FEATURE_NAMES, FEATURE_NAMES_V2, LOCATION_FEATURES  # noqa: E402
+from dastml.features import FEATURE_NAMES, FEATURE_NAMES_V2, FEATURE_NAMES_V3, LOCATION_FEATURES  # noqa: E402
 from dastml.groundtruth import GroundTruth  # noqa: E402
 from dastml.paths import paths  # noqa: E402
 from dastml.evaluation import bootstrap_endpoints, clusters, endpoint_metrics, row_metrics  # noqa: E402
-from dastml.model import GRIDS, THRESHOLDS, DastModel  # noqa: E402
+from dastml.model import GRIDS, THRESHOLDS, THRESHOLDS_V3, DastModel  # noqa: E402
 
 REPORTS = ROOT / "reports"
 # Feature subsets the inner LOAO may choose from (F5: is the location one-hot an app-specific prior?).
 # Set by main(); {"all": every column} reproduces v1 exactly.
 FSETS = {}
+# Threshold grid for this run (v3: 0.20-0.95, see dastml.model.THRESHOLDS_V3). Set by main().
+THRESH = list(THRESHOLDS)
 
 
 def inner_select(kind, rows, X, y, groups):
@@ -44,7 +46,7 @@ def inner_select(kind, rows, X, y, groups):
                 if len(set(y[~te])) < 2:
                     continue
                 proba[te] = DastModel(kind, params).fit(X[~te][:, cols], y[~te]).predict_proba(X[te][:, cols])
-            for t in THRESHOLDS:
+            for t in THRESH:
                 score = endpoint_metrics(clusters(rows, proba, t))["macro_f1"]
                 if score > best[0] + 1e-9:
                     best = (score, {**params, "fset": fset} if len(FSETS) > 1 else params, t)
@@ -115,12 +117,13 @@ def main(data="v1", labels=None, kinds=("lr", "rf", "lgbm")):
     """data: feature version (v1: FEATURE_NAMES; v2: FEATURE_NAMES_V2 plus the location ablation).
     labels: optionally re-label with another ground truth; the "before" model re-scored on the
     corrected labels is --data v1 --labels v2."""
-    global FSETS
+    global FSETS, THRESH
     t0 = time.time()
     labels = labels or data
     relabel = GroundTruth(paths(labels)["ground_truth"]) if labels != data else None
     rows = load(directory=paths(data)["features"], relabel=relabel)
-    names = FEATURE_NAMES if data == "v1" else FEATURE_NAMES_V2
+    names = {"v1": FEATURE_NAMES, "v2": FEATURE_NAMES_V2, "v3": FEATURE_NAMES_V3}[data]
+    THRESH = list(THRESHOLDS_V3 if data == "v3" else THRESHOLDS)
     X, y = matrix(rows, names)
     FSETS = {"all": list(range(len(names)))}
     if data != "v1":
@@ -149,7 +152,7 @@ def main(data="v1", labels=None, kinds=("lr", "rf", "lgbm")):
 
 
 def write_md(res, tag=""):
-    title = {"": "", "_v1relabel": ": v1 model re-scored on the corrected (v2) labels", "_v2": ": v2 features and data"}.get(tag, tag)
+    title = {"": "", "_v1relabel": ": v1 model re-scored on the corrected (v2) labels", "_v2": ": v2 features and data", "_v3": ": v3 features and data"}.get(tag, tag)
     L = [f"# ml-dast leave-one-app-out (main evaluation){title}", "",
          f"Data {res.get('data', 'v1')}, labels {res.get('labels', 'v1')}. Rows: {res['n_rows']}. Test folds (each app group unseen once): {', '.join(res['apps'])}. DVNA is not part of this table.",
          "Endpoint-param level (headline): a parameter is flagged for a class if any of its rows of that payload class passes the threshold.", ""]
@@ -174,8 +177,8 @@ def write_md(res, tag=""):
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data", default="v1", choices=["v1", "v2"])
-    ap.add_argument("--labels", choices=["v1", "v2"])
+    ap.add_argument("--data", default="v1", choices=["v1", "v2", "v3"])
+    ap.add_argument("--labels", choices=["v1", "v2", "v3"])
     ap.add_argument("--kinds", default="lr,rf,lgbm")
     a = ap.parse_args()
     main(a.data, a.labels, tuple(a.kinds.split(",")))
