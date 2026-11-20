@@ -9,9 +9,11 @@
 //   E2E_PYTHON_REPO           GitHub URL of the Python fixture repo
 //   E2E_NODE_REPO             GitHub URL of the Node fixture repo
 //   E2E_PYTHON_CLEAN_REPO     GitHub URL of the clean Python fixture repo
+//   E2E_DEMO_FORMS_REPO       GitHub URL of the DAST demo app (default: the public mirror of
+//                             demo/forms-app, https://github.com/hammad0-dev/cloudsentinel-demo-forms)
 //   E2E_GITHUB_TOKEN          optional, for private fixture repos
 //   E2E_TIMEOUT_MIN           per-app timeout in minutes (default 45)
-// Usage: node scripts/e2e-smoke.js [python|node|python-clean ...]
+// Usage: node scripts/e2e-smoke.js [python|node|python-clean|demo-forms ...]
 "use strict";
 const path = require("path");
 const crypto = require("crypto");
@@ -27,6 +29,7 @@ const APPS = {
   python: { name: "e2e-python-flask", repo: process.env.E2E_PYTHON_REPO },
   node: { name: "e2e-node-express", repo: process.env.E2E_NODE_REPO },
   "python-clean": { name: "e2e-python-clean", repo: process.env.E2E_PYTHON_CLEAN_REPO },
+  "demo-forms": { name: "e2e-demo-forms", repo: process.env.E2E_DEMO_FORMS_REPO || "https://github.com/hammad0-dev/cloudsentinel-demo-forms" },
 };
 const DONE = ["COMPLETED", "STAGE_FAILED", "ERROR", "NOT_ADMITTED"];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -42,7 +45,7 @@ async function login() {
 }
 
 async function ensureProject(auth, app) {
-  if (!app.repo) fail(`missing repo URL for ${app.name} (E2E_PYTHON_REPO / E2E_NODE_REPO)`);
+  if (!app.repo) fail(`missing repo URL for ${app.name} (E2E_PYTHON_REPO / E2E_NODE_REPO / E2E_PYTHON_CLEAN_REPO)`);
   const found = await pool.query("SELECT id FROM projects WHERE user_id=$1 AND name=$2 AND repo_url=$3 ORDER BY id DESC LIMIT 1", [auth.userId, app.name, app.repo]);
   if (found.rows.length) return found.rows[0].id;
   const r = await axios.post(`${API}/api/projects`, { name: app.name, repoUrl: app.repo, githubToken: process.env.E2E_GITHUB_TOKEN }, { headers: { Authorization: `Bearer ${auth.token}` } });
@@ -95,6 +98,20 @@ async function stages(executionId) {
   ].map(([name, r, counts]) => ({ name, status: r ? r.status : "NOT_RUN", seconds: r ? secs(r.s, r.c) : "-", counts, url: r?.staging_url }));
 }
 
+// Per-finding detail: what SAST reported and what DAST found per endpoint, plus DAST crawl coverage.
+async function details(executionId) {
+  const sast = await pool.query(`SELECT sr.severity, sr.rule, sr.file_path, sr.line_number, sr.issue_type FROM scan_results sr
+    JOIN scan_history sh ON sh.id = sr.scan_history_id WHERE sh.pipeline_execution_id=$1
+      AND sh.id = (SELECT MAX(id) FROM scan_history WHERE pipeline_execution_id=$1) ORDER BY sr.file_path, sr.line_number`, [executionId]);
+  for (const f of sast.rows) console.log(`  SAST  ${f.severity.padEnd(8)} ${f.issue_type || "-"} ${f.rule} ${f.file_path}:${f.line_number}`);
+  const scan = (await pool.query("SELECT id, tool_provenance FROM dast_scans WHERE pipeline_execution_id=$1 ORDER BY id DESC LIMIT 1", [executionId])).rows[0];
+  if (!scan) return;
+  const prov = scan.tool_provenance || {};
+  console.log(`  DAST  coverage ${JSON.stringify(prov.coverage || null)} seeds=${JSON.stringify(prov.seedPaths || [])} openapi=${prov.openapiUrl || "-"}`);
+  const rows = await pool.query("SELECT severity, method, endpoint, param, cwe_id, alert FROM dast_findings WHERE scan_id=$1 ORDER BY endpoint, param", [scan.id]);
+  for (const f of rows.rows) console.log(`  DAST  ${f.severity.padEnd(8)} CWE-${f.cwe_id} ${f.method} ${f.endpoint} param=${f.param} (${f.alert})`);
+}
+
 (async () => {
   const which = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(APPS);
   const auth = await login();
@@ -111,6 +128,7 @@ async function stages(executionId) {
     const staging = rows.find((r) => r.name === "Deploy").url || "-";
     console.log(`Gate: ${e.status === "COMPLETED" ? "PASSED" : "BLOCKED"}${e.failure_reason ? " — " + e.failure_reason : ""}`);
     console.log(`Staging URL: ${staging}`);
+    await details(executionId);
     if (e.status !== "COMPLETED" && e.status !== "STAGE_FAILED") exit = 1;
   }
   await pool.end();
