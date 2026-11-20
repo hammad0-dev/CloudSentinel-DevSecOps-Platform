@@ -58,7 +58,7 @@ def main():
         systems["zap"] = zap_cl
     result = {"preregistration": prereg, "n_rows": len(rows), "n_clusters": len(ml_cl),
               "ml": {"endpoint": endpoint_metrics(ml_cl), "row": row_metrics(rows, proba, det.threshold)},
-              "zap": {"endpoint": endpoint_metrics(systems["zap"]), "coverage": zap_stats} if "zap" in systems else "TODO: no ZAP report for DVNA",
+              "zap": {"endpoint": endpoint_metrics(systems["zap"]), "coverage": zap_stats} if "zap" in systems else "timed out / no report: the unauthenticated ZAP full scan of DVNA produced no report (container gone, empty log); not retried",
               "bootstrap": bootstrap_endpoints(systems),
               "clusters": {k: {"true": v[0], "ml": v[1], **({"zap": systems["zap"][k][1]} if "zap" in systems else {})} for k, v in ml_cl.items()}}
     result["summary"] = {"n_clusters": len(ml_cl), "ml_endpoint_macro_f1": result["ml"]["endpoint"]["macro_f1"],

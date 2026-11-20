@@ -1,0 +1,213 @@
+{
+ "preregistration": {
+  "model_sha256": "ce04524f2f3b82c1cd757525c12398de4fcf4e5afd6d83343ee1414c2c67c884",
+  "selection": {
+   "decided_before_final_heldout": true,
+   "family": "lr",
+   "candidates": {
+    "lr": {
+     "loao_all": 0.8705532455532455,
+     "loao_ci95": [
+      0.7898367223403092,
+      0.9453207812963911
+     ],
+     "loao_third_party": 0.9280303030303031,
+     "loao_own": 0.8328431372549018
+    },
+    "rf": {
+     "loao_all": 0.6432963135549342,
+     "loao_ci95": [
+      0.5240063065218207,
+      0.7473727227327907
+     ],
+     "loao_third_party": 0.3830227743271222,
+     "loao_own": 0.7877336003051106
+    },
+    "lgbm": {
+     "loao_all": 0.7743464052287582,
+     "loao_ci95": [
+      0.6723350730189234,
+      0.8620979620842558
+     ],
+     "loao_third_party": 0.8773892773892774,
+     "loao_own": 0.7239057239057239
+    }
+   },
+   "rule": "highest pooled leave-one-app-out endpoint-param macro-F1 over all 6 training groups; hyperparameters and threshold then chosen by inner LOAO over all 6 groups",
+   "note": "LR is also best on third-party apps; RF fails NodeGoat XSS (0.0) in LOAO. LR and LightGBM often chose the top of the threshold grid (0.9); the grid was not widened after seeing outer results."
+  },
+  "freeze": {
+   "app": "dvna",
+   "role": "final_heldout",
+   "frozen_at": "2026-11-20",
+   "features_sha256": "70d3d335e9c8dedc7270b5efc7e2ce1d21e71e03f5936fd7f97943698ad0cd8d",
+   "raw_sha256": "1850852464f2009728269e5b1c7aabc28113341a77dcc7c2a02c32d0d441712c",
+   "ground_truth_sha256": "9bfb36c6716edd7ca7fee8973704b6b732ab46d578ca02cf7254a5c0f3c371d6",
+   "payloads_sha256": "531a5c22f18f4ef38568694f4df309688d1b630ebae84f44e3e844608430704b",
+   "rule": "DVNA rows are excluded by dastml.dataset.load() unless final=True; scored exactly once by scripts/eval_final.py",
+   "history": [
+    {
+     "date": "2026-11-20",
+     "change": "re-featurized from unchanged raw records after fixing specials_kept (page markup next to a reflection was counted as kept payload characters); DVNA not yet scored",
+     "old_features_sha256": "bbb74c13903616c6114131591811aace15c691701ce3ff1fa857c4ad725746df"
+    }
+   ]
+  },
+  "ground_truth_changed_since_freeze": false,
+  "metric": "endpoint-param macro-F1 over classes present, per-class P/R/F1, row-level macro-F1, cluster bootstrap 1000"
+ },
+ "n_rows": 160,
+ "n_clusters": 4,
+ "ml": {
+  "endpoint": {
+   "n": 4,
+   "macro_f1": 0.38888888888888884,
+   "per_class": {
+    "safe": {
+     "precision": 0.5,
+     "recall": 0.5,
+     "f1": 0.5,
+     "support": 2,
+     "tp": 1,
+     "fp": 1,
+     "fn": 1
+    },
+    "CWE-89": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "support": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "CWE-79": {
+     "precision": 0.5,
+     "recall": 1.0,
+     "f1": 0.6666666666666666,
+     "support": 1,
+     "tp": 1,
+     "fp": 1,
+     "fn": 0
+    }
+   },
+   "confusion": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "binary": {
+    "precision": 0.5,
+    "recall": 0.5
+   }
+  },
+  "row": {
+   "n": 160,
+   "macro_f1": 0.4888888888888889,
+   "per_class": {
+    "safe": {
+     "precision": 0.7741935483870968,
+     "recall": 0.8275862068965517,
+     "f1": 0.7999999999999999,
+     "support": 116,
+     "tp": 96,
+     "fp": 28,
+     "fn": 20
+    },
+    "CWE-89": {
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "support": 28,
+     "tp": 0,
+     "fp": 4,
+     "fn": 28
+    },
+    "CWE-79": {
+     "precision": 0.5,
+     "recall": 1.0,
+     "f1": 0.6666666666666666,
+     "support": 16,
+     "tp": 16,
+     "fp": 16,
+     "fn": 0
+    }
+   },
+   "confusion": [
+    [
+     96,
+     4,
+     16
+    ],
+    [
+     28,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     16
+    ]
+   ],
+   "binary": {
+    "precision": 0.4444444444444444,
+    "recall": 0.36363636363636365
+   }
+  }
+ },
+ "zap": "timed out / no report: the unauthenticated ZAP full scan of DVNA produced no report (container gone, empty log); not retried",
+ "bootstrap": {
+  "n_clusters": 4,
+  "macro_f1": {
+   "ml": {
+    "mean": 0.4373968253968254,
+    "ci95": [
+     0.0,
+     1.0
+    ]
+   }
+  },
+  "differences": {}
+ },
+ "clusters": {
+  "dvna|POST|/app/ping|address": {
+   "true": 0,
+   "ml": 2
+  },
+  "dvna|POST|/app/products|name": {
+   "true": 2,
+   "ml": 2
+  },
+  "dvna|POST|/app/usersearch|login": {
+   "true": 1,
+   "ml": 0
+  },
+  "dvna|POST|/forgotpw|login": {
+   "true": 0,
+   "ml": 0
+  }
+ },
+ "summary": {
+  "n_clusters": 4,
+  "ml_endpoint_macro_f1": 0.38888888888888884,
+  "ml_ci95": [
+   0.0,
+   1.0
+  ],
+  "ml_row_macro_f1": 0.4888888888888889,
+  "zap_endpoint_macro_f1": null
+ }
+}
