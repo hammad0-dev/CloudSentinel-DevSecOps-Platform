@@ -117,3 +117,31 @@ psql -d cloudsentinel -f backend/migrations/023_scan_engine_provenance.sql
 ```
 
 Tests: `cd backend && npm run test:ml`, and `pytest` in each service directory.
+
+### Pipeline with `SAST_ENGINE=ml` on the e2e fixtures
+
+The trained model files are gitignored. Before you start, copy `model.joblib` and `model.json` from a
+training run (`services-ml/ml-sast/models/release_v2/`, built by `scripts/package_v2.py`) into that
+same folder in your checkout. Alternatively, point `ML_SAST_MODEL_DIR` at the folder that holds them.
+
+```bash
+scripts/run-ml-sast.sh                     # ml-sast on 127.0.0.1:8001 with the v2 model; creates the venv on first run
+curl -s localhost:8001/model-info          # expect status "trained", ml-sast-hybrid 2.0.0
+
+# Backend with the ML engine. Variables set in the shell override backend/.env.
+# PORT also sets the URL the orchestrator uses to call its own stage endpoints.
+cd backend && SAST_ENGINE=ml ML_SAST_URL=http://127.0.0.1:8001 PORT=3100 node server.js &
+cd .. && E2E_API=http://127.0.0.1:3100 node scripts/e2e-smoke.js python-clean node
+```
+
+`e2e-smoke.js` reads its login and the fixture repository URLs from `~/.cloudsentinel-e2e.env`. The
+app keys are `python`, `node` and `python-clean`.
+
+Result on 2026-11-20 (ml-sast-hybrid 2.0.0, SHA-256 `00fe69cf…`, Minikube off):
+
+| Fixture | SAST (ML) | Gate |
+|---|---|---|
+| python-clean | 0 findings | Passed SAST, Dependency (1 low) and IaC. The run then stopped at Deploy because Minikube was off (`kubectl create namespace` failed), so Image and DAST did not run |
+| node-express | 3 findings, all true: hardcoded secret, line 7 (**rule-based** detector, `.rule`); SQL injection in `GET /users` (ML); XSS in `GET /search` (ML) | Blocked at SAST (CRITICAL) |
+
+This was a single check. The model was not tuned for these fixtures.
