@@ -20,7 +20,7 @@ Everything else is handled like this:
 | Requests to endpoints not listed at all | Row dropped, never guessed |
 
 Labels come from the source code of each app, read at its pinned commit or image, never from scanner
-output. Juice Shop entries are **provisional** until checked against the running app.
+output. Juice Shop entries were verified against the running app (v20.4.0-SNAPSHOT) on 2026-11-20.
 
 Every request carries a unique marker. "Reflected" means *this* request's marker came back in *this*
 response, so payloads stored by earlier requests (NodeGoat profile, vulpy posts) don't count as
@@ -78,7 +78,7 @@ are phase 2, used only after CWE-89 and CWE-79 work.
   - `GET /note?text`: Jinja2 `|safe`, body.
   - `GET /docs-link?topic`: `|safe` in `href`.
 
-**juice-shop** (provisional)
+**juice-shop** (verified against the running app, v20.4.0-SNAPSHOT)
 - CWE-89:
   - `GET /rest/products/search?q`.
   - `POST /rest/user/login` with JSON `email`.

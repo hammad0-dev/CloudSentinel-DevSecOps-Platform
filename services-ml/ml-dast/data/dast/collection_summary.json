@@ -1,0 +1,137 @@
+{
+ "labflask": {
+  "pages_crawled": 21,
+  "points_found": 22,
+  "points_probed": 22,
+  "gt_params_listed": 22,
+  "gt_params_found": 22,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 1055,
+  "rows": 968,
+  "seconds": 49
+ },
+ "labexpress": {
+  "pages_crawled": 21,
+  "points_found": 18,
+  "points_probed": 18,
+  "gt_params_listed": 18,
+  "gt_params_found": 18,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 868,
+  "rows": 792,
+  "seconds": 80
+ },
+ "labfastapi": {
+  "pages_crawled": 15,
+  "points_found": 14,
+  "points_probed": 13,
+  "gt_params_listed": 13,
+  "gt_params_found": 13,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "GET /docs [topic]"
+  ],
+  "requests": 626,
+  "rows": 572,
+  "seconds": 30
+ },
+ "juice-shop": {
+  "pages_crawled": 1,
+  "points_found": 4,
+  "points_probed": 4,
+  "gt_params_listed": 6,
+  "gt_params_found": 4,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/ftp/{file}",
+    "file"
+   ],
+   [
+    "GET",
+    "/rest/track-order/{id}",
+    "id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 189,
+  "rows": 176,
+  "seconds": 15
+ },
+ "nodegoat": {
+  "pages_crawled": 6,
+  "points_found": 16,
+  "points_probed": 13,
+  "gt_params_listed": 13,
+  "gt_params_found": 13,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /profile [website]",
+   "POST /signup [password]",
+   "POST /signup [verify]"
+  ],
+  "requests": 645,
+  "rows": 572,
+  "seconds": 106
+ },
+ "vulpy-bad": {
+  "pages_crawled": 3,
+  "points_found": 6,
+  "points_probed": 4,
+  "gt_params_listed": 4,
+  "gt_params_found": 4,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /user/create [email]",
+   "POST /user/login [otp]"
+  ],
+  "requests": 253,
+  "rows": 176,
+  "seconds": 11
+ },
+ "vulpy-good": {
+  "pages_crawled": 3,
+  "points_found": 6,
+  "points_probed": 4,
+  "gt_params_listed": 4,
+  "gt_params_found": 4,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /user/create [email]",
+   "POST /user/login [otp]"
+  ],
+  "requests": 191,
+  "rows": 176,
+  "seconds": 9
+ },
+ "dvna": {
+  "pages_crawled": 7,
+  "points_found": 4,
+  "points_probed": 4,
+  "gt_params_listed": 7,
+  "gt_params_found": 4,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/app/modifyproduct",
+    "id"
+   ],
+   [
+    "POST",
+    "/login",
+    "password"
+   ],
+   [
+    "POST",
+    "/login",
+    "username"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 257,
+  "rows": 160,
+  "seconds": 40
+ }
+}
