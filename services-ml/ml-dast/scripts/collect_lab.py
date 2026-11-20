@@ -48,7 +48,16 @@ SEEDS = {"nodegoat": [InjectionPoint("GET", "/learn", "url", "query", (("url", "
              ("/hexToRgb", "hex", (("hex", "ff8800"),)), ("/cwe113/split", "key", (("key", "x-lab"), ("value", "1"))),
              ("/cwe113/split", "value", (("key", "x-lab"), ("value", "1"))), ("/cwe601/redirect", "text", (("text", "hello"),)))]}
 # v3: one-off setup requests before collection (never probed). They pass the guards with an empty skip list.
-SETUP = {"vampi": [("GET", "/createdb")]}
+# sirappsec: the seed data pre-registered in FREEZE_v3.json (populate.sh lines 1-24, plus one beer).
+SETUP = {"vampi": [("GET", "/createdb", None)],
+         "sirappsec": [("POST", "/v1/user/", {"name": "amit", "email": "amit@gmail.com", "password": "123", "role": "user", "address": "aadssd", "profile_pic": "20aab704e5532523652ac9d908d3b8de"}),
+                       ("POST", "/v1/user/", {"name": "shir", "email": "shir@gmail.com", "password": "123", "role": "user", "address": "aadssd", "profile_pic": "20aab704e5532523652ac9d908d3b8de"}),
+                       ("POST", "/v1/admin/new-beer/", {"name": "Beer!!!", "price": 12, "picture": "20aab704e5532523652ac9d908d3b8de"})]}
+# v3: same-origin OpenAPI documents whose operations become injection points (the scan configuration
+# pre-registered for the held-out app; dastml.openapi, through the guards)
+OPENAPI = {"sirappsec": "/v1/api-docs"}
+# v3: per-app request timeout (pre-registered for sirappsec, whose broken handlers never answer)
+TIMEOUT = {"sirappsec": 5.0}
 # Passive pass (v2): a fresh, cookie-less client loads the start pages and logs in, keeping response
 # headers, so cookies set on first visit or at login are seen. Vulpy is probed unauthenticated (as in
 # v1); its login here only serves the cookie checks.
@@ -122,16 +131,19 @@ def main(apps, version="v1", final=False):
             raise SystemExit(f"refused: {app} is {meta['role']}; it is collected once, only by scripts/eval_final_v2.py")
         base = f"http://127.0.0.1:{meta['port']}"
         policy = TargetPolicy(allowed_ports=LAB_PORTS, max_pages=200, max_requests=20000, rate_per_sec=25.0,
-                              skip_paths=gt.skip_paths(app), skip_params=gt.skip_params(app), timeout_sec=15.0)
+                              skip_paths=gt.skip_paths(app), skip_params=gt.skip_params(app), timeout_sec=TIMEOUT.get(app, 15.0))
         client = GuardedClient(base, policy)
         t0 = time.time()
         if version == "v3":
-            for method, path in SETUP.get(app, []):
+            for method, path, body in SETUP.get(app, []):
                 setup_policy = TargetPolicy(allowed_ports=LAB_PORTS, max_requests=10, timeout_sec=30.0)
-                GuardedClient(base, setup_policy).request(method, path)
+                GuardedClient(base, setup_policy).request(method, path, **({"json": body} if body else {}))
         login(client, app, first=True)
         seeds = (JUICE_SEEDS if app == "juice-shop" else []) + (SEEDS.get(app, []) if v2 else [])
         forms, pages = ([], []) if version == "v3" else (None, None)
+        if version == "v3" and app in OPENAPI:
+            from dastml.openapi import load_points
+            seeds = list(seeds) + load_points(client, OPENAPI[app])
         found, visited = crawl(client, START.get(app, "/"), seeds=seeds, forms_out=forms, pages_out=pages)
         for extra in EXTRA_PAGES.get(app, []):
             # (v3 fix: this loop used to rebind the name v2, the version flag, to the visited list)
@@ -143,11 +155,15 @@ def main(apps, version="v1", final=False):
         unlisted = sorted(f"{p.method} {p.path} [{p.param}]" for p in uniq.values() if gt.entry(app, p) is None)
         listed_keys = {(e["method"], e["path"], prm) for e in gt.data["endpoints"] if e["app"] == app for prm in e["params"]}
         hit = {(gt.entry(app, p)["method"], gt.entry(app, p)["path"], p.param if p.location != "path" else gt.entry(app, p)["params"][0]) for p in listed}
-        rows = 0
+        rows, errors = 0, []
         with gzip.open(P["raw"] / f"{app}.jsonl.gz", "wt") as raw, gzip.open(P["features"] / f"{app}.jsonl.gz", "wt") as feat:
             for point in sorted(listed, key=lambda p: p.key):
                 login(client, app)
-                rec = probe_point(client, point, payloads, v2=v2)
+                try:
+                    rec = probe_point(client, point, payloads, v2=v2)
+                except Exception as exc:  # noqa: BLE001 - v3: one broken endpoint must not end the collection
+                    errors.append(f"{point.method} {point.path} [{point.param}]: {type(exc).__name__}")
+                    continue
                 rec["app"] = app
                 raw.write(json.dumps(rec) + "\n")
                 for p, r, f in point_rows(rec, payloads):
@@ -172,7 +188,7 @@ def main(apps, version="v1", final=False):
             summary_extra = {}
         summary[app] = {"pages_crawled": len(visited), "points_found": len(uniq), "points_probed": len(listed),
                         "gt_params_listed": len(listed_keys), "gt_params_found": len(hit), "gt_params_missed": sorted(map(list, listed_keys - hit)),
-                        "unlisted_points_not_probed": unlisted[:50], "requests": client.requests_sent, "rows": rows, "seconds": round(time.time() - t0), **summary_extra}
+                        "unlisted_points_not_probed": unlisted[:50], "requests": client.requests_sent, "rows": rows, "seconds": round(time.time() - t0), "point_errors": errors, **summary_extra}
         print(app, json.dumps({k: v for k, v in summary[app].items() if k not in ("unlisted_points_not_probed",)}), flush=True)
     path = OUT / f"collection_summary{P['suffix']}.json"
     old = json.loads(path.read_text()) if path.exists() else {}
