@@ -5,6 +5,8 @@ the fixed payload list, featurizes every response and reports one finding per (e
 class) whose highest model probability reaches the threshold. All traffic goes through
 GuardedClient (allowlist, same origin, budgets, rate limit). When the request budget runs out the
 scan stops and returns what it has; ``last_scan`` records coverage so callers can see it.
+Optional ``seed_paths`` (extra start pages) and ``openapi_url`` (an OpenAPI document) widen the crawl
+for apps whose endpoints are not linked from HTML; they pass the same guards as everything else.
 """
 from urllib.parse import urljoin
 
@@ -45,13 +47,25 @@ class DastDetector:
         self.classes = tuple(classes)
         self.last_scan = {}
 
-    def scan(self, base_url, max_pages=50, max_requests=500, policy=None, seeds=(), threshold=None):
+    def scan(self, base_url, max_pages=50, max_requests=500, policy=None, seeds=(), threshold=None,
+             seed_paths=(), openapi_url=None):
+        """seed_paths: extra pages to crawl; openapi_url: same-origin OpenAPI/Swagger JSON whose
+        GET/POST operations become injection points (dastml.openapi). Both go through the guards."""
         t = float(self.threshold if threshold is None else threshold)
         policy = policy or TargetPolicy.from_env()
         policy.max_pages, policy.max_requests = max_pages, max_requests
         client = GuardedClient(base_url, policy)  # raises GuardError for a refused target
+        for path in seed_paths:
+            client.check_url(path)  # an off-origin seed refuses the whole scan before any traffic
+        if openapi_url:
+            client.check_url(openapi_url)
         payloads = load_payloads(self.classes)
-        points, visited = crawl(client, "/", seeds=seeds)
+        self.last_scan = {}  # errors from a previous scan must not leak into this one
+        seeds = list(seeds)
+        if openapi_url:
+            from .openapi import load_points
+            seeds += load_points(client, openapi_url)
+        points, visited = crawl(client, "/", seeds=seeds, start_paths=seed_paths)
         findings, probed, stopped = [], 0, None
         for point in points:
             try:

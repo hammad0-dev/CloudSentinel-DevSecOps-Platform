@@ -78,10 +78,14 @@ def points_from_form(page_url, form):
     return [InjectionPoint(form.method, parts.path, name, loc, pairs) for name, _ in pairs if name not in tokens]
 
 
-def crawl(client, start="/", seeds=(), max_depth=3):
-    """BFS over same-origin HTML pages. Returns (injection points, list of visited paths)."""
+def crawl(client, start="/", seeds=(), max_depth=3, start_paths=()):
+    """BFS over same-origin HTML pages. Returns (injection points, list of visited paths).
+
+    ``start_paths`` are extra pages crawled at depth 0 (configured seed paths such as
+    ``/search?q=x``); like every discovered link they go through ``client.check_url``, so an
+    off-origin or skip-listed seed is never requested."""
     seen, visited, points = set(), [], {}
-    queue = deque([(start, 0)])
+    queue = deque([(start, 0)] + [(p, 0) for p in start_paths])
     for p in seeds:
         points.setdefault(p.key, p)
     while queue:

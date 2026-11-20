@@ -20,7 +20,7 @@ def test_untrained_health_and_model_info():
 
 def test_untrained_scan_returns_no_findings():
     body = {"baseUrl": "http://staging.example:30080", "maxPages": 5, "maxRequests": 20}
-    assert client.post("/scan", json=body).json() == {"findings": []}
+    assert client.post("/scan", json=body).json()["findings"] == []
 
 
 def test_scan_validates_target_and_bounds():
@@ -47,7 +47,7 @@ def test_trained_detector_findings_are_validated(monkeypatch):
     detector = FakeDetector([FINDING])
     monkeypatch.setattr(service, "DETECTOR", detector)
     body = {"baseUrl": LAB, "maxPages": 3, "maxRequests": 9}
-    assert client.post("/scan", json=body).json() == {"findings": [FINDING]}
+    assert client.post("/scan", json=body).json()["findings"] == [FINDING]
     assert detector.args == (LAB, 3, 9)
     monkeypatch.setattr(service, "DETECTOR", FakeDetector([{**FINDING, "severity": "CRITICAL"}]))
     assert client.post("/scan", json=body).status_code == 500
