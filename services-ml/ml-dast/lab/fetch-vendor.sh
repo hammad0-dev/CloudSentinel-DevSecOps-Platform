@@ -17,4 +17,7 @@ fetch() {  # name url commit
 fetch NodeGoat https://github.com/OWASP/NodeGoat.git c5cb68a7084e4ae7dcc60e6a98768720a81841e8
 fetch vulpy https://github.com/fportantier/vulpy.git 5249cc8b05a1c37f6b2f757b1cf16a509c327122
 fetch vulnerable-node https://github.com/cr0hn/vulnerable-node.git d68f2a3c9277ece2c2feb9976052033bdecd7fbe
-fetch DSVW https://github.com/stamparm/DSVW.git 9ca3c9acf3defa0a6148d40e5f5cebeb5dcbb908  # v2 final held-out (FREEZE_v2.json)
+fetch DSVW https://github.com/stamparm/DSVW.git 9ca3c9acf3defa0a6148d40e5f5cebeb5dcbb908  # v2 held-out (FREEZE_v2.json); v3 training
+fetch sirappsec https://github.com/SirAppSec/vuln-node.js-express.js-app.git b977c7407f328da929577745ad509639e26c428a  # v3 final held-out (FREEZE_v3.json)
+fetch VAmPI https://github.com/erev0s/VAmPI.git f16052dce83f05847133ec98f01c5193a41de7d8
+fetch node-api-goat https://github.com/layro01/node-api-goat.git 868ee6c11a112d267b152f6dc8c50b8b4a11cdb7

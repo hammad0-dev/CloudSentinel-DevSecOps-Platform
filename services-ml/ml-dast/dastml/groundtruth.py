@@ -38,7 +38,9 @@ class GroundTruth:
             if e["app"] != app or e["method"] != point.method or e["in"] != point.location or not rx.match(point.path):
                 continue
             if point.location == "path":
-                if e["params"]:
+                # v3: an entry may name its path segment ("seg": index in path.split("/")), so two
+                # path parameters of one route (/v1/search/{filter}/{query}) are separate entries.
+                if e["params"] and ("seg" not in e or point.param == "{seg%d}" % e["seg"]):
                     return e
             elif point.param in e["params"]:
                 return e

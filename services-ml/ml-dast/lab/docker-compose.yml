@@ -148,6 +148,19 @@ services:
     ports: ["127.0.0.1:5109:8080"]
     mem_limit: 2g   # its own index page links a time-based SQLi exploit (RANDOMBLOB(300000000)); 128m was OOM-killed
 
+  # v3 FINAL HELD-OUT APP (frozen in data/dast/FREEZE_v3.json): SirAppSec vuln-node.js-express.js-app
+  # @ b977c74. Labelled from source and frozen before any request; only started with --profile final-v3,
+  # only by scripts/eval_final_v3.py. No resolver; /v1/status/{brand} (execSync curl), /v1/test (SSRF)
+  # and /v1/init (deserialization) are on the ground-truth skip list and are never requested.
+  sirappsec:
+    <<: *lab
+    build: { context: ./vendor/sirappsec, dockerfile: ../../sirappsec.Dockerfile }
+    image: mldast-lab/sirappsec:b977c74
+    profiles: ["final-v3"]
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5113:5000"]
+    mem_limit: 1g
+
 networks:
   lab:
     internal: false   # published ports need a non-internal network; the apps get no outbound use

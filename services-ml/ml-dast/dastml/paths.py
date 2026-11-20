@@ -11,6 +11,9 @@ VERSIONS = {
            "raw": DATA / "raw", "features": DATA / "features", "suffix": ""},
     "v2": {"ground_truth": DATA / "ground_truth_v2.json", "payloads": DATA / "payloads/payloads_v2.json",
            "raw": DATA / "raw_v2", "features": DATA / "features_v2", "suffix": "_v2"},
+    # v3 sends the same payloads as v2 (payloads_v2.json): the v3 changes are features, data and rules.
+    "v3": {"ground_truth": DATA / "ground_truth_v3.json", "payloads": DATA / "payloads/payloads_v2.json",
+           "raw": DATA / "raw_v3", "features": DATA / "features_v3", "suffix": "_v3"},
 }
 # Apps whose files must never be written by any script (frozen held-out sets).
 FROZEN_APPS = {"dvna"}
