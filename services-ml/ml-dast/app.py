@@ -14,6 +14,10 @@ Until a trained model file exists at MODEL_PATH the service is "untrained": /sca
 findings list without sending any traffic, and /model-info reports status "untrained". It never
 fabricates findings.
 
+Optional ``seedPaths`` (extra pages to crawl, e.g. ``/search?q=x``) and ``openapiUrl`` (a same-origin
+OpenAPI/Swagger JSON document) widen the crawl; each must resolve to the target's origin or the scan
+is refused with HTTP 400 before any traffic.
+
 A trained model is a joblib artifact exposing ``scan(base_url, max_pages, max_requests[, threshold=])``
 (dastml.detector.DastDetector). Metadata (name, version, trained_on, metrics, threshold,
 limitations, components) is read from MODEL_META_PATH. ML_DAST_CONFIDENCE_THRESHOLD overrides the
@@ -24,13 +28,14 @@ import inspect
 import json
 import os
 from pathlib import Path
-from typing import List, Literal, Optional
-from urllib.parse import urlparse
+from typing import Any, Dict, List, Literal, Optional
+from urllib.parse import urljoin, urlparse
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from dastml.guards import GuardError, TargetPolicy
+from dastml.openapi import OpenAPIError
 
 SERVICE = "ml-dast"
 MODEL_PATH = Path(os.environ.get("MODEL_PATH", "/models/ml-dast/model.joblib"))
@@ -43,6 +48,17 @@ class ScanRequest(BaseModel):
     baseUrl: str = Field(min_length=1, max_length=2000)
     maxPages: int = Field(default=50, ge=1, le=500)
     maxRequests: int = Field(default=500, ge=1, le=5000)
+    # Optional crawl seeds for endpoints not linked from HTML. Paths (or same-origin URLs) are
+    # resolved against baseUrl; anything that resolves to another origin refuses the scan.
+    seedPaths: List[str] = Field(default_factory=list, max_length=50)
+    openapiUrl: Optional[str] = Field(default=None, min_length=1, max_length=2000)
+
+    @field_validator("seedPaths")
+    @classmethod
+    def seed_lengths(cls, value):
+        if any(not s or len(s) > 500 for s in value):
+            raise ValueError("each seed path must be 1-500 characters")
+        return value
 
     @field_validator("baseUrl")
     @classmethod
@@ -69,6 +85,9 @@ class Finding(BaseModel):
 
 class ScanResponse(BaseModel):
     findings: List[Finding]
+    # crawl coverage of this scan (pages, points_found, points_probed, requests, stopped), when the
+    # model reports it: zero points found means the scan tested nothing, not that the app is clean.
+    coverage: Optional[Dict[str, Any]] = None
 
 
 def sha256_file(path: Path) -> str:
@@ -141,7 +160,22 @@ def run_detector(request):
         kwargs["threshold"] = MODEL_INFO["threshold"]
     if "policy" in params:
         kwargs["policy"] = TargetPolicy.from_env()
+    for field, name in (("seedPaths", "seed_paths"), ("openapiUrl", "openapi_url")):
+        value = getattr(request, field)
+        if not value:
+            continue
+        if name not in params:  # never drop requested coverage silently
+            raise HTTPException(status_code=501, detail=f"the loaded model does not support {field}")
+        kwargs[name] = value
     return DETECTOR.scan(request.baseUrl, request.maxPages, request.maxRequests, **kwargs)
+
+
+def check_seeds(request, policy):
+    """Every seed must resolve to the scan target's own origin (same allowlist, same origin)."""
+    origin = policy.origin_of(request.baseUrl)
+    for seed in list(request.seedPaths) + ([request.openapiUrl] if request.openapiUrl else []):
+        if policy.origin_of(urljoin(request.baseUrl, seed)) != origin:
+            raise GuardError(f"seed {seed!r} is not same-origin with {request.baseUrl}")
 
 
 @app.post("/scan", response_model=ScanResponse)
@@ -149,17 +183,22 @@ def scan(request: ScanRequest):
     if DETECTOR is None:
         return {"findings": []}
     try:
-        TargetPolicy.from_env().origin_of(request.baseUrl)  # refuse before any traffic
+        check_seeds(request, TargetPolicy.from_env())  # refuse before any traffic
     except GuardError as exc:
         raise HTTPException(status_code=400, detail=f"target refused: {exc}") from exc
     try:
         raw = run_detector(request)
+    except HTTPException:
+        raise
     except GuardError as exc:
         raise HTTPException(status_code=400, detail=f"target refused: {exc}") from exc
+    except OpenAPIError as exc:
+        raise HTTPException(status_code=400, detail=f"openapiUrl could not be used: {exc}") from exc
     except Exception as exc:  # model failure must surface, never look like a clean scan
         raise HTTPException(status_code=500, detail=f"model scan failed: {type(exc).__name__}") from exc
     try:
         findings = [Finding.model_validate(item) for item in raw]
     except ValidationError as exc:
         raise HTTPException(status_code=500, detail=f"model returned an invalid finding: {exc.error_count()} error(s)") from exc
-    return {"findings": findings}
+    coverage = getattr(DETECTOR, "last_scan", None)
+    return {"findings": findings, "coverage": dict(coverage) if isinstance(coverage, dict) and coverage else None}

@@ -11,12 +11,20 @@ The CloudSentinel backend calls this FastAPI service on the baseline DAST path w
 |---|---|---|
 | GET | `/health` | `{status, service, model}` |
 | GET | `/model-info` | `{name, version, sha256, trained_on, metrics, status, threshold, classes, limitations, components}` |
-| POST | `/scan` | body `{baseUrl, maxPages, maxRequests}` → `{findings:[{alert, attack_type, severity, endpoint, method, param, request_payload, response_details, cwe_id, solution, confidence}]}` |
+| POST | `/scan` | body `{baseUrl, maxPages, maxRequests, seedPaths?, openapiUrl?}` → `{findings:[{alert, attack_type, severity, endpoint, method, param, request_payload, response_details, cwe_id, solution, confidence}], coverage:{pages, points_found, points_probed, requests, stopped}}` |
 
 How `/scan` works with a trained model (`dastml.detector.DastDetector`):
 
 1. **Crawl.** Same-origin HTML crawl collects injection points from links, forms, query parameters,
-   form fields and numeric path segments.
+   form fields and numeric path segments. For endpoints not linked from HTML (JSON roots, APIs):
+   - `seedPaths` (max 50) are extra start pages, e.g. `["/users?name=alice", "/search?q=test"]`;
+   - `openapiUrl` is an OpenAPI 3 / Swagger 2 **JSON** document (`dastml/openapi.py`). Its GET and
+     POST operations become points: query and path parameters, plus JSON or form body properties.
+     PUT, PATCH and DELETE are never probed, and a `servers` host is never used as a destination.
+
+   Each seed is resolved against `baseUrl` and must stay on its origin under the allowlist; otherwise
+   the scan is refused with 400 before any traffic. A model build without seed support answers 501.
+   `coverage` reports what was tested: `points_found: 0` means nothing was tested, not "clean".
 2. **Probe.** Each point gets two baseline requests, one benign probe and the fixed payload list in
    `data/dast/payloads/` (28 SQLi, 16 XSS).
 3. **Featurize.** Each request/response pair becomes a feature row (`dastml/features.py`).

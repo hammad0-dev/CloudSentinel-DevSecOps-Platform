@@ -16,7 +16,7 @@ const { createMlSastClient } = require("../services/ml/mlSastClient");
 const { createMlDastClient } = require("../services/ml/mlDastClient");
 const engines = require("../services/ml/engines");
 const { runMlSast, collectSourceFiles, toIssues } = require("../services/ml/mlSastScan");
-const { runMlBaselineScan } = require("../services/ml/mlDastScan");
+const { runMlBaselineScan, seedConfig } = require("../services/ml/mlDastScan");
 const { coerceIssueRow } = require("../routes/sast/config");
 const { fingerprint } = require("../services/dastBaselineScanner");
 const { normalize } = require("../services/governance/normalize");
@@ -34,7 +34,7 @@ function withEnv(vars, fn) {
   return Promise.resolve().then(fn).finally(restore);
 }
 
-async function mockService({ info, findings = [], scanStatus = 200, hang = false }) {
+async function mockService({ info, findings = [], scanStatus = 200, hang = false, coverage }) {
   const requests = [];
   const server = http.createServer((req, res) => {
     let body = "";
@@ -45,7 +45,7 @@ async function mockService({ info, findings = [], scanStatus = 200, hang = false
       const send = (status, data) => { res.writeHead(status, { "content-type": "application/json" }); res.end(JSON.stringify(data)); };
       if (req.url === "/model-info") return send(200, info);
       if (req.url === "/health") return send(200, { status: "ok" });
-      if (req.url === "/scan") return scanStatus === 200 ? send(200, { findings }) : send(scanStatus, { detail: "model scan failed: RuntimeError" });
+      if (req.url === "/scan") return scanStatus === 200 ? send(200, coverage ? { findings, coverage } : { findings }) : send(scanStatus, { detail: "model scan failed: RuntimeError" });
       return send(404, { detail: "not found" });
     });
   });
@@ -145,6 +145,7 @@ function dastDb({ projectId = 11, executionId = 23, stagingUrl = "http://192.168
     if (sql.startsWith("SELECT id FROM dast_scans WHERE project_id=$1 AND status='RUNNING'")) return { rows: scans.filter((s) => s.status === "RUNNING") };
     if (sql.startsWith("INSERT INTO dast_scans")) { const s = { id: 70 + scans.length, project_id: params[0], pipeline_execution_id: params[1], target_url: params[2], status: "RUNNING", scan_mode: "BASELINE", policy_name: "ml-dast", policy_version: "pending", target_authorization: JSON.parse(params[4]), scan_engine: "ml" }; scans.push(s); return { rows: [{ id: s.id }] }; }
     if (sql.startsWith("UPDATE dast_scans SET policy_name")) { Object.assign(scans.find((s) => s.id === params[3]), { policy_name: params[0], policy_version: params[1], tool_provenance: JSON.parse(params[2]) }); return { rows: [], rowCount: 1 }; }
+    if (sql.startsWith("UPDATE dast_scans SET tool_provenance = COALESCE")) { const s = scans.find((x) => x.id === params[1]); Object.assign(s.tool_provenance, JSON.parse(params[0])); return { rows: [], rowCount: 1 }; }
     if (sql.startsWith("UPDATE dast_scans SET status='FAILED'")) { const s = scans.find((x) => x.id === params[1]); if (s?.status === "RUNNING") Object.assign(s, { status: "FAILED", failure_reason: params[0] }); return { rows: [], rowCount: 1 }; }
     if (sql === "BEGIN" || sql === "COMMIT" || sql === "ROLLBACK") return { rows: [] };
     if (sql.startsWith("DELETE FROM dast_findings")) return { rows: [], rowCount: 0 };
@@ -354,6 +355,48 @@ test("ML DAST only scans the verified staging target and records failures on the
     stageProvenance.binding = async () => ({ commit_sha: "c".repeat(40) });
     await assert.rejects(runMlBaselineScan({ pool: db.pool, projectId: 11, executionId: 23, targetUrl: db.stagingUrl, userId: 3, client: createMlDastClient({ url }) }), (e) => e.code === "ML_ENGINE_PROVENANCE_UNSUPPORTED");
   } finally { stageProvenance.binding = binding; }
+});
+
+test("ML DAST seed config: paths and OpenAPI URL must stay on the staging target", () => {
+  const target = "http://192.168.49.2:31281";
+  assert.deepEqual(seedConfig(target, { seedPaths: " /users?id=1, /search?q=x ,,/users?id=1", openapiUrl: "/openapi.json" }),
+    { seedPaths: ["/users?id=1", "/search?q=x"], openapiUrl: "http://192.168.49.2:31281/openapi.json" });
+  assert.deepEqual(seedConfig(target, { seedPaths: "", openapiUrl: "" }), { seedPaths: [], openapiUrl: null });
+  assert.equal(seedConfig(target, { openapiUrl: "http://192.168.49.2:31281/v3/api-docs" }).openapiUrl, "http://192.168.49.2:31281/v3/api-docs");
+  for (const bad of ["http://evil.example/x", "//evil.example/x", "users", "/" + "a".repeat(600)]) {
+    assert.throws(() => seedConfig(target, { seedPaths: bad }), (e) => e.code === "ML_DAST_SEED_INVALID" && e.status === 400, bad);
+  }
+  assert.throws(() => seedConfig(target, { seedPaths: Array.from({ length: 51 }, (_, i) => `/p${i}`) }), /at most 50/);
+  for (const bad of ["http://evil.example/openapi.json", "//evil.example/openapi.json", "http://192.168.49.2:8443/openapi.json", "https://192.168.49.2:31281/openapi.json"]) {
+    assert.throws(() => seedConfig(target, { openapiUrl: bad }), (e) => e.code === "ML_DAST_SEED_INVALID", bad);
+  }
+});
+
+test("ML DAST sends configured seeds to ml-dast and records them and the crawl coverage", async () => {
+  const coverage = { pages: 3, points_found: 4, points_probed: 4, requests: 180, stopped: null };
+  const svc = await mockService({ info: TRAINED("ml-dast-lr"), findings: [], coverage });
+  const db = dastDb();
+  const binding = stageProvenance.binding;
+  stageProvenance.binding = async () => null;
+  try {
+    await withEnv({ ML_DAST_SEED_PATHS: "/users?id=1,/search?q=x", ML_DAST_OPENAPI_URL: "/openapi.json" }, async () => {
+      const out = await runMlBaselineScan({ pool: db.pool, projectId: 11, executionId: 23, targetUrl: db.stagingUrl, userId: 3, client: createMlDastClient({ url: svc.url }), maxPages: 7, maxRequests: 70 });
+      assert.deepEqual(svc.requests.find((r) => r.url === "/scan").body, { baseUrl: db.stagingUrl, maxPages: 7, maxRequests: 70,
+        seedPaths: ["/users?id=1", "/search?q=x"], openapiUrl: `${db.stagingUrl}/openapi.json` });
+      assert.deepEqual(out.coverage, coverage);
+      const [scan] = db.scans;
+      assert.equal(scan.status, "COMPLETED");
+      assert.deepEqual(scan.tool_provenance.seedPaths, ["/users?id=1", "/search?q=x"]);
+      assert.equal(scan.tool_provenance.openapiUrl, `${db.stagingUrl}/openapi.json`);
+      assert.deepEqual(scan.tool_provenance.coverage, coverage);
+    });
+    await withEnv({ ML_DAST_SEED_PATHS: "http://evil.example/x", ML_DAST_OPENAPI_URL: undefined }, async () => {
+      const before = svc.requests.length;
+      await assert.rejects(runMlBaselineScan({ pool: db.pool, projectId: 11, executionId: 23, targetUrl: db.stagingUrl, userId: 3, client: createMlDastClient({ url: svc.url }) }), (e) => e.code === "ML_DAST_SEED_INVALID");
+      assert.equal(db.scans.length, 1, "no scan row for an invalid seed configuration");
+      assert.equal(svc.requests.length, before, "ml-dast is not called");
+    });
+  } finally { stageProvenance.binding = binding; await svc.close(); }
 });
 
 // ---- routes: the flag default keeps the old engine ----

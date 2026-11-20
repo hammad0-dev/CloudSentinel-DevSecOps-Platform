@@ -1,0 +1,63 @@
+# Deployed by the CloudSentinel pipeline into the project's namespace (kubectl --namespace), so no
+# namespace is set here. The pipeline replaces the image with the one it just built and scanned.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-forms
+  labels:
+    app: demo-forms
+    owner: cloudsentinel-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-forms
+  template:
+    metadata:
+      labels:
+        app: demo-forms
+        owner: cloudsentinel-demo
+    spec:
+      serviceAccountName: cloudsentinel-app
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: demo-forms
+          image: demo-forms:0.1.0
+          imagePullPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: tmp
+          emptyDir: {}

@@ -46,9 +46,21 @@ function createMlDastClient({ url = process.env.ML_DAST_URL, timeoutMs = positiv
     timeoutMs,
     health: () => client.get("/health"),
     modelInfo: async () => parseModelInfo(await client.get("/model-info"), { service: SERVICE, label: LABEL, url: origin }),
-    scan: async ({ baseUrl: target, maxPages, maxRequests }) =>
-      parseFindings(await client.post("/scan", { baseUrl: target, maxPages, maxRequests }), origin),
+    scan: async (args) => (await scanDetailed(client, origin, args)).findings,
+    // { findings, coverage }: coverage is ml-dast's crawl summary (pages, points_found, ...) or null.
+    scanDetailed: (args) => scanDetailed(client, origin, args),
   };
+}
+
+// seedPaths / openapiUrl are sent only when configured, so older ml-dast builds keep working.
+async function scanDetailed(client, origin, { baseUrl: target, maxPages, maxRequests, seedPaths = [], openapiUrl = null }) {
+  const body = { baseUrl: target, maxPages, maxRequests };
+  if (seedPaths.length) body.seedPaths = seedPaths;
+  if (openapiUrl) body.openapiUrl = openapiUrl;
+  const data = await client.post("/scan", body);
+  const findings = parseFindings(data, origin);
+  const coverage = data.coverage && typeof data.coverage === "object" && !Array.isArray(data.coverage) ? data.coverage : null;
+  return { findings, coverage };
 }
 
 module.exports = { createMlDastClient, parseFindings, SEVERITIES };
