@@ -1,0 +1,31 @@
+{
+  "systems": {
+    "v1_shipped": {
+      "path": "models/release/model.joblib",
+      "sha256": "f8a6c5454a158812ab4d8a6bd5d9c7dfe31046e16eb29148cf4c860d181763d4"
+    },
+    "v2_final": {
+      "path": "models/release_v2/model.joblib",
+      "sha256": "00fe69cfc62abd9d59954fcf92ef6d2c201f2dde55b690a2cdf3fd64708aa765"
+    }
+  },
+  "freeze": {
+    "labels_sha256": "127ca0d8fc5414332f00446e44cff6d160f239d3a58df22de95fd9e9c57a1420",
+    "rows_sha256": "9505c51558ead1852d4c959ad5d7046f871942c832d9a5bc712df9f7d74003e6",
+    "sources_sha256": "63bf7c68417be995ef55e35adcee30251f6d2116d501b2fb43b430ba67cda8f3",
+    "n_files": 79,
+    "commits": {
+      "django.nV": "a48901f106da4888417339b7b44b8ed56b64c63f",
+      "dvws-node": "4221c04f132960a0ccca4bf5aa5f3a9f53172778",
+      "vulnerable-node": "d68f2a3c9277ece2c2feb9976052033bdecd7fbe"
+    },
+    "policy": "Labelled and frozen before any v2 modelling. Score exactly once with scripts/eval_fresh_final.py."
+  },
+  "views": [
+    "all",
+    "code_visible",
+    "no_seeds",
+    "app_code_only"
+  ],
+  "metric": "macro-F1 over classes present, per-class P/R/F1, vulnerable-vs-safe P/R, bootstrap 95% CI (1000)"
+}
