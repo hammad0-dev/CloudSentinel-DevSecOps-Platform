@@ -1,0 +1,63 @@
+{
+ "model_sha256": "5dc397d0b6c462d1ed30567920e51d2afbd7272560db6d1ebc78f887c84712eb",
+ "selection": {
+  "family": "lr",
+  "rule": "highest pooled LOAO endpoint-param macro-F1 (all training apps), fixed before DSVW is collected or scored",
+  "loao_macro_f1": {
+   "lr": 0.8274913018642572,
+   "rf": 0.6961538461538462,
+   "lgbm": 0.7312540610786226
+  },
+  "loao_ci95": {
+   "lr": [
+    0.744205725189228,
+    0.8943250918462388
+   ],
+   "rf": [
+    0.5916151074820875,
+    0.7782448594346658
+   ],
+   "lgbm": [
+    0.6331508508973047,
+    0.8100502593487813
+   ]
+  },
+  "apps": [
+   "juice-shop",
+   "labexpress",
+   "labfastapi",
+   "labflask",
+   "nodegoat",
+   "vulnerable-node",
+   "vulpy"
+  ],
+  "n_rows": 5468,
+  "date": "2026-11-21",
+  "feature_set_frozen_at": "iteration 2 (raw_reflected_dangerous); no feature changes after the final collection"
+ },
+ "freeze": {
+  "app": "dsvw",
+  "role": "final_heldout_v2",
+  "frozen_at": "2026-11-20",
+  "frozen_before_any_scan": true,
+  "source": "stamparm/DSVW @ 9ca3c9acf3defa0a6148d40e5f5cebeb5dcbb908 (Unlicense)",
+  "source_sha256": "d293763e697d042667d3ff1629c4d5564d50c139cc13bbdea24c59bf2bbef93a",
+  "ground_truth_dsvw_sha256": "17e31d4a764bb7278cfbab49db56c84b2ed86d5e30ed9e7e91fa77112d7acea0",
+  "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive} for dsvw, sort_keys=True)",
+  "rule": "DSVW is labelled from source only, never collected for training or tuning; collected and scored exactly once by scripts/eval_final_v2.py after the v2 model is fixed by SHA-256",
+  "counts": {
+   "CWE-89": 3,
+   "CWE-79": 2,
+   "CWE-78": 1,
+   "CWE-22": 1,
+   "CWE-601": 1,
+   "passive_positive": 5,
+   "passive_negative": 1
+  }
+ },
+ "freeze_checks": {
+  "source_sha256": true,
+  "ground_truth_dsvw_sha256": true
+ },
+ "metric": "ML: endpoint-param macro-F1 over classes present, per-class P/R/F1, cluster bootstrap 1000; rules/passive: counts"
+}

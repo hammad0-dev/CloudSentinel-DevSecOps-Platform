@@ -138,5 +138,19 @@
   "requests": 1003,
   "rows": 598,
   "seconds": 59
+ },
+ "dsvw": {
+  "pages_crawled": 28,
+  "points_found": 13,
+  "points_probed": 12,
+  "gt_params_listed": 12,
+  "gt_params_found": 12,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "GET / [foobar]"
+  ],
+  "requests": 988,
+  "rows": 714,
+  "seconds": 56
  }
 }

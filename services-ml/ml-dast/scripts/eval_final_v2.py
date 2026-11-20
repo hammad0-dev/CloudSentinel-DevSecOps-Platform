@@ -72,10 +72,13 @@ def main():
                      "clusters": {k: {"true": v[0], "pred": v[1]} for k, v in ml_cl.items()}},
               "rules": {c: counts(d, "safe_units") for c, d in active.items()},
               "passive": {c: counts(d, "negatives") for c, d in passive.items()}}
+    aborted = sorted((ROOT / "reports").glob("final_dsvw_aborted_attempt*.json"))
+    result["aborted_attempts"] = [json.loads(x.read_text()) for x in aborted]  # disclosed: infrastructure failures before any scoring
     result["summary"] = {"ml_endpoint_macro_f1": result["ml"]["endpoint"]["macro_f1"], "ml_ci95": boot["macro_f1"]["ml"]["ci95"],
                          "ml_per_class": {c: {k: result["ml"]["endpoint"]["per_class"][c][k] for k in ("precision", "recall", "f1", "support")} for c in ("CWE-89", "CWE-79")},
                          "ml_per_class_f1_ci95": boot["per_class_f1_ci95"]["ml"], "n_clusters": len(ml_cl),
                          "rules": {c: f"found {v['found']} of {v['known']}, {len(v['false_alarms'])} false alarms on {v['negatives']} safe" for c, v in result["rules"].items()},
+                         "aborted_attempts_before_scoring": len(aborted),
                          "passive": {c: f"found {v['found']} of {v['known']}, {len(v['false_alarms'])} false alarms on {v['negatives']}" for c, v in result["passive"].items()}}
     OUT.write_text(json.dumps(result, indent=1) + "\n")
     print(json.dumps(result["summary"], indent=1))

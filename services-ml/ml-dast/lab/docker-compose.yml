@@ -146,7 +146,7 @@ services:
     profiles: ["final-v2"]
     dns: ["127.0.0.1"]
     ports: ["127.0.0.1:5109:8080"]
-    mem_limit: 128m
+    mem_limit: 2g   # its own index page links a time-based SQLi exploit (RANDOMBLOB(300000000)); 128m was OOM-killed
 
 networks:
   lab:
