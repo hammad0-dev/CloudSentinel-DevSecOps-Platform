@@ -10,7 +10,10 @@
 * Redirects are never followed automatically; :meth:`GuardedClient.request` follows only same-origin
   redirects, each one counted against the budget.
 * Proxies from the environment are ignored, so traffic cannot be routed elsewhere.
-* ``skip`` paths (endpoints that must never be attacked) are refused.
+* ``skip`` paths (endpoints that must never be attacked) are refused, and so are (path, parameter)
+  pairs on ``skip_params``.
+* A request whose query or body parameters carry a URL (``scheme://`` raw or %-encoded) is refused,
+  so a crawled link can never make the target fetch another host (SSRF / remote include).
 
 Configuration (service): ML_DAST_ALLOWED_HOSTS (comma list), ML_DAST_ALLOWED_PORTS (comma list of
 ports or ranges, e.g. ``5101-5108,8080``), ML_DAST_RATE_PER_SEC.
@@ -20,7 +23,7 @@ import re
 import threading
 import time
 from dataclasses import dataclass, field
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import parse_qsl, urljoin, urlsplit
 
 import requests
 
@@ -73,6 +76,9 @@ class TargetPolicy:
     max_redirects: int = 3
     timeout_sec: float = 10.0
     skip_paths: tuple = ()
+    # (path pattern, parameter) pairs: a request to that path carrying that query parameter is
+    # refused (endpoints that share a path with others, e.g. DSVW's "/?object=" pickle RCE).
+    skip_params: tuple = ()
 
     @classmethod
     def from_env(cls, **kw):
@@ -109,13 +115,28 @@ class TargetPolicy:
             raise GuardError(f"port {port} is not in the allowlist")
         return (parts.scheme, host, port)
 
-    def skipped(self, path):
-        for pattern in self.skip_paths:
-            regex = "^" + re.escape(pattern).replace(r"\{", "{").replace(r"\}", "}")
-            regex = re.sub(r"\{[^}]+\}", "[^/]+", regex)
-            if re.match(regex + r"(/|$|\?)", path):
-                return True
-        return False
+    @staticmethod
+    def _path_matches(pattern, path):
+        regex = "^" + re.escape(pattern).replace(r"\{", "{").replace(r"\}", "}")
+        regex = re.sub(r"\{[^}]+\}", "[^/]+", regex)
+        return re.match(regex + r"(/|$|\?)", path) is not None
+
+    def skipped(self, path, query=""):
+        if any(self._path_matches(p, path) for p in self.skip_paths):
+            return True
+        names = {k for k, _ in parse_qsl(query, keep_blank_values=True)}
+        return any(param in names and self._path_matches(p, path) for p, param in self.skip_params)
+
+
+# A request whose parameters carry a URL could make the target fetch another host (SSRF, remote
+# include). ml-dast payloads never contain one; crawled links that do are refused.
+_URL_IN_PARAMS = re.compile(r"[a-z][a-z0-9+.-]*:(//|%2f%2f)", re.I)
+
+
+def carries_url(query):
+    if _URL_IN_PARAMS.search(query):
+        return True
+    return any(_URL_IN_PARAMS.search(v) for _, v in parse_qsl(query, keep_blank_values=True))
 
 
 class GuardedClient:
@@ -137,10 +158,19 @@ class GuardedClient:
         absolute = urljoin(self.base_url, url)
         if self.policy.origin_of(absolute) != self.origin:
             raise GuardError(f"{absolute} is not same-origin with {self.base_url}")
-        path = urlsplit(absolute).path or "/"
-        if self.policy.skipped(path):
+        parts = urlsplit(absolute)
+        path = parts.path or "/"
+        if self.policy.skipped(path, parts.query):
             raise GuardError(f"{path} is on the skip list")
+        if carries_url(parts.query):
+            raise GuardError(f"{path}: a parameter carries a URL (possible SSRF); refused")
         return absolute
+
+    def check_body(self, data):
+        """Query/form/JSON parameter dicts are checked like query strings: no URL-carrying values."""
+        values = data.values() if isinstance(data, dict) else []
+        if any(isinstance(v, str) and _URL_IN_PARAMS.search(v) for v in values):
+            raise GuardError("a parameter carries a URL (possible SSRF); refused")
 
     def count_page(self):
         if self.pages >= self.policy.max_pages:
@@ -160,6 +190,9 @@ class GuardedClient:
     def request(self, method, url, **kw):
         """Send one request (plus same-origin redirects). Returns (final response, elapsed seconds)."""
         url = self.check_url(url)
+        for key in ("params", "data", "json"):
+            if key in kw:
+                self.check_body(kw[key])
         kw.pop("allow_redirects", None)
         kw.setdefault("timeout", self.policy.timeout_sec)
         started = time.monotonic()
