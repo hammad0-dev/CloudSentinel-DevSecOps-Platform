@@ -14,6 +14,13 @@ const FILES = "/srv/files";
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+// Express 4 does not catch rejected async handlers and Node 20 exits on an unhandled rejection
+// (an out-of-range id crashed the app during a ZAP scan). Route every handler's rejection to the
+// error handler at the bottom, which answers with a generic 500.
+for (const m of ["get", "post"]) {
+  const orig = app[m].bind(app);
+  app[m] = (p, ...handlers) => orig(p, ...handlers.map((h) => (req, res, next) => Promise.resolve(h(req, res, next)).catch(next)));
+}
 
 const page = (title, body) => `<!doctype html><html><head><title>${escapeHtml(title)}</title></head><body><h2>${escapeHtml(title)}</h2>${body}<p><a href="/">home</a></p></body></html>`;
 const list = (rows) => "<table>" + rows.map((r) => `<tr><td>${escapeHtml(String(r.title))}</td><td>${escapeHtml(String(r.category))}</td></tr>`).join("") + "</table>";
@@ -131,5 +138,8 @@ app.get("/file-safe", (req, res) => { // SAFE
   if (!p.startsWith(FILES + path.sep)) return res.status(404).send(page("file", "<p>missing</p>"));
   fs.readFile(p, "utf8", (err, data) => err ? res.status(404).send(page("file", "<p>missing</p>")) : res.type("text/plain").send(data.slice(0, 4096)));
 });
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => res.status(500).send(page("error", "<p>Internal error</p>")));
 
 init().then(() => app.listen(8080, "0.0.0.0", () => console.log("labexpress on 8080")));

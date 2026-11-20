@@ -57,8 +57,9 @@ services:
   juice-shop:
     <<: *lab
     image: bkimminich/juice-shop:latest   # already local; digest recorded in data/dast/manifest.json
+    environment: { NODE_OPTIONS: "--max-old-space-size=768" }   # 512m ran out of JS heap during a ZAP scan
     ports: ["127.0.0.1:5104:3000"]
-    mem_limit: 512m
+    mem_limit: 1g
 
   dvna:                                   # FINAL HELD-OUT APP: never used for training or tuning
     <<: *lab
