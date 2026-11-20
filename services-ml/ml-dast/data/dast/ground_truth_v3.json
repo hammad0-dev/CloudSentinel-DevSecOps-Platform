@@ -2644,11 +2644,6 @@
   },
   {
    "app": "vulnerable-node",
-   "path": "/products/{id}/reviews",
-   "reason": "stored XSS only (out of scope)"
-  },
-  {
-   "app": "vulnerable-node",
    "path": "/register",
    "reason": "creates accounts"
   },
@@ -2886,6 +2881,10 @@
   {
    "what": "labflask passive cookie-no-samesite false -> true",
    "prompted_by": "the v3 block adds a session cookie without SameSite (app code change, not a label correction)"
+  },
+  {
+   "what": "vulnerable-node skip entry POST /products/{id}/reviews ('stored XSS only (out of scope)') removed",
+   "prompted_by": "v3 brings stored XSS into scope; the review form is labelled in v3 (stored + reflected-after-redirect). Removed before vulnerable-node's v3 collection"
   }
  ],
  "stored": [
