@@ -2885,6 +2885,10 @@
   {
    "what": "vulnerable-node skip entry POST /products/{id}/reviews ('stored XSS only (out of scope)') removed",
    "prompted_by": "v3 brings stored XSS into scope; the review form is labelled in v3 (stored + reflected-after-redirect). Removed before vulnerable-node's v3 collection"
+  },
+  {
+   "what": "CSRF ground truth: labflask POST /find-safe and vulnerable-node POST /tools/regex added as instances",
+   "prompted_by": "the CSRF rule reported both forms on the training apps and they were not labelled; checked in source (tokenless POST forms, session cookie without SameSite) and added. Disclosed: a rule-prompted label addition"
   }
  ],
  "stored": [
@@ -3202,6 +3206,11 @@
      "path": "/v3/settings-safe",
      "vuln": false,
      "note": "csrf_token field checked on POST"
+    },
+    {
+     "path": "/find-safe",
+     "vuln": true,
+     "note": "POST form with no token field; lab/labflask/app.py has no CSRF code here (omitted from the first v3 labelling)"
     }
    ],
    "evidence": "lab/labflask/app.py (v3 block): no CSRF code except /v3/settings-safe"
@@ -3288,6 +3297,11 @@
      "path": "/tools/ping",
      "vuln": true,
      "note": ""
+    },
+    {
+     "path": "/tools/regex",
+     "vuln": true,
+     "note": "views: POST form, no token; server.js line 72: no CSRF anywhere (omitted from the first v3 labelling; the path is skip-listed for probing, the form is still crawled)"
     }
    ],
    "evidence": "server.js @ d68f2a3 lines 72-73: 'CSRF: not implemented anywhere on purpose'"

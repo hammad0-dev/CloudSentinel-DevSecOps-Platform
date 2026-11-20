@@ -47,7 +47,7 @@ def evaluate_stored(apps, gtj):
         if not f.exists():
             continue
         records = json.loads(f.read_text())["records"]
-        seen = set()
+        seen, units = set(), {}  # one unit per labelled field, however many concrete paths wrote to it
         for rec in records:
             pt = rec["point"]
             fired = bool(stored_xss_findings([rec], "http://lab/"))
@@ -55,10 +55,12 @@ def evaluate_stored(apps, gtj):
                           and s["write"]["param"] == pt["param"] and _rx(s["write"]["path"]).match(pt["path"])), None)
             unit = f"{app}|{pt['method']} {match['write']['path'] if match else pt['path']} [{pt['param']}]"
             if match is None:
-                if fired:
+                if fired and unit not in out["unlabelled_findings"]:
                     out["unlabelled_findings"].append(unit)
                 continue
             seen.add(id(match))
+            units[unit] = (match, units.get(unit, (match, False))[1] or fired)
+        for unit, (match, fired) in units.items():
             if match["vuln"]:
                 out["known"].append(unit)
                 (out["found"] if fired else out["missed"]).append(unit)
