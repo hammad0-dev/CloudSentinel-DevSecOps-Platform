@@ -150,3 +150,78 @@ Result on 2026-11-20 (ml-sast-hybrid 2.0.0, SHA-256 `00fe69cf…`, Minikube off)
 | node-express | 3 findings, all true: hardcoded secret, line 7 (**rule-based** detector, `.rule`); SQL injection in `GET /users` (ML); XSS in `GET /search` (ML) | Blocked at SAST (CRITICAL) |
 
 This was a single check. The model was not tuned for these fixtures.
+
+## Running the full ML pipeline
+
+This runs both ML engines (`SAST_ENGINE=ml`, `DAST_ENGINE=ml`) through deploy to Minikube and DAST
+against the staging app. Start Minikube first (`minikube start`). If the ml-dast lab is running, stop
+it to free RAM (`cd services-ml/ml-dast/lab && docker compose down`).
+
+**Model files.** These are gitignored, so copy them in from a training run:
+
+| Service | Folder | Built by |
+|---|---|---|
+| ml-sast | `services-ml/ml-sast/models/release_v2/model.{joblib,json}` | `services-ml/ml-sast/scripts/package_v2.py` |
+| ml-dast | `services-ml/ml-dast/models/release/model.{joblib,json}` | `services-ml/ml-dast/scripts/train_final.py` |
+
+**Target allowlist.** ml-dast refuses every target outside its allowlist with HTTP 400, before
+sending any traffic. The pipeline's DAST target is the authorized staging URL,
+`http://<minikube ip>:<NodePort>`. Kubernetes assigns that NodePort when it deploys, so no fixed port
+can be allowed in advance. `scripts/run-ml-dast.sh` (default `--minikube`) therefore sets:
+
+- `ML_DAST_ALLOWED_HOSTS` to exactly `minikube ip`;
+- `ML_DAST_ALLOWED_PORTS` to the cluster's NodePort range, read from kube-apiserver
+  `--service-node-port-range` (default 30000-32767).
+
+Nothing else is allowed, not even localhost, the API server port or other hosts. The backend still
+authorizes the exact staging URL first. Set the two variables by hand to narrow them further.
+
+**Reachability: host process.** Docker runs natively in WSL here, so the Minikube bridge
+(192.168.49.0/24) is a local interface. A host process reaches `http://<minikube ip>:<NodePort>`
+directly. A containerized ml-dast would need `--network minikube` instead.
+
+```bash
+scripts/run-ml-sast.sh &                   # 127.0.0.1:8001, ml-sast-hybrid 2.0.0
+scripts/run-ml-dast.sh --minikube &        # 127.0.0.1:8002, ml-dast-lr 1.0.0, allow <minikube ip>:30000-32767
+cd backend && PORT=3100 SAST_ENGINE=ml DAST_ENGINE=ml \
+  ML_SAST_URL=http://127.0.0.1:8001 ML_DAST_URL=http://127.0.0.1:8002 node server.js &
+cd .. && E2E_API=http://127.0.0.1:3100 node scripts/e2e-smoke.js node python-clean
+```
+
+Optional env:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ML_DAST_MAX_PAGES` | 50 | Per-scan page budget the backend passes |
+| `ML_DAST_MAX_REQUESTS` | 500 | Per-scan request budget the backend passes |
+| `ML_SAST_VENV`, `ML_DAST_VENV` | – | Reuse existing venvs |
+| `DAST_ACTIVE_ENABLED` | unset | Leave unset: Active DAST is the frozen ZAP active scanner and is not part of this run |
+
+### e2e results (2026-11-20)
+
+Engines: ml-sast-hybrid 2.0.0 (`00fe69cf…`) and ml-dast-lr 1.0.0 (`ce04524f…`); both SHA-256 values
+were recorded as scan provenance. Minikube was at 192.168.49.2.
+
+| Stage | node-express (vulnerable) | python-clean |
+|---|---|---|
+| SAST (ML) | 3 s: C1 H2. All 3 true: hardcoded secret (**rule-based**), SQLi `GET /users`, XSS `GET /search` | 2 s: 0 findings |
+| Dependency | not run | 20 s: L1 (3 packages) |
+| IaC | not run | 11 s: 0 |
+| Image | not run | 22 s: H48 M110 L67. Not a blocking stage: the orchestrator gates only SAST, Dependency and IaC |
+| Deploy | not run | success, `http://192.168.49.2:32707` |
+| DAST (ML) | not run | 0.1 s, 0 findings. **Nothing to test**: 1 page crawled, 0 injection points, 1 request |
+| **Gate** | **Blocked at SAST** (CRITICAL), 3 s | **Passed**, pipeline COMPLETED in 372 s |
+
+**What works:**
+- Both ML engines run inside the real pipeline.
+- The clean app passes, and the vulnerable fixture is blocked at SAST with only true findings.
+- The ml-dast allowlist accepts the staging NodePort and nothing else.
+
+**What doesn't:**
+- **The DAST stage is vacuous on these fixtures.** Both apps answer `/` with JSON and contain no links
+  or forms, so the ml-dast crawler finds no injection points.
+- I also ran the same detector, outside the pipeline, against the older node-express staging
+  deployment (NodePort 31344): 1 page, 0 points, 0 findings. Its `/users?name` SQLi and `/search?q` XSS
+  are unreachable without seed URLs or an API description.
+- This is the crawler limitation documented in the ml-dast model card. Neither model was tuned for
+  these fixtures.

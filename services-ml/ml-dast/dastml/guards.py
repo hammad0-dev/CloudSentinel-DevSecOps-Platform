@@ -36,6 +36,11 @@ class BudgetExceeded(GuardError):
     pass
 
 
+# Widest single range accepted: the Kubernetes default NodePort range 30000-32767 (2768 ports), because
+# a pipeline's staging NodePort is assigned at deploy time. Anything wider is refused.
+MAX_RANGE_WIDTH = 32767 - 30000
+
+
 def parse_ports(spec):
     ports = set()
     for part in str(spec).split(","):
@@ -44,7 +49,7 @@ def parse_ports(spec):
             continue
         if "-" in part:
             lo, hi = (int(x) for x in part.split("-", 1))
-            if not (1 <= lo <= hi <= 65535) or hi - lo > 1000:
+            if not (1 <= lo <= hi <= 65535) or hi - lo > MAX_RANGE_WIDTH:
                 raise ValueError(f"bad port range {part}")
             ports.update(range(lo, hi + 1))
         else:

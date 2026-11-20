@@ -73,6 +73,20 @@ def test_env_configuration(monkeypatch):
         p.origin_of("http://127.0.0.1:5101/")
     with pytest.raises(ValueError):
         parse_ports("1-5000")  # absurdly wide ranges are refused
+    with pytest.raises(ValueError):
+        parse_ports("29999-32767")  # one port wider than the Kubernetes NodePort range
+
+
+def test_minikube_staging_allowlist(monkeypatch):
+    """The pipeline setup: exactly the Minikube node IP, ports limited to the NodePort range."""
+    monkeypatch.setenv("ML_DAST_ALLOWED_HOSTS", "192.168.49.2")
+    monkeypatch.setenv("ML_DAST_ALLOWED_PORTS", "30000-32767")
+    p = TargetPolicy.from_env()
+    assert p.origin_of("http://192.168.49.2:31344/") == ("http", "192.168.49.2", 31344)
+    for url in ("http://192.168.49.2:8443/", "http://192.168.49.2:22/", "http://192.168.49.3:31344/",
+                "http://127.0.0.1:31344/", "http://localhost:31344/", "http://192.168.49.2.nip.io:31344/"):
+        with pytest.raises(GuardError):
+            p.origin_of(url)
 
 
 def test_same_origin_only(server):
