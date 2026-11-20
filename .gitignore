@@ -57,3 +57,7 @@ services-ml/ml-sast/data/**
 !services-ml/ml-sast/data/heldout/LABELS.md
 !services-ml/ml-sast/data/heldout/labels.json
 services-ml/ml-sast/.hf/
+!services-ml/ml-sast/data/fresh/
+!services-ml/ml-sast/data/fresh/LABELS.md
+!services-ml/ml-sast/data/fresh/labels.json
+!services-ml/ml-sast/data/fresh/FREEZE.json
