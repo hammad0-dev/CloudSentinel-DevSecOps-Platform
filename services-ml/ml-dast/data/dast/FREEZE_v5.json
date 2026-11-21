@@ -1,0 +1,58 @@
+{
+ "app": "dvws-node",
+ "role": "final_heldout_v5",
+ "frozen_before_any_container": true,
+ "source": "snoopysecurity/dvws-node @ 4221c04f132960a0ccca4bf5aa5f3a9f53172778 (GPL-3.0)",
+ "commit": "4221c04f132960a0ccca4bf5aa5f3a9f53172778",
+ "source_sha256": "366348f9f514f1dc5b8a28cae12632a1b541e40913585111282199d8f5a36f15",
+ "source_files": 133,
+ "source_hash_covers": "sha256 of the sorted lines '<sha256(file)>  <path>' over `git ls-files` at the commit",
+ "ground_truth_dvws_sha256": "f8ef7a1070b27838dcd73b4d508316a5266d1c85e30442cfb6f31f5a6d078bf0",
+ "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive, stored, csrf} for dvws-node, sort_keys=True)",
+ "scan_config": {
+  "start": "/",
+  "seed_endpoints": true,
+  "seeds": "one seed per labelled endpoint (the 'seed' of each ground-truth entry, with its baseline values); the app is a single-page app",
+  "auth": {
+   "loginPath": "/api/v2/login",
+   "body": "json",
+   "success": {
+    "tokenJson": "token"
+   },
+   "loggedOut": {
+    "status": [
+     401
+    ]
+   },
+   "credentialRef": "DVWS"
+  },
+  "excluded_not_probed": "the login endpoints /api/v2/login and /api/v1/login (rate-limited to 100 attempts per 30 s; probing them is a brute-force pattern) and every parameter-less route",
+  "timeout_sec": 15.0,
+  "rate_per_sec": 25.0,
+  "network": "own compose network; the app container has no resolver (dns 127.0.0.1), as for BenchmarkPython",
+  "images": "app built from the pinned source (lab/dvws.Dockerfile: node:22-bookworm-slim, npm ci, no frontend build, port 8080 as user node); mysql:5.7 and mongo:4.4, the images already in the lab (upstream compose: mysql:8, mongo:4.0.4)",
+  "seed_data": "scripts/seed-database.js at container start (upstream compose command)"
+ },
+ "spot_check": "every file:line cited in the dvws-node entries was re-read at the pinned commit before this freeze (routes and controllers, per file; two citations outside dvws-node were corrected first)",
+ "rule": "dvws-node is labelled from source only and never collected for training or tuning; it is collected and scored exactly once by scripts/eval_final_v5.py after reports/final_preregistration_v5.json is committed. v2 (deployed), v3 and v4 are scored on the same records.",
+ "counts": {
+  "endpoints": 20,
+  "endpoint_params": 27,
+  "skip_listed_routes": 19,
+  "CWE-89_vulnerable": 3,
+  "CWE-89_unknown": 2,
+  "CWE-89_safe": 22,
+  "CWE-79_vulnerable": 0,
+  "CWE-79_unknown": 1,
+  "CWE-79_safe": 26,
+  "sqli_or_xss_vulnerable_params": 3,
+  "safe_for_both_ml_classes": 24,
+  "rule_class_vulnerable": {
+   "CWE-78": 0,
+   "CWE-22": 1,
+   "CWE-601": 0
+  },
+  "passive_positive": 4,
+  "passive_negative": 2
+ }
+}
