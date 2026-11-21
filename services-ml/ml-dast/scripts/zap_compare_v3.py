@@ -46,7 +46,7 @@ def report(app):
     v3 = ROOT / "logs/zap_v3"
     if (v3 / f"{app}.json").exists():
         status = (v3 / f"{app}.status").read_text().strip() if (v3 / f"{app}.status").exists() else "missing status"
-        if status != "ok":
+        if not status.startswith("ok"):
             return None, f"v3 scan NOT USED ({status})"
         return json.loads((v3 / f"{app}.json").read_text()), "v3 scan"
     for d, label in ((ROOT / "logs/zap_v2", "v2 scan (app unchanged in v3)"), (ROOT / "logs/zap", "v1 scan (app unchanged since v1)")):

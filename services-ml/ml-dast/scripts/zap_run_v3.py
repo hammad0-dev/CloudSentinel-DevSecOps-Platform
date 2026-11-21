@@ -55,7 +55,7 @@ def scan(app):
         cfg += ["-config", f"globalexcludeurl.url_list.url({i}).regex={r}", "-config", f"globalexcludeurl.url_list.url({i}).description=cs-v3-{i}",
                 "-config", f"globalexcludeurl.url_list.url({i}).enabled=true"]
     name, before = container(app)
-    since = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime())
+    since = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())  # UTC: without the Z docker reads local time
     for f in (OUT / f"{app}.json", OUT / f"{app}.status"):
         f.unlink(missing_ok=True)
     t0 = time.time()
@@ -78,10 +78,15 @@ def scan(app):
     if status == "ok" and rx:
         logs = subprocess.run(["docker", "logs", "--since", since, name], capture_output=True, text=True, timeout=60)
         text = logs.stdout + logs.stderr
-        bad = [p for _, p in REMOTE_FETCH.get(app, [])] + [s.get("param") for s in json.loads((ROOT / "data/dast/ground_truth_v3.json").read_text())["skip"] if s["app"] == app and s.get("param")]
-        hits = sorted({p for p in bad if p and re.search(rf"[?&]{re.escape(p)}=", text)})
-        if hits:
-            status = f"excluded parameters were requested: {hits}"
+        skips = [s for s in json.loads((ROOT / "data/dast/ground_truth_v3.json").read_text())["skip"] if s["app"] == app]
+        bad = [p for _, p in REMOTE_FETCH.get(app, [])] + [s["param"] for s in skips if s.get("param")]
+        hits = sorted({p for p in bad if re.search(rf"[?&]{re.escape(p)}=", text)})
+        paths = sorted({s["path"] for s in skips if "param" not in s
+                        and re.search(r'"(GET|POST|PUT|DELETE) ' + re.sub(r"\\\{[^}]+\\\}", "[^/ ]+", re.escape(s["path"])) + r"[/?\s]", text)})
+        if hits or paths:
+            status = f"excluded parameters/paths were requested: {hits + paths}"
+        elif not text.strip():
+            status = "ok (target writes no request log: exclusions not verifiable)"
     (OUT / f"{app}.status").write_text(status + "\n")
     (OUT / f"{app}.meta.json").write_text(json.dumps({"app": app, "excludes": rx, "exit": rc, "seconds": round(time.time() - t0), "container_before": before,
                                                        "container_after": after, "status": status}, indent=1) + "\n")
