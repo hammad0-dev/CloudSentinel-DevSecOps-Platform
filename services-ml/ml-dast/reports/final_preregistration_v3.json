@@ -1,0 +1,89 @@
+{
+ "model_v3_sha256": "bbcd03d12b211271f21bfd540c634d1942c94724402d95c87ca516e2b2fcf36f",
+ "model_v2_sha256": "5dc397d0b6c462d1ed30567920e51d2afbd7272560db6d1ebc78f887c84712eb",
+ "selection": {
+  "family": "lr",
+  "rule": "highest pooled LOAO endpoint-param macro-F1 (all training apps), fixed before SirAppSec is collected or scored",
+  "loao_macro_f1": {
+   "lr": 0.862872931368113,
+   "rf": 0.8132494666372398,
+   "lgbm": 0.8313994718136387
+  },
+  "loao_ci95": {
+   "lr": [
+    0.8048193504584127,
+    0.9136210315317584
+   ],
+   "rf": [
+    0.7464265089786077,
+    0.8698380274185165
+   ],
+   "lgbm": [
+    0.7610611332693453,
+    0.890449232364725
+   ]
+  },
+  "apps": [
+   "dsvw",
+   "juice-shop",
+   "labexpress",
+   "labfastapi",
+   "labflask",
+   "node-api-goat",
+   "nodegoat",
+   "vampi",
+   "vulnerable-node",
+   "vulpy"
+  ],
+  "n_rows": 9402,
+  "date": "2026-11-21",
+  "feature_set_frozen_at": "v3 F1-F6 (docs/ml-dast-v3-plan.md, section A), fixed before any v3 training; no feature changes after the v3 collection"
+ },
+ "freeze": {
+  "app": "sirappsec",
+  "role": "final_heldout_v3",
+  "frozen_before_any_scan": true,
+  "source": "SirAppSec/vuln-node.js-express.js-app @ b977c7407f328da929577745ad509639e26c428a (no license file)",
+  "commit": "b977c7407f328da929577745ad509639e26c428a",
+  "source_sha256": "b5349285b8bae18be42395bedb42e25c9703e2026f3f083446a4ca549840cbc2",
+  "source_files": 115,
+  "source_hash_covers": "sha256 of the sorted lines '<sha256(file)>  <path>' over `git ls-files` at the commit",
+  "ground_truth_sirappsec_sha256": "26c0683c186d03053d2516313b453663122fafe6a2b2d75adbb619c14d49b90f",
+  "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive, stored, csrf} for sirappsec, sort_keys=True)",
+  "scan_config": {
+   "start": "/",
+   "openapi_url": "/v1/api-docs",
+   "seed_data": "populate.sh lines 1-24 (POST /v1/user/ amit, shir) and one POST /v1/admin/new-beer/ (name 'Beer!!!', price 12), before the scan"
+  },
+  "rule": "SirAppSec is labelled from source only and never collected for training or tuning; it is collected and scored exactly once by scripts/eval_final_v3.py after the v3 model is fixed by SHA-256. v2 is scored on the same collection.",
+  "counts": {
+   "CWE-79": 2,
+   "CWE-22": 1,
+   "CWE-89": 2,
+   "CWE-601": 1,
+   "safe_endpoint_params": 33,
+   "passive_positive": 4,
+   "passive_negative": 2,
+   "stored_xss": 2
+  }
+ },
+ "freeze_checks": {
+  "source_sha256": true,
+  "ground_truth_sirappsec_sha256": true
+ },
+ "scan_config": {
+  "start": "/",
+  "openapi_url": "/v1/api-docs",
+  "seed_data": "populate.sh lines 1-24 (POST /v1/user/ amit, shir) and one POST /v1/admin/new-beer/ (name 'Beer!!!', price 12), before the scan"
+ },
+ "timeout_sec": 5.0,
+ "metric": "ML: endpoint-param macro-F1 over the classes present, per-class P/R/F1, cluster bootstrap 1000 (paired v3 vs v2); rules/passive/stored/CSRF: counts",
+ "default_model_rule": "v3 becomes the packaged default only if (a) its SirAppSec endpoint-param macro-F1 is higher than v2's on the same records AND (b) in leave-one-app-out on the same endpoint-params v3 is not significantly worse than v2 (the 95% CI of v2 - v3 does not lie entirely above 0, reports/before_after_v3.json). Otherwise v2 stays the default and v3 is packaged separately.",
+ "loao_v2_minus_v3": {
+  "mean": -0.10858837099427643,
+  "ci95": [
+   -0.1930707358891704,
+   -0.031257456116396035
+  ]
+ }
+}

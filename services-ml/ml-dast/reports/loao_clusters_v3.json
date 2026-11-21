@@ -1,0 +1,3050 @@
+{
+"lr": {
+"dsvw|GET|/|charset": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|comment": [
+1,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|domain": [
+0,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|id": [
+1,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|name": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|path": [
+0,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|redir": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|tmpl": [
+2,
+2,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|v": [
+2,
+2,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/login|password": [
+1,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/login|username": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/users.json|callback": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"juice-shop|GET|/api/Products/{id}|id": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|GET|/ftp/{file}|file": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|GET|/rest/products/search|q": [
+1,
+1,
+"third-party",
+"juice-shop"
+],
+"juice-shop|POST|/rest/user/login|email": [
+1,
+1,
+"third-party",
+"juice-shop"
+],
+"juice-shop|POST|/rest/user/login|password": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"labexpress|GET|/api/echo|q": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/api/items-safe|q": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/banner|msg": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/banner-safe|msg": [
+0,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/book-safe/{id}|id": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/book/{id}|id": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/books|category": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/books-safe|category": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/convert|amount": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/dns|host": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/dns-safe|host": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/file|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/file-safe|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/hello|name": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/hello-safe|name": [
+0,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/link|url": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/next|next": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/next-safe|next": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/sort|by": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/sort-safe|by": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/upstream-safe|sku": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/api/book|title": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/api/book-safe|title": [
+0,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/badge|label": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/badge-safe|label": [
+0,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/text/book|id": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/text/book-safe|id": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|POST|/lookup|email": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|POST|/lookup-safe|email": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|POST|/v3/account|nickname": [
+0,
+2,
+"own",
+"labexpress"
+],
+"labfastapi|GET|/api/orders-safe|item": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/api/status|item": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/api/status-safe|item": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/carrier-safe|code": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/docs-link|topic": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/docs-link-safe|topic": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/link|url": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/note|text": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/note-safe|text": [
+0,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/notfound-safe|page": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/order|id": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/order-safe|id": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/orders|status": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/orders-safe|status": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/text|msg": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/greet-js|name": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/greet-js-safe|name": [
+0,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/order-text|id": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/order-text-safe|id": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|POST|/report|region": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|POST|/report-safe|region": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labflask|GET|/api/echo|msg": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/api/items-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/calc|x": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/download|file": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/download-safe|file": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/greet|name": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/greet-safe|name": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/item|id": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/item-safe|id": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/link|url": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/lookup-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/next|next": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/next-safe|next": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/notfound-safe|page": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/ping|host": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/ping-safe|host": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/plain|msg": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/profile|color": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/profile-safe|color": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/search|q": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/search-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/slow|n": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/api/item|name": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/api/price-safe|max": [
+0,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/convert-safe|amount": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/item-text|id": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/item-text-safe|id": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/js|term": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/js-safe|term": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/lookup|q": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/lookup-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/note|body": [
+1,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/note-safe|body": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/sort|order": [
+1,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/sort-safe|order": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/tag|label": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/tag-safe|label": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/widget|cb": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/widget-safe|cb": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/find|q": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/find-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/login|password": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/login|username": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/login-safe|password": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/login-safe|username": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook|message": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook-safe|message": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/settings|display_name": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/settings-safe|display_name": [
+0,
+2,
+"own",
+"labflask"
+],
+"node-api-goat|GET|/cwe113/split|key": [
+0,
+1,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe113/split|value": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe201/exposure|text": [
+2,
+2,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe601/redirect|text": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe79/echo|text": [
+2,
+2,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/hexToRgb|hex": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"nodegoat|GET|/learn|url": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/login|password": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/login|userName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|address": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|bankAcc": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|bankRouting": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|dob": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|firstName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|lastName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|ssn": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|email": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|firstName": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|lastName": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|userName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"vampi|GET|/users/v1/{username}|username": [
+1,
+1,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/login|password": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/login|username": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|email": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|password": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|username": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vulnerable-node|GET|/download|file": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/orders|sort": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/products/{id}|id": [
+0,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/search|q#CWE-89": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/search|q#CWE-79": [
+2,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/contact|email": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/contact|message": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|password": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|returnurl": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|username": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/products/{id}/reviews|body": [
+2,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/products/{id}/reviews|rating": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/tools/ping|host": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulpy-bad|POST|/user/create|password": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/create|username": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/login|password": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/login|username": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-good|POST|/user/create|password": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/create|username": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/login|password": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/login|username": [
+0,
+0,
+"third-party",
+"vulpy-good"
+]
+},
+"rf": {
+"dsvw|GET|/|charset": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|comment": [
+1,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|domain": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|id": [
+1,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|name": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|path": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|redir": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|tmpl": [
+2,
+2,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|v": [
+2,
+2,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/login|password": [
+1,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/login|username": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/users.json|callback": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"juice-shop|GET|/api/Products/{id}|id": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|GET|/ftp/{file}|file": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|GET|/rest/products/search|q": [
+1,
+1,
+"third-party",
+"juice-shop"
+],
+"juice-shop|POST|/rest/user/login|email": [
+1,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|POST|/rest/user/login|password": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"labexpress|GET|/api/echo|q": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/api/items-safe|q": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/banner|msg": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/banner-safe|msg": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/book-safe/{id}|id": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/book/{id}|id": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/books|category": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/books-safe|category": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/convert|amount": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/dns|host": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/dns-safe|host": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/file|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/file-safe|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/hello|name": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/hello-safe|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/link|url": [
+2,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/next|next": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/next-safe|next": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/sort|by": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/sort-safe|by": [
+0,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/upstream-safe|sku": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/api/book|title": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/api/book-safe|title": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/badge|label": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/badge-safe|label": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/text/book|id": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/text/book-safe|id": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|POST|/lookup|email": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|POST|/lookup-safe|email": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|POST|/v3/account|nickname": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labfastapi|GET|/api/orders-safe|item": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/api/status|item": [
+1,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/api/status-safe|item": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/carrier-safe|code": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/docs-link|topic": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/docs-link-safe|topic": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/link|url": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/note|text": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/note-safe|text": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/notfound-safe|page": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/order|id": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/order-safe|id": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/orders|status": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/orders-safe|status": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/text|msg": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/greet-js|name": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/greet-js-safe|name": [
+0,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/order-text|id": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/order-text-safe|id": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|POST|/report|region": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|POST|/report-safe|region": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labflask|GET|/api/echo|msg": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/api/items-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/calc|x": [
+0,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/download|file": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/download-safe|file": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/greet|name": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/greet-safe|name": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/item|id": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/item-safe|id": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/link|url": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/lookup-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/next|next": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/next-safe|next": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/notfound-safe|page": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/ping|host": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/ping-safe|host": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/plain|msg": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/profile|color": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/profile-safe|color": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/search|q": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/search-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/slow|n": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/api/item|name": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/api/price-safe|max": [
+0,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/convert-safe|amount": [
+0,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/item-text|id": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/item-text-safe|id": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/js|term": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/js-safe|term": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/lookup|q": [
+2,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/lookup-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/note|body": [
+1,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/note-safe|body": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/sort|order": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/sort-safe|order": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/tag|label": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/tag-safe|label": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/widget|cb": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/widget-safe|cb": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/find|q": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/find-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/login|password": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/login|username": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/login-safe|password": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/login-safe|username": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook|message": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook-safe|message": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/settings|display_name": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/settings-safe|display_name": [
+0,
+2,
+"own",
+"labflask"
+],
+"node-api-goat|GET|/cwe113/split|key": [
+0,
+1,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe113/split|value": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe201/exposure|text": [
+2,
+2,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe601/redirect|text": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe79/echo|text": [
+2,
+2,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/hexToRgb|hex": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"nodegoat|GET|/learn|url": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/login|password": [
+0,
+1,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/login|userName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|address": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|bankAcc": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|bankRouting": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|dob": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|firstName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|lastName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|ssn": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|email": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|firstName": [
+0,
+1,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|lastName": [
+0,
+1,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|userName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"vampi|GET|/users/v1/{username}|username": [
+1,
+1,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/login|password": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/login|username": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|email": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|password": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|username": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vulnerable-node|GET|/download|file": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/orders|sort": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/products/{id}|id": [
+0,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/search|q#CWE-89": [
+1,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/search|q#CWE-79": [
+2,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/contact|email": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/contact|message": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|password": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|returnurl": [
+0,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|username": [
+1,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/products/{id}/reviews|body": [
+2,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/products/{id}/reviews|rating": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/tools/ping|host": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulpy-bad|POST|/user/create|password": [
+1,
+0,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/create|username": [
+1,
+0,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/login|password": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/login|username": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-good|POST|/user/create|password": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/create|username": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/login|password": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/login|username": [
+0,
+0,
+"third-party",
+"vulpy-good"
+]
+},
+"lgbm": {
+"dsvw|GET|/|charset": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|comment": [
+1,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|domain": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|id": [
+1,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|name": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|path": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|redir": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|tmpl": [
+2,
+2,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/|v": [
+2,
+2,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/login|password": [
+1,
+1,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/login|username": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"dsvw|GET|/users.json|callback": [
+0,
+0,
+"third-party",
+"dsvw"
+],
+"juice-shop|GET|/api/Products/{id}|id": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|GET|/ftp/{file}|file": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|GET|/rest/products/search|q": [
+1,
+1,
+"third-party",
+"juice-shop"
+],
+"juice-shop|POST|/rest/user/login|email": [
+1,
+0,
+"third-party",
+"juice-shop"
+],
+"juice-shop|POST|/rest/user/login|password": [
+0,
+0,
+"third-party",
+"juice-shop"
+],
+"labexpress|GET|/api/echo|q": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/api/items-safe|q": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/banner|msg": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/banner-safe|msg": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/book-safe/{id}|id": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/book/{id}|id": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/books|category": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/books-safe|category": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/convert|amount": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/dns|host": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/dns-safe|host": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/file|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/file-safe|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/hello|name": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/hello-safe|name": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/link|url": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/next|next": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/next-safe|next": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/sort|by": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/sort-safe|by": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/upstream-safe|sku": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/api/book|title": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/api/book-safe|title": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/badge|label": [
+2,
+2,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/badge-safe|label": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/text/book|id": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|GET|/v3/text/book-safe|id": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|POST|/lookup|email": [
+1,
+1,
+"own",
+"labexpress"
+],
+"labexpress|POST|/lookup-safe|email": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labexpress|POST|/v3/account|nickname": [
+0,
+0,
+"own",
+"labexpress"
+],
+"labfastapi|GET|/api/orders-safe|item": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/api/status|item": [
+1,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/api/status-safe|item": [
+0,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/carrier-safe|code": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/docs-link|topic": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/docs-link-safe|topic": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/link|url": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/note|text": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/note-safe|text": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/notfound-safe|page": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/order|id": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/order-safe|id": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/orders|status": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/orders-safe|status": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/text|msg": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/greet-js|name": [
+2,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/greet-js-safe|name": [
+0,
+2,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/order-text|id": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|GET|/v3/order-text-safe|id": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labfastapi|POST|/report|region": [
+1,
+1,
+"own",
+"labfastapi"
+],
+"labfastapi|POST|/report-safe|region": [
+0,
+0,
+"own",
+"labfastapi"
+],
+"labflask|GET|/api/echo|msg": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/api/items-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/calc|x": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/download|file": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/download-safe|file": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/greet|name": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/greet-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/item|id": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/item-safe|id": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/link|url": [
+2,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/link-safe|url": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/lookup-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/next|next": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/next-safe|next": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/notfound-safe|page": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/ping|host": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/ping-safe|host": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/plain|msg": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/profile|color": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/profile-safe|color": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/search|q": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/search-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/slow|n": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/api/item|name": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/api/price-safe|max": [
+0,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/convert-safe|amount": [
+0,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/item-text|id": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/item-text-safe|id": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/js|term": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/js-safe|term": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/lookup|q": [
+2,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/lookup-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/note|body": [
+1,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/note-safe|body": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/sort|order": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/sort-safe|order": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/tag|label": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/v3/tag-safe|label": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|GET|/widget|cb": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|GET|/widget-safe|cb": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/find|q": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/find-safe|q": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/login|password": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/login|username": [
+1,
+1,
+"own",
+"labflask"
+],
+"labflask|POST|/login-safe|password": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/login-safe|username": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook|message": [
+2,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook-safe|message": [
+0,
+2,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/guestbook-safe|name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/settings|display_name": [
+0,
+0,
+"own",
+"labflask"
+],
+"labflask|POST|/v3/settings-safe|display_name": [
+0,
+0,
+"own",
+"labflask"
+],
+"node-api-goat|GET|/cwe113/split|key": [
+0,
+1,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe113/split|value": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe201/exposure|text": [
+2,
+2,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe601/redirect|text": [
+0,
+1,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/cwe79/echo|text": [
+2,
+2,
+"third-party",
+"node-api-goat"
+],
+"node-api-goat|GET|/hexToRgb|hex": [
+0,
+0,
+"third-party",
+"node-api-goat"
+],
+"nodegoat|GET|/learn|url": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/login|password": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/login|userName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|address": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|bankAcc": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|bankRouting": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|dob": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|firstName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|lastName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/profile|ssn": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|email": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|firstName": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|lastName": [
+0,
+0,
+"third-party",
+"nodegoat"
+],
+"nodegoat|POST|/signup|userName": [
+2,
+2,
+"third-party",
+"nodegoat"
+],
+"vampi|GET|/users/v1/{username}|username": [
+1,
+2,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/login|password": [
+0,
+1,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/login|username": [
+0,
+1,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|email": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|password": [
+0,
+0,
+"third-party",
+"vampi"
+],
+"vampi|POST|/users/v1/register|username": [
+0,
+1,
+"third-party",
+"vampi"
+],
+"vulnerable-node|GET|/download|file": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/orders|sort": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/products/{id}|id": [
+0,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/search|q#CWE-89": [
+1,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|GET|/search|q#CWE-79": [
+2,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/contact|email": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/contact|message": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|password": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|returnurl": [
+0,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/login/auth|username": [
+1,
+1,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/products/{id}/reviews|body": [
+2,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/products/{id}/reviews|rating": [
+0,
+0,
+"third-party",
+"vulnerable-node"
+],
+"vulnerable-node|POST|/tools/ping|host": [
+0,
+2,
+"third-party",
+"vulnerable-node"
+],
+"vulpy-bad|POST|/user/create|password": [
+1,
+0,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/create|username": [
+1,
+0,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/login|password": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-bad|POST|/user/login|username": [
+1,
+1,
+"third-party",
+"vulpy-bad"
+],
+"vulpy-good|POST|/user/create|password": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/create|username": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/login|password": [
+0,
+0,
+"third-party",
+"vulpy-good"
+],
+"vulpy-good|POST|/user/login|username": [
+0,
+0,
+"third-party",
+"vulpy-good"
+]
+}
+}
