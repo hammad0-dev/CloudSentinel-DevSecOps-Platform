@@ -44,3 +44,18 @@ def test_v4_keeps_every_v3_label_and_holdouts_never_train():
 def test_dvpwa_has_no_data_unless_scored():
     scored = (ROOT / "reports/final_dvpwa.json").exists()
     assert scored or not (paths("v4")["raw"] / "dvpwa.jsonl.gz").exists()
+
+
+def test_benchmark_is_its_own_group_and_rule_only_cases_give_no_ml_rows():
+    from dastml.crawl import InjectionPoint
+    from dastml.groundtruth import GroundTruth
+    assert V4['apps']['benchmarkpython']['origin'] == 'benchmark' and V4['apps']['benchmarkpython']['group'] == 'benchmark'
+    gt = GroundTruth(DATA / 'ground_truth_v4.json')
+    bench = [e for e in V4['endpoints'] if e['app'] == 'benchmarkpython']
+    assert len(bench) == 155 and sum(e['ml'] for e in bench) == 80
+    rule_only = next(e for e in bench if not e['ml'] and 'CWE-22' in e['vuln'])
+    pt = InjectionPoint(rule_only['method'], rule_only['path'], rule_only['params'][0], rule_only['in'])
+    assert gt.label('benchmarkpython', pt, 'CWE-89') is None and gt.label('benchmarkpython', pt, 'CWE-22') == 'CWE-22'
+    xss = next(e for e in bench if 'CWE-79' in e['vuln'])
+    pt = InjectionPoint(xss['method'], xss['path'], xss['params'][0], xss['in'])
+    assert gt.label('benchmarkpython', pt, 'CWE-79') == 'CWE-79' and gt.label('benchmarkpython', pt, 'CWE-89') == 'safe'

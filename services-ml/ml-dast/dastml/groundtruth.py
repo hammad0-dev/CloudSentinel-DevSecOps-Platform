@@ -51,6 +51,9 @@ class GroundTruth:
         e = self.entry(app, point)
         if e is None or payload_class in e.get("unknown", []):
             return None
+        # v4: "ml": false marks a rule-only entry (probed for the rules, but no ML rows); absent in v1-v3.
+        if e.get("ml") is False and payload_class in ML_CLASSES:
+            return None
         return payload_class if payload_class in e["vuln"] else "safe"
 
     def cluster(self, app, point, payload_class=None):

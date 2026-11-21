@@ -30,7 +30,7 @@ from dastml.stored import stored_pass  # noqa: E402
 
 OUT = ROOT / "data/dast"
 # Collection-only allowlist (127.0.0.1/localhost): the lab ports. The service default is unchanged.
-LAB_PORTS = parse_ports("5101-5114")
+LAB_PORTS = parse_ports("5101-5116")
 ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22", "CWE-601")
 
 # NodeGoat /learn's crawled link carries a URL (refused by the guards), so it is seeded with a same-site value.
@@ -77,7 +77,8 @@ AUTH = {
              ("POST", "/login", {"username": "csdast", "password": "CsDast!2026"}, False)],
     "nodegoat": [("POST", "/login", {"userName": "user1", "password": "User1_123"}, False)],
 }
-START = {"dvna": "/app", "nodegoat": "/dashboard", "vulpy-bad": "/user/login", "vulpy-good": "/user/login"}
+START = {"benchmarkpython": "/redirected",  # v4: a page without links; the test cases come from ground-truth seeds
+         "dvna": "/app", "nodegoat": "/dashboard", "vulpy-bad": "/user/login", "vulpy-good": "/user/login"}
 EXTRA_PAGES = {"vulnerable-node": ["/tools/ping", "/contact", "/login", "/orders"],
                "vulpy-bad": ["/user/create"], "vulpy-good": ["/user/create"], "nodegoat": ["/login", "/signup", "/profile"],
                "dvna": ["/app/usersearch", "/app/products", "/app/ping", "/login", "/forgotpw"],
@@ -134,14 +135,18 @@ def main(apps, version="v1", final=False):
                               skip_paths=gt.skip_paths(app), skip_params=gt.skip_params(app), timeout_sec=TIMEOUT.get(app, 15.0))
         client = GuardedClient(base, policy)
         t0 = time.time()
-        if version == "v3":
+        if version in ("v3", "v4"):
             for method, path, body in SETUP.get(app, []):
                 setup_policy = TargetPolicy(allowed_ports=LAB_PORTS, max_requests=10, timeout_sec=30.0)
                 GuardedClient(base, setup_policy).request(method, path, **({"json": body} if body else {}))
         login(client, app, first=True)
         seeds = (JUICE_SEEDS if app == "juice-shop" else []) + (SEEDS.get(app, []) if v2 else [])
-        forms, pages = ([], []) if version == "v3" else (None, None)
-        if version == "v3" and app in OPENAPI:
+        if version == "v4" and app == "benchmarkpython":
+            # v4: one seed per labelled test case, with the baseline value from the test's own HTML form
+            seeds += [InjectionPoint(e["method"], e["path"], e["params"][0], e["in"], ((e["params"][0], e.get("baseline", "bar")),))
+                      for e in gt.data["endpoints"] if e["app"] == app]
+        forms, pages = ([], []) if version in ("v3", "v4") else (None, None)
+        if version in ("v3", "v4") and app in OPENAPI:
             from dastml.openapi import load_points
             seeds = list(seeds) + load_points(client, OPENAPI[app])
         found, visited = crawl(client, START.get(app, "/"), seeds=seeds, forms_out=forms, pages_out=pages)
@@ -178,7 +183,7 @@ def main(apps, version="v1", final=False):
         if v2:
             passive = passive_pass(base, policy, app)
             (P["raw"] / f"{app}.passive.json").write_text(json.dumps(passive, indent=0) + "\n")
-        if version == "v3":
+        if version in ("v3", "v4"):
             # forms (CSRF heuristic) and the stored-XSS pass: only listed, non-skipped write points, after the ML probing
             (P["raw"] / f"{app}.forms.json").write_text(json.dumps(forms, indent=0) + "\n")
             stored = stored_pass(client, listed, pages, relogin=lambda: login(client, app))

@@ -174,6 +174,16 @@
     "seed_data": "the shipped migrations only (migrations/000-init-schema.sql, 001-fixtures.sql)",
     "openapi_url": null
    }
+  },
+  "benchmarkpython": {
+   "port": 5114,
+   "lang": "python",
+   "framework": "Flask 3.1 (OWASP BenchmarkPython v0.1)",
+   "origin": "benchmark",
+   "role": "train_loao",
+   "group": "benchmark",
+   "source": "OWASP-Benchmark/BenchmarkPython @ f1291485808b66e20ddb6b01b10dc71b3df8c8ba (GPL-3.0)",
+   "note": "synthetic benchmark: one LOAO group with its own origin, never counted as own or third-party; in-benchmark numbers reported separately"
   }
  },
  "endpoints": [
@@ -2618,6 +2628,2163 @@
    "in": "path",
    "vuln": [],
    "note": "routes.py \\d+; parameterized get"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00082",
+   "params": [
+    "BenchmarkTest00082"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00083",
+   "params": [
+    "BenchmarkTest00083"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00084",
+   "params": [
+    "BenchmarkTest00084"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00085",
+   "params": [
+    "BenchmarkTest00085"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00086",
+   "params": [
+    "BenchmarkTest00086"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00087",
+   "params": [
+    "BenchmarkTest00087"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00088",
+   "params": [
+    "BenchmarkTest00088"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00089",
+   "params": [
+    "BenchmarkTest00089"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00090",
+   "params": [
+    "BenchmarkTest00090"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00091",
+   "params": [
+    "BenchmarkTest00091"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00092",
+   "params": [
+    "BenchmarkTest00092"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00093",
+   "params": [
+    "BenchmarkTest00093"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00094",
+   "params": [
+    "BenchmarkTest00094"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00095",
+   "params": [
+    "BenchmarkTest00095"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00096",
+   "params": [
+    "BenchmarkTest00096"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00097",
+   "params": [
+    "BenchmarkTest00097"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00098",
+   "params": [
+    "BenchmarkTest00098"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00099",
+   "params": [
+    "BenchmarkTest00099"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=true, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00100",
+   "params": [
+    "BenchmarkTest00100"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00149",
+   "params": [
+    "BenchmarkTest00149"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00150",
+   "params": [
+    "BenchmarkTest00150"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00165",
+   "params": [
+    "BenchmarkTest00165"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": false,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00166",
+   "params": [
+    "BenchmarkTest00166"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": true,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00167",
+   "params": [
+    "BenchmarkTest00167"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": false,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00168",
+   "params": [
+    "BenchmarkTest00168"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": true,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00169",
+   "params": [
+    "BenchmarkTest00169"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00170",
+   "params": [
+    "BenchmarkTest00170"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00171",
+   "params": [
+    "BenchmarkTest00171"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00172",
+   "params": [
+    "BenchmarkTest00172"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00173",
+   "params": [
+    "BenchmarkTest00173"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00174",
+   "params": [
+    "BenchmarkTest00174"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00175",
+   "params": [
+    "BenchmarkTest00175"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00176",
+   "params": [
+    "BenchmarkTest00176"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00177",
+   "params": [
+    "BenchmarkTest00177"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00178",
+   "params": [
+    "BenchmarkTest00178"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00179",
+   "params": [
+    "BenchmarkTest00179"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00180",
+   "params": [
+    "BenchmarkTest00180"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00181",
+   "params": [
+    "BenchmarkTest00181"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00182",
+   "params": [
+    "BenchmarkTest00182"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00183",
+   "params": [
+    "BenchmarkTest00183"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00184",
+   "params": [
+    "BenchmarkTest00184"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00185",
+   "params": [
+    "BenchmarkTest00185"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00186",
+   "params": [
+    "BenchmarkTest00186"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00187",
+   "params": [
+    "BenchmarkTest00187"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00188",
+   "params": [
+    "BenchmarkTest00188"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00189",
+   "params": [
+    "BenchmarkTest00189"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00190",
+   "params": [
+    "BenchmarkTest00190"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00191",
+   "params": [
+    "BenchmarkTest00191"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00192",
+   "params": [
+    "BenchmarkTest00192"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00256",
+   "params": [
+    "BenchmarkTest00256"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00257",
+   "params": [
+    "BenchmarkTest00257"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00267",
+   "params": [
+    "BenchmarkTest00267"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": true,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00268",
+   "params": [
+    "BenchmarkTest00268"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": false,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00272",
+   "params": [
+    "BenchmarkTest00272"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00273",
+   "params": [
+    "BenchmarkTest00273"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00274",
+   "params": [
+    "BenchmarkTest00274"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00275",
+   "params": [
+    "BenchmarkTest00275"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00276",
+   "params": [
+    "BenchmarkTest00276"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-00/BenchmarkTest00277",
+   "params": [
+    "BenchmarkTest00277"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00278",
+   "params": [
+    "BenchmarkTest00278"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00279",
+   "params": [
+    "BenchmarkTest00279"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00280",
+   "params": [
+    "BenchmarkTest00280"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00281",
+   "params": [
+    "BenchmarkTest00281"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00282",
+   "params": [
+    "BenchmarkTest00282"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00283",
+   "params": [
+    "BenchmarkTest00283"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=true, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00284",
+   "params": [
+    "BenchmarkTest00284"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-89"
+   ],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=true, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00285",
+   "params": [
+    "BenchmarkTest00285"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00286",
+   "params": [
+    "BenchmarkTest00286"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00287",
+   "params": [
+    "BenchmarkTest00287"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00334",
+   "params": [
+    "BenchmarkTest00334"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00335",
+   "params": [
+    "BenchmarkTest00335"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00350",
+   "params": [
+    "BenchmarkTest00350"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": true,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=false, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00661",
+   "params": [
+    "BenchmarkTest00661"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00662",
+   "params": [
+    "BenchmarkTest00662"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00663",
+   "params": [
+    "BenchmarkTest00663"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00664",
+   "params": [
+    "BenchmarkTest00664"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00665",
+   "params": [
+    "BenchmarkTest00665"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00666",
+   "params": [
+    "BenchmarkTest00666"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00667",
+   "params": [
+    "BenchmarkTest00667"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00668",
+   "params": [
+    "BenchmarkTest00668"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00669",
+   "params": [
+    "BenchmarkTest00669"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00670",
+   "params": [
+    "BenchmarkTest00670"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00671",
+   "params": [
+    "BenchmarkTest00671"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00672",
+   "params": [
+    "BenchmarkTest00672"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00673",
+   "params": [
+    "BenchmarkTest00673"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00736",
+   "params": [
+    "BenchmarkTest00736"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=false, CWE-78; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00737",
+   "params": [
+    "BenchmarkTest00737"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00738",
+   "params": [
+    "BenchmarkTest00738"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00739",
+   "params": [
+    "BenchmarkTest00739"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00740",
+   "params": [
+    "BenchmarkTest00740"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00741",
+   "params": [
+    "BenchmarkTest00741"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00742",
+   "params": [
+    "BenchmarkTest00742"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00743",
+   "params": [
+    "BenchmarkTest00743"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00744",
+   "params": [
+    "BenchmarkTest00744"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00745",
+   "params": [
+    "BenchmarkTest00745"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00746",
+   "params": [
+    "BenchmarkTest00746"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00747",
+   "params": [
+    "BenchmarkTest00747"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00748",
+   "params": [
+    "BenchmarkTest00748"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00749",
+   "params": [
+    "BenchmarkTest00749"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00750",
+   "params": [
+    "BenchmarkTest00750"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00751",
+   "params": [
+    "BenchmarkTest00751"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00752",
+   "params": [
+    "BenchmarkTest00752"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00753",
+   "params": [
+    "BenchmarkTest00753"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00754",
+   "params": [
+    "BenchmarkTest00754"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest00755",
+   "params": [
+    "BenchmarkTest00755"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00829",
+   "params": [
+    "BenchmarkTest00829"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00830",
+   "params": [
+    "BenchmarkTest00830"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00831",
+   "params": [
+    "BenchmarkTest00831"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00832",
+   "params": [
+    "BenchmarkTest00832"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00833",
+   "params": [
+    "BenchmarkTest00833"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00834",
+   "params": [
+    "BenchmarkTest00834"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00835",
+   "params": [
+    "BenchmarkTest00835"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00836",
+   "params": [
+    "BenchmarkTest00836"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00837",
+   "params": [
+    "BenchmarkTest00837"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00838",
+   "params": [
+    "BenchmarkTest00838"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00839",
+   "params": [
+    "BenchmarkTest00839"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00840",
+   "params": [
+    "BenchmarkTest00840"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00841",
+   "params": [
+    "BenchmarkTest00841"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00842",
+   "params": [
+    "BenchmarkTest00842"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00883",
+   "params": [
+    "BenchmarkTest00883"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00884",
+   "params": [
+    "BenchmarkTest00884"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00899",
+   "params": [
+    "BenchmarkTest00899"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": false,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest00900",
+   "params": [
+    "BenchmarkTest00900"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "ECHOOO",
+   "note": "expectedresults-0.1.csv: cmdi, real=false, CWE-78; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00905",
+   "params": [
+    "BenchmarkTest00905"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00906",
+   "params": [
+    "BenchmarkTest00906"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00907",
+   "params": [
+    "BenchmarkTest00907"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00908",
+   "params": [
+    "BenchmarkTest00908"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00909",
+   "params": [
+    "BenchmarkTest00909"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00910",
+   "params": [
+    "BenchmarkTest00910"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00911",
+   "params": [
+    "BenchmarkTest00911"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00912",
+   "params": [
+    "BenchmarkTest00912"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00913",
+   "params": [
+    "BenchmarkTest00913"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00914",
+   "params": [
+    "BenchmarkTest00914"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00915",
+   "params": [
+    "BenchmarkTest00915"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": true,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00916",
+   "params": [
+    "BenchmarkTest00916"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00917",
+   "params": [
+    "BenchmarkTest00917"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00918",
+   "params": [
+    "BenchmarkTest00918"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00919",
+   "params": [
+    "BenchmarkTest00919"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "Filename",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00920",
+   "params": [
+    "BenchmarkTest00920"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00921",
+   "params": [
+    "BenchmarkTest00921"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest00922",
+   "params": [
+    "BenchmarkTest00922"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00923",
+   "params": [
+    "BenchmarkTest00923"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00924",
+   "params": [
+    "BenchmarkTest00924"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00925",
+   "params": [
+    "BenchmarkTest00925"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-00/BenchmarkTest00926",
+   "params": [
+    "BenchmarkTest00926"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest01179",
+   "params": [
+    "BenchmarkTest01179"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest01180",
+   "params": [
+    "BenchmarkTest01180"
+   ],
+   "in": "form",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-01/BenchmarkTest01181",
+   "params": [
+    "BenchmarkTest01181"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-02/BenchmarkTest01183",
+   "params": [
+    "BenchmarkTest01183"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/cmdi-00/BenchmarkTest01191",
+   "params": [
+    "BenchmarkTest01191"
+   ],
+   "in": "form",
+   "vuln": [
+    "CWE-78"
+   ],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: cmdi, real=true, CWE-78; input via form parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-02/BenchmarkTest01202",
+   "params": [
+    "BenchmarkTest01202"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=false, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/sqli-00/BenchmarkTest01203",
+   "params": [
+    "BenchmarkTest01203"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "bar",
+   "note": "expectedresults-0.1.csv: sqli, real=false, CWE-89; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-01/BenchmarkTest01210",
+   "params": [
+    "BenchmarkTest01210"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-79"
+   ],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=true, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/xss-01/BenchmarkTest01213",
+   "params": [
+    "BenchmarkTest01213"
+   ],
+   "in": "query",
+   "vuln": [],
+   "ml": true,
+   "baseline": "SafeText",
+   "note": "expectedresults-0.1.csv: xss, real=false, CWE-79; input via query parameter; secondary class from the handler/helpers (safe)"
+  },
+  {
+   "app": "benchmarkpython",
+   "method": "POST",
+   "path": "/benchmark/pathtraver-02/BenchmarkTest01214",
+   "params": [
+    "BenchmarkTest01214"
+   ],
+   "in": "query",
+   "vuln": [
+    "CWE-22"
+   ],
+   "ml": false,
+   "baseline": "FileName",
+   "note": "expectedresults-0.1.csv: pathtraver, real=true, CWE-22; input via query parameter; secondary class from the handler/helpers (safe)"
   }
  ],
  "skip": [
@@ -3069,6 +5236,15 @@
    "cookie-no-samesite": true,
    "cors-any-origin": false,
    "evidence": "sqli/app.py and middlewares.py: no header middleware; RedisStorage(app['redis'], httponly=False) (middlewares.py line 20) with aiohttp_session's default samesite=None; the session is written on every visit to / (views.index sets last_visited); no CORS"
+  },
+  "benchmarkpython": {
+   "missing-csp": true,
+   "missing-nosniff": true,
+   "missing-frame-protection": true,
+   "cookie-no-httponly": null,
+   "cookie-no-samesite": null,
+   "cors-any-origin": false,
+   "evidence": "app.py: no header code; the only cookies are per-test values (not sessions)"
   }
  },
  "changes_v3": [
@@ -3656,6 +5832,12 @@
     }
    ],
    "evidence": "sqli/app.py line 28: csrf_middleware commented out; templates render _csrf_token from csrf_processor but nothing checks it"
+  },
+  "benchmarkpython": {
+   "form_csrf": null,
+   "cookie": "no session cookie",
+   "forms": [],
+   "evidence": "no sessions; not evaluated"
   }
  },
  "changes_v4": [
@@ -3666,6 +5848,10 @@
   {
    "what": "sirappsec keeps role final_heldout_v3 (burned, scored once in v3) and is NOT used as v4 training data",
    "prompted_by": "v4 brief"
+  },
+  {
+   "what": "benchmarkpython added: 155 reachable test cases (form or query input) of sqli/xss/cmdi/pathtraver; 80 contribute ML rows",
+   "prompted_by": "v4 brief; labels from expectedresults-0.1.csv, spot-checked 16/16"
   }
  ]
 }
