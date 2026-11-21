@@ -98,6 +98,22 @@ difference not significant), although it is significantly better in leave-one-ap
 `ML_DAST_MODEL_DIR=services-ml/ml-dast/models/release_v3 scripts/run-ml-dast.sh`. Details are in
 `docs/ml-dast-model-card.md`.
 
+## v4: BenchmarkPython training data, wider tuning (packaged separately, not deployed)
+
+A v4 model (`models/release_v4/`, built by `scripts/train_final_v4.py`, with `data_version: "v4"` and `"default": false`)
+scans exactly like v3. Its differences are in the data and the selection:
+- **Data:** a BenchmarkPython subset is added as one synthetic training group.
+- **Feature set:** chosen by inner leave-one-app-out between the existing v2 and v3 sets; it picked v3 without the
+  location one-hot.
+- **Threshold grid:** widened to 0.995.
+
+**v2 stays deployed.** v4 is significantly better than v2 in leave-one-app-out, but it only tied v2 on the frozen
+held-out app DVPWA (1.000 each). The unauthenticated crawl reached just 8 endpoint-params there, because DVPWA's
+vulnerable forms render only after login. To try v4:
+`ML_DAST_MODEL_DIR=/abs/path/services-ml/ml-dast/models/release_v4 scripts/run-ml-dast.sh`.
+
+The deployed v2 model is guarded by `tests/test_v2_compat_v4.py`: identical v2 features and scores on a fixed sample.
+
 ## Untrained mode
 
 With no model file at `MODEL_PATH`, `/scan` returns `{"findings": []}`, sends no traffic, and

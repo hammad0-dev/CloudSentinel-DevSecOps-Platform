@@ -141,3 +141,13 @@ Otherwise v2 stays deployed and v4 is packaged as `models/release_v4`. **No retu
 8. Docs and e2e; deploy switch only if v4 wins.
 
 If time runs short, ZAP on BenchmarkPython is dropped first. Evaluation, docs and e2e are never cut.
+
+## Outcome (added after the run; the sections above are unchanged)
+
+- **v2 stays deployed, and v4 is packaged as `models/release_v4`.** The rule needed v4 to beat v2 on DVPWA and they
+  tied (1.000 each). In leave-one-app-out, v4 is significantly better.
+- **Planning mistake:** section 2 says "no login is needed for the vulnerable routes". That is true for the POST
+  handlers, but the forms are rendered only for logged-in users or admins. The pre-registered unauthenticated scan
+  therefore reached 8 of 17 labelled parameters, with 1 vulnerable, which made the held-out comparison uninformative.
+  It was not re-scanned.
+- Details are in `docs/ml-dast-model-card.md`.
