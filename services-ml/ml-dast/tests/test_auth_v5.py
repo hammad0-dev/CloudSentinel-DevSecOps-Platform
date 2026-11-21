@@ -182,6 +182,21 @@ def test_destructive_requests_are_refused_by_the_guard(app_url):
     assert fa.APP.log == []
 
 
+def test_payload_in_a_path_segment_is_not_mistaken_for_a_destructive_route(app_url):
+    """Regression (found in the v5 lab collection): a path-traversal payload such as ../../etc/passwd injected
+    into a path segment must not make the guard refuse the point; the route itself is what is checked."""
+    from dastml.crawl import InjectionPoint
+    from dastml.probe import send
+    url, port = app_url
+    client = GuardedClient(url, policy(port), auth=AuthSession(config(url)))
+    client.login()
+    point = InjectionPoint("GET", "/account/orders/1", "{seg3}", "path", (("{seg3}", "1"),), "/account/orders/{seg3}")
+    assert send(client, point, "../../../../etc/passwd")["status"] in (200, 302, 404)
+    bad = InjectionPoint("GET", "/account/delete/1", "{seg3}", "path", (("{seg3}", "1"),), "/account/delete/{seg3}")
+    with pytest.raises(GuardError):
+        send(client, bad, "1")
+
+
 def test_destructive_list_matching():
     for path in ("/logout", "/logout/", "/user/logout", "/v2/users/logout/x", "/sign-out", "/items/3/delete",
                  "/account/remove", "/reset", "/createdb", "/users/v1/name1/password", "/forgotpw", "/setup"):

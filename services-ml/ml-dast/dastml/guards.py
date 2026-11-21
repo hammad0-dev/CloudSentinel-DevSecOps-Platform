@@ -157,7 +157,7 @@ class GuardedClient:
         # no login, no re-login and no destructive-action skip list.
         self.auth = auth
 
-    def check_url(self, url):
+    def check_url(self, url, route=None):
         absolute = urljoin(self.base_url, url)
         if self.policy.origin_of(absolute) != self.origin:
             raise GuardError(f"{absolute} is not same-origin with {self.base_url}")
@@ -169,7 +169,10 @@ class GuardedClient:
             raise GuardError(f"{path}: a parameter carries a URL (possible SSRF); refused")
         if self.auth is not None:
             from .auth import destructive_path
-            if destructive_path(path, [k for k, _ in parse_qsl(parts.query, keep_blank_values=True)]):
+            # route: the probed point's own path; an injected path SEGMENT (a payload such as ../etc/passwd) is a
+            # value, not the action being requested, so the destructive-action list is checked on the route
+            checked = urlsplit(urljoin(self.base_url, route)).path if route else path
+            if destructive_path(checked, [k for k, _ in parse_qsl(parts.query, keep_blank_values=True)]):
                 raise GuardError(f"{path} is on the destructive-action skip list (authenticated scan)")
         return absolute
 
@@ -199,7 +202,7 @@ class GuardedClient:
             self._last = time.monotonic()
             self.requests_sent += 1
 
-    def request(self, method, url, **kw):
+    def request(self, method, url, route=None, **kw):
         """Send one request (plus same-origin redirects). Returns (final response, elapsed seconds).
 
         v5, with an AuthSession: DELETE and destructive parameter names are refused, and a response
@@ -212,7 +215,7 @@ class GuardedClient:
         names = [k for key in ("params", "data", "json") if isinstance(kw.get(key), dict) for k in kw[key]]
         if names and destructive_path("/", names):
             raise GuardError("a parameter name is on the destructive-action skip list (authenticated scan)")
-        resp, elapsed = self._request(method, url, **kw)
+        resp, elapsed = self._request(method, url, route=route, **kw)
         path = urlsplit(urljoin(self.base_url, url)).path or "/"
         if self.auth.in_login or self.auth.suspended or self.auth.is_login_request(path) or not self.auth.expired(resp):
             return resp, elapsed
@@ -224,10 +227,10 @@ class GuardedClient:
             self.auth.login(self)
         except AuthError:
             return resp, elapsed
-        return self._request(method, url, **kw)
+        return self._request(method, url, route=route, **kw)
 
-    def _request(self, method, url, **kw):
-        url = self.check_url(url)
+    def _request(self, method, url, route=None, **kw):
+        url = self.check_url(url, route=route)
         for key in ("params", "data", "json"):
             if key in kw:
                 self.check_body(kw[key])

@@ -229,6 +229,13 @@ def main(apps, version="v1", final=False):
             more, vis = crawl(client, extra, max_depth=0, forms_out=forms, pages_out=pages)
             found += more
             visited += vis
+        if session is not None:
+            # v5: the logged-out crawl too (the login form itself is only rendered to logged-out visitors); its points
+            # come first so a point found in both keeps the logged-in version (its baseline values)
+            anon_found, _ = crawl(anon, START.get(app, "/"), seeds=seeds, forms_out=forms)
+            for extra in EXTRA_PAGES.get(app, []):
+                anon_found += crawl(anon, extra, max_depth=0, forms_out=forms)[0]
+            found = anon_found + found
         uniq = {p.key: p for p in found}
         listed = [p for p in uniq.values() if gt.entry(app, p) is not None]
         unlisted = sorted(f"{p.method} {p.path} [{p.param}]" for p in uniq.values() if gt.entry(app, p) is None)
