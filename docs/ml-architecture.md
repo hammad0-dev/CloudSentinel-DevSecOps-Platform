@@ -485,3 +485,61 @@ Engines: ml-sast-hybrid 2.0.0 and ml-dast-lr 2.0.0 (`5dc397d0b6c4…`). Executio
 | demo-forms (vulnerable) | **blocked at SAST** (CRITICAL) |
 
 **Not run:** the vulnerable `python` fixture, because no repository is configured (`E2E_PYTHON_REPO`, as in v3).
+
+
+## ML DAST v5: authenticated scanning, dvws-node held-out, v4 deployed
+
+**What v5 changed:**
+- **Scanner:** it can log in. `dastml/auth.py` adds the login, one shared session, re-login on expiry and the
+  destructive-action skip list. `/scan` takes an optional `auth` object, which never carries credentials.
+- **Unchanged:** features, models and thresholds.
+
+**Deployed now: v4.** Port 8002 serves `ml-dast-lr` 4.0.0 (`7a306aca5b07cf03…`).
+- **Held-out:** on dvws-node it beat v2 under the rule pre-registered in
+  `services-ml/ml-dast/reports/final_preregistration_v5.json`: macro-F1 0.918 against 0.853, the same 3 of 3 SQLi
+  found, 1 false alarm against 2, 100% coverage.
+- **Evidence:** one small app, weak evidence.
+- **Details:** [`docs/ml-dast-model-card.md`](ml-dast-model-card.md), plan:
+  [`docs/ml-dast-auth-plan.md`](ml-dast-auth-plan.md), how-to: [`docs/ml-dast-auth-howto.md`](ml-dast-auth-howto.md),
+  final report: [`docs/ml-dast-auth-final-report.md`](ml-dast-auth-final-report.md).
+
+**Backend:** no change. The pipeline still sends unauthenticated scans. Authenticated pipeline scans need
+per-project credential storage with its own security design (how-to, section 5).
+
+### Restart and rollback (port 8002)
+
+Run from the repository root (`~/cs-dast` in WSL). The allowlist is the Minikube node and its NodePort range, as
+before.
+
+```bash
+# stop whatever serves 8002 (only the uvicorn process started by run-ml-dast.sh)
+pkill -f 'uvicorn app:app --host 127.0.0.1 --port 8002'
+
+# start v4 (the deployed model)
+ML_DAST_MODEL_DIR=$PWD/services-ml/ml-dast/models/release_v4 ML_DAST_PORT=8002 \
+ML_DAST_ALLOWED_HOSTS=192.168.49.2 ML_DAST_ALLOWED_PORTS=30000-32767 \
+  setsid nohup scripts/run-ml-dast.sh > services-ml/ml-dast/logs/ml-dast-8002.log 2>&1 < /dev/null &
+
+# ROLLBACK to v2: the same, with release_v2
+pkill -f 'uvicorn app:app --host 127.0.0.1 --port 8002'
+ML_DAST_MODEL_DIR=$PWD/services-ml/ml-dast/models/release_v2 ML_DAST_PORT=8002 \
+ML_DAST_ALLOWED_HOSTS=192.168.49.2 ML_DAST_ALLOWED_PORTS=30000-32767 \
+  setsid nohup scripts/run-ml-dast.sh > services-ml/ml-dast/logs/ml-dast-8002.log 2>&1 < /dev/null &
+
+# check
+curl -s http://127.0.0.1:8002/model-info   # v4: version 4.0.0, sha256 7a306aca…; v2: 2.0.0, 5dc397d0…
+```
+
+**Notes:**
+- `ML_DAST_MODEL_DIR` must be absolute, because `run-ml-dast.sh` changes directory.
+- `models/release_v4/model.json` keeps `"default": false`, because files under `models/` are never rewritten.
+
+### e2e with this branch
+
+| Run | Engines | Executions | node-express | python-clean | demo-forms |
+|---|---|---|---|---|---|
+| v4 candidate on 8003 (before the switch) | ml-sast-hybrid 2.0.0, ml-dast-lr 4.0.0 | 96-98 | blocked at SAST | **passed every stage** (37 s; 1 INFO passive finding) | blocked at SAST |
+| v4 deployed on 8002 (after the switch) | ml-sast-hybrid 2.0.0, ml-dast-lr 4.0.0 | 99-101 | blocked at SAST | **passed every stage** (33 s; 1 INFO passive finding) | blocked at SAST |
+
+**Not run:** the vulnerable `python` fixture, because no repository is configured (`E2E_PYTHON_REPO`, as in v3 and
+v4).

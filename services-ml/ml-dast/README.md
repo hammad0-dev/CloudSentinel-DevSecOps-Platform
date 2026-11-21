@@ -98,7 +98,27 @@ difference not significant), although it is significantly better in leave-one-ap
 `ML_DAST_MODEL_DIR=services-ml/ml-dast/models/release_v3 scripts/run-ml-dast.sh`. Details are in
 `docs/ml-dast-model-card.md`.
 
-## v4: BenchmarkPython training data, wider tuning (packaged separately, not deployed)
+## v5: authenticated scanning; v4 is now deployed
+
+**Authenticated scans.** `POST /scan` takes an optional `auth` object:
+- **Fields:** login path, form or JSON body, field names, an optional login-form CSRF token, the success indicator
+  (cookie, text or bearer token), expiry signs, and `credentialRef`.
+- **Credentials:** never in the request. `credentialRef` names a service-side profile, from `ML_DAST_AUTH_FILE` or
+  `ML_DAST_AUTH_<REF>_USERNAME`/`_PASSWORD`/`_ORIGINS`, bound to the target's origin.
+- **What the scan then does:** it logs in first, keeps one session for crawl, probes and the stored-XSS pass, logs in
+  again when the session expires, and never requests logout, delete, password-change or reset actions.
+- **Without `auth`:** nothing changes (`tests/test_auth_v5.py` replays the pre-auth request sequence of v2 and v4).
+- **Guide:** [`docs/ml-dast-auth-howto.md`](../../docs/ml-dast-auth-howto.md).
+
+**Lab collection.** `scripts/collect_lab.py --data v5` collects the lab apps with a login, using their documented demo
+accounts from the gitignored `lab/auth.local.json`. `scripts/coverage_v5.py` compares the logged-out and logged-in
+crawls. Nothing trains on v5 data yet.
+
+**v4 is deployed on port 8002.** It beat v2 on the new held-out app dvws-node under the pre-registered rule
+(`scripts/prereg_v5.py`, `scripts/eval_final_v5.py`, `reports/final_dvws.json`). The restart and rollback commands
+are in `docs/ml-architecture.md` ("ML DAST v5").
+
+## v4: BenchmarkPython training data, wider tuning (packaged in v4; deployed since v5)
 
 A v4 model (`models/release_v4/`, built by `scripts/train_final_v4.py`, with `data_version: "v4"` and `"default": false`)
 scans exactly like v3. Its differences are in the data and the selection:

@@ -1,4 +1,81 @@
-# Model card: ml-dast 4.0.0 (`ml-dast-lr`), packaged separately; v2 stays deployed
+# Model card: ml-dast 4.0.0 (`ml-dast-lr`): DEPLOYED on port 8002 since the v5 held-out test
+
+## v5 update: authenticated scanning, dvws-node held-out test, v4 deployed
+
+**v5 changes the scanner, not the model.**
+- **New:** authenticated scanning (login, shared session, re-login, a destructive-action skip list), plus one new
+  held-out test on an unseen app that needs a login.
+- **Unchanged:** features, models and thresholds. Plan: [`ml-dast-auth-plan.md`](ml-dast-auth-plan.md); how-to:
+  [`ml-dast-auth-howto.md`](ml-dast-auth-howto.md).
+
+**Deployed now: v4.** It replaced v2 on port 8002 under the rule pre-registered in
+`reports/final_preregistration_v5.json` (before the scan).
+- **v2 on dvws-node:** endpoint-param macro-F1 **0.853**, 95% CI [0.632, 1.000]; 3 of 3 SQLi found, 2 false alarms.
+- **v4 on dvws-node:** macro-F1 **0.918**, 95% CI [0.730, 1.000]; 3 of 3 SQLi found, 1 false alarm.
+- **Rule conditions:** all four hold. Coverage was 27/27 (100%); v4's macro-F1 was strictly higher; it found as many
+  vulnerable parameters; and it had no extra false alarm.
+
+| Held-out: dvws-node @ 4221c04f, 27 endpoint-params (3 CWE-89), one scan | v2 (was deployed) | v3 | **v4 (deployed)** |
+|---|---|---|---|
+| Endpoint-param macro-F1 [95% cluster-bootstrap CI] | 0.853 [0.632, 1.000] | 0.870 [0.672, 0.979] | **0.918 [0.730, 1.000]** |
+| Vulnerable parameters found (of 3) | 3 | 3 | 3 |
+| False alarms (of 24 safe) | 2 | 5 (4 as XSS) | 1 |
+| Paired difference vs v4 | v2 − v4 = −0.065 [−0.239, 0.000] | v3 − v4 = −0.051 [−0.115, −0.011] | |
+
+**How strong the evidence is.** One small app is weak evidence.
+- The v2 − v4 interval reaches 0, so v4 is not significantly better than v2 there.
+- The CI was not part of the rule.
+- **The whole v4-v2 difference is one cluster:** v2 also flags `GET /api/v2/notes/{noteId}` as SQLi; v4 does not.
+- **Shared false alarm:** all three models flag `GET /api/v2/users/{id}/profile-details` as SQLi (a Mongoose cast
+  error that echoes the id, in JSON).
+- **v3's extra false alarms:** it also flags four JSON write fields as XSS (`POST /api/v2/notes` name and body, the
+  `bio`, and the notification `email`).
+- Every cluster is listed in `reports/final_dvws.json`.
+- Together with the leave-one-app-out result (v4 0.970 against v2 0.827 on the same 111 endpoint-params, significant),
+  this is the first held-out test where v4 was not tied with v2.
+
+**Rule checks on dvws-node (counts):**
+- **Passive:** 4 of 4 positives found, 0 false alarms.
+- **CWE-22:** 0 of 1 (`/api/v2/reports/monthly` only reads `*.json` files).
+- **Stored XSS / CSRF:** no labelled units (single-page app, bearer-token API).
+
+**In-distribution (not held-out).** These are training apps (DVPWA, NodeGoat, vulnerable-node): 9 ML clusters reached
+only by the authenticated collection, scored separately in `reports/indist_v5.json`.
+- **Scores:** v2 0.667 [0.308, 0.962], v3 0.639, v4 0.903 [0.471, 1.000].
+- **Why it is not held-out:** the models were trained on these apps.
+
+**What authenticated scanning adds.** Pages and parameters behind a login are now reached. Labelled endpoint-params
+reached, before → with login:
+
+| App | Before | With login |
+|---|---|---|
+| DVPWA | 8 | 14 of 17 |
+| NodeGoat | 7 | 15 of 15 |
+| vulnerable-node | 10 | 13 of 18 |
+
+These counts are the union of the logged-out and logged-in crawls (`data/dast/coverage_v5.json`). The dvws-node
+held-out was scanned logged in, with 100% coverage.
+
+**Limits of authenticated scanning:**
+- **Logins it cannot do:** MFA/OTP, CAPTCHA and SSO on another origin.
+- **CSRF tokens:** tokens that rotate per request are not refreshed per probe.
+- **API apps:** a single-page app's API still needs seeds or an OpenAPI document.
+- **Login-form probing:** the login form itself is probed logged out.
+- **Passive checks:** the passive header checks stay cookie-less.
+- **App bugs:** an app whose login is broken cannot be scanned logged in (vulpy in the lab: its own session code
+  raises a 500).
+- **The model is the same:** authentication adds reach, not accuracy.
+
+**v5 data is not used by any model yet** (`data/dast/*_v5`).
+
+**Rollback** to v2 (the exact commands are in `docs/ml-architecture.md`, "ML DAST v5"): stop the 8002 process and
+start `scripts/run-ml-dast.sh` with `ML_DAST_MODEL_DIR=…/models/release_v2` and the same allowlist.
+`models/release_v4/model.json` still says `"default": false`, because files under `models/` are never rewritten.
+The deployment is the run command, not that flag.
+
+---
+
+# Model card: ml-dast 4.0.0 (`ml-dast-lr`) as packaged in v4 (v2 was then kept deployed)
 
 v4 adds OWASP BenchmarkPython (a subset) as training data, freezes DVPWA as a new held-out app, and widens the
 tuning range. It adds no new features.
