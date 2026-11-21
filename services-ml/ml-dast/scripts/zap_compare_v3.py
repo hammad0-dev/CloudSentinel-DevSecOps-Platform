@@ -117,7 +117,7 @@ def main():
                 stored_hits[app].add(param)
             if pid in CSRF_PLUGINS:
                 csrf_pages[app].add(path)
-    scanned = [x for x in apps if sources[x] != "no ZAP report"]
+    scanned = [x for x in apps if sources[x] == "v3 scan" or sources[x].startswith(("v2 scan", "v1 scan"))]  # unusable scans (NOT USED) are excluded, never scored as zero
     common = {k: v for k, v in ml.items() if v[3] in scanned}
     zap = {k: (v[0], zap_ml.get(k, 0), v[2], v[3]) for k, v in common.items()}
     out = {"apps": apps, "zap_sources": sources, "n_common_clusters": len(common),
