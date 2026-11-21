@@ -74,6 +74,30 @@ confirms command injection on a parameter, the ML SQLi score on that parameter y
 parity also fires for shell quoting). v1 artifacts keep the exact v1 behaviour. Point the service at a
 v2 model with `ML_DAST_MODEL_DIR=services-ml/ml-dast/models/release_v2 scripts/run-ml-dast.sh`.
 
+## v3: stored XSS, CSRF heuristic (packaged separately, not the default)
+
+A v3 model (`models/release_v3/`, built by `scripts/train_final_v3.py`, with `data_version: "v3"` and
+`"default": false` in `model.json`) has new SQLi/XSS features (`FEATURE_NAMES_V3`) and two more rules:
+
+| Class | Evidence | Severity |
+|---|---|---|
+| Stored XSS (CWE-79) | A random marker `cs<hex>'"<i>cs<hex></i>` is written to each POST/PUT form or JSON field (`dastml/stored.py`). After each write, up to 20 crawled pages are re-fetched; the rule fires only if `<i>marker</i>` comes back unescaped in a rendered HTML page | HIGH |
+| CSRF (CWE-352), **heuristic** | A POST form with no anti-CSRF token field, while the session cookie has no `SameSite=Lax/Strict` | LOW, confidence 0.5, never gate-blocking |
+
+**Writes:**
+- Writes go only through the guarded client, so they reach only allowlisted targets: the lab and our own demo.
+- Markers are random per write, so leftovers from an earlier scan never match.
+- `ML_DAST_STORED_XSS=0` turns the write pass off.
+
+**Detectors:**
+- v1 and v2 detectors never write.
+- A request that times out is recorded as an error response instead of aborting the point.
+
+**v2 remains the model in use.** v3 did not beat v2 on the frozen held-out app SirAppSec (0.652 against 0.718,
+difference not significant), although it is significantly better in leave-one-app-out. To try v3:
+`ML_DAST_MODEL_DIR=services-ml/ml-dast/models/release_v3 scripts/run-ml-dast.sh`. Details are in
+`docs/ml-dast-model-card.md`.
+
 ## Untrained mode
 
 With no model file at `MODEL_PATH`, `/scan` returns `{"findings": []}`, sends no traffic, and
