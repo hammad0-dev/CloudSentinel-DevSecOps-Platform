@@ -86,6 +86,31 @@ EXTRA_PAGES = {"vulnerable-node": ["/tools/ping", "/contact", "/login", "/orders
                "labflask": ["/v3/settings"], "labexpress": ["/v3/account"], "node-api-goat": ["/cwe79/echo?text=hi"], "vampi": ["/users/v1"]}
 
 
+# v5: authenticated collection (dastml.auth). These login profiles hold NO credentials: credentialRef is
+# resolved from lab/auth.local.json (gitignored; ML_DAST_AUTH_FILE) or ML_DAST_AUTH_<REF>_* environment
+# variables, bound to the app's lab origin. Only the documented demo accounts are used
+# (docs/ml-dast-auth-plan.md section 5). v1-v4 collection keeps its own AUTH lists above, unchanged.
+LAB_AUTH_V5 = {
+    "dvpwa": {"loginPath": "/", "success": {"text": 'action="/logout/"'},
+              "loggedOut": {"status": [401], "loginRedirect": False}, "credentialRef": "DVPWA"},
+    "nodegoat": {"loginPath": "/login", "usernameField": "userName", "success": {"text": 'href="/logout"'},
+                 "credentialRef": "NODEGOAT"},
+    "vulpy-bad": {"loginPath": "/user/login", "success": {"cookie": "vulpy_session"}, "credentialRef": "VULPY"},
+    "vulpy-good": {"loginPath": "/user/login", "success": {"cookie": "vulpy_session"}, "credentialRef": "VULPY"},
+    "vulnerable-node": {"loginPath": "/login/auth", "success": {"text": 'href="/logout"'},
+                        "loggedOut": {"redirectTo": "/login"}, "credentialRef": "VULNERABLE_NODE"},
+}
+
+
+def v5_auth(app, base, gt=None):
+    """AuthConfig for a v5 collection (lab profile, or the ground-truth app's pre-registered scan_config.auth), or None."""
+    from dastml.auth import AuthConfig
+    spec = LAB_AUTH_V5.get(app)
+    if spec is None and gt is not None:
+        spec = (gt.apps().get(app, {}).get("scan_config") or {}).get("auth")
+    return AuthConfig.from_spec(dict(spec, maxRelogins=200), base) if spec else None
+
+
 def login(client, app, first=False):
     for method, path, data, once in AUTH.get(app, []):
         if once and not first:
@@ -93,8 +118,16 @@ def login(client, app, first=False):
         client.request(method, path, data=data)
 
 
-def passive_pass(base, policy, app):
-    client = GuardedClient(base, policy)
+def passive_pass(base, policy, app, auth=None):
+    """v5 (auth given): the configured login replaces the AUTH/PASSIVE_AUTH requests; only the login
+    response's headers are kept (never the request, never a body)."""
+    if auth is not None:
+        from dastml.auth import AuthSession
+        session = AuthSession(auth)
+        client = GuardedClient(base, policy, auth=session)
+        session.suspended = True  # cookie-less first visit, no re-login
+    else:
+        client = GuardedClient(base, policy)
     snaps = []
     for path in [START.get(app, "/")] + EXTRA_PAGES.get(app, []):
         try:
@@ -102,7 +135,13 @@ def passive_pass(base, policy, app):
             snaps.append({"kind": "page", "path": path, **snapshot(resp, el, headers=True)})
         except Exception as exc:  # noqa: BLE001 - an unreachable page is recorded, not fatal
             snaps.append({"kind": "error", "path": path, "error": type(exc).__name__})
-    for method, path, data, _ in AUTH.get(app, []) + PASSIVE_AUTH.get(app, []):
+    if auth is not None:
+        try:
+            client.login()
+            snaps.append({"kind": "login", "path": auth.login_path, **snapshot(session.last_response, 0.0, headers=True)})
+        except Exception as exc:  # noqa: BLE001
+            snaps.append({"kind": "error", "path": auth.login_path, "error": type(exc).__name__})
+    for method, path, data, _ in ([] if auth is not None else AUTH.get(app, []) + PASSIVE_AUTH.get(app, [])):
         try:
             resp, el = client.request(method, path, **({"data": data} if data else {}))
             snaps.append({"kind": "login", "path": path, **snapshot(resp, el, headers=True)})
@@ -133,23 +172,41 @@ def main(apps, version="v1", final=False):
         base = f"http://127.0.0.1:{meta['port']}"
         policy = TargetPolicy(allowed_ports=LAB_PORTS, max_pages=200, max_requests=20000, rate_per_sec=25.0,
                               skip_paths=gt.skip_paths(app), skip_params=gt.skip_params(app), timeout_sec=TIMEOUT.get(app, 15.0))
-        client = GuardedClient(base, policy)
+        auth = v5_auth(app, base, gt) if version == "v5" else None
+        session = None
+        if auth is not None:
+            from dastml.auth import AuthSession
+            session = AuthSession(auth)
+        client = GuardedClient(base, policy, auth=session)
+        anon = GuardedClient(base, policy)  # v5: the login form itself is probed logged out
         t0 = time.time()
-        if version in ("v3", "v4"):
+        if version in ("v3", "v4", "v5"):
             for method, path, body in SETUP.get(app, []):
                 setup_policy = TargetPolicy(allowed_ports=LAB_PORTS, max_requests=10, timeout_sec=30.0)
                 GuardedClient(base, setup_policy).request(method, path, **({"json": body} if body else {}))
-        login(client, app, first=True)
+        if version == "v5":
+            if session is not None:
+                client.login()
+        else:
+            login(client, app, first=True)
         seeds = (JUICE_SEEDS if app == "juice-shop" else []) + (SEEDS.get(app, []) if v2 else [])
         if version == "v4" and app == "benchmarkpython":
             # v4: one seed per labelled test case, with the baseline value from the test's own HTML form
             seeds += [InjectionPoint(e["method"], e["path"], e["params"][0], e["in"], ((e["params"][0], e.get("baseline", "bar")),))
                       for e in gt.data["endpoints"] if e["app"] == app]
-        forms, pages = ([], []) if version in ("v3", "v4") else (None, None)
-        if version in ("v3", "v4") and app in OPENAPI:
+        if version == "v5":
+            # v5: ground-truth seeds pre-registered for an app (scan_config.seed_endpoints), with their baselines
+            sc = meta.get("scan_config") or {}
+            if sc.get("seed_endpoints"):
+                seeds += [InjectionPoint(e["method"], e.get("seed_path", e["path"]), prm, e["in"],
+                                         tuple(map(tuple, e.get("baseline_params", [[prm, "test"]]))), e.get("template", ""))
+                          for e in gt.data["endpoints"] if e["app"] == app and not e.get("skip_listed") for prm in e["params"]]
+        forms, pages = ([], []) if version in ("v3", "v4", "v5") else (None, None)
+        if version in ("v3", "v4", "v5") and app in OPENAPI:
             from dastml.openapi import load_points
             seeds = list(seeds) + load_points(client, OPENAPI[app])
-        found, visited = crawl(client, START.get(app, "/"), seeds=seeds, forms_out=forms, pages_out=pages)
+        landing = [session.landing] if session is not None and session.landing else []
+        found, visited = crawl(client, START.get(app, "/"), seeds=seeds, forms_out=forms, pages_out=pages, start_paths=landing)
         for extra in EXTRA_PAGES.get(app, []):
             # (v3 fix: this loop used to rebind the name v2, the version flag, to the visited list)
             more, vis = crawl(client, extra, max_depth=0, forms_out=forms, pages_out=pages)
@@ -163,9 +220,13 @@ def main(apps, version="v1", final=False):
         rows, errors = 0, []
         with gzip.open(P["raw"] / f"{app}.jsonl.gz", "wt") as raw, gzip.open(P["features"] / f"{app}.jsonl.gz", "wt") as feat:
             for point in sorted(listed, key=lambda p: p.key):
-                login(client, app)
+                if version != "v5":
+                    login(client, app)
+                use = client
+                if auth is not None and point.method == auth.method and point.path == auth.login_path:
+                    use = anon  # v5: probing the login form while logged in would test a different handler path
                 try:
-                    rec = probe_point(client, point, payloads, v2=v2)
+                    rec = probe_point(use, point, payloads, v2=v2)
                 except Exception as exc:  # noqa: BLE001 - v3: one broken endpoint must not end the collection
                     errors.append(f"{point.method} {point.path} [{point.param}]: {type(exc).__name__}")
                     continue
@@ -181,19 +242,21 @@ def main(apps, version="v1", final=False):
                                            "family": p["family"], "label": label, "features": f}) + "\n")
                     rows += 1
         if v2:
-            passive = passive_pass(base, policy, app)
+            passive = passive_pass(base, policy, app, auth=auth)
             (P["raw"] / f"{app}.passive.json").write_text(json.dumps(passive, indent=0) + "\n")
-        if version in ("v3", "v4"):
+        if version in ("v3", "v4", "v5"):
             # forms (CSRF heuristic) and the stored-XSS pass: only listed, non-skipped write points, after the ML probing
             (P["raw"] / f"{app}.forms.json").write_text(json.dumps(forms, indent=0) + "\n")
-            stored = stored_pass(client, listed, pages, relogin=lambda: login(client, app))
+            relogin = None if version == "v5" else (lambda: login(client, app))  # v5: re-login is automatic
+            stored = stored_pass(client, listed, pages, relogin=relogin)
             (P["raw"] / f"{app}.stored.json").write_text(json.dumps({"pages": list(dict.fromkeys(pages)), "records": stored}, indent=0) + "\n")
             summary_extra = {"forms": len(forms), "stored_points": len(stored), "stored_raw_hits": sum(any(h["raw"] for h in r["hits"]) for r in stored)}
         else:
             summary_extra = {}
         summary[app] = {"pages_crawled": len(visited), "points_found": len(uniq), "points_probed": len(listed),
                         "gt_params_listed": len(listed_keys), "gt_params_found": len(hit), "gt_params_missed": sorted(map(list, listed_keys - hit)),
-                        "unlisted_points_not_probed": unlisted[:50], "requests": client.requests_sent, "rows": rows, "seconds": round(time.time() - t0), "point_errors": errors, **summary_extra}
+                        "unlisted_points_not_probed": unlisted[:50], "requests": client.requests_sent + anon.requests_sent, "rows": rows, "seconds": round(time.time() - t0), "point_errors": errors, **summary_extra,
+                        **({"auth": {"logins": session.logins, "relogins": session.relogins}} if session is not None else {})}
         print(app, json.dumps({k: v for k, v in summary[app].items() if k not in ("unlisted_points_not_probed",)}), flush=True)
     path = OUT / f"collection_summary{P['suffix']}.json"
     old = json.loads(path.read_text()) if path.exists() else {}
