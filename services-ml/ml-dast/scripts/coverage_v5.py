@@ -22,7 +22,6 @@ from dastml.groundtruth import GroundTruth  # noqa: E402
 from dastml.guards import GuardedClient, TargetPolicy  # noqa: E402
 from dastml.paths import paths  # noqa: E402
 
-OUT = ROOT / "data/dast/coverage_v5.json"
 
 
 def run(app, gt, logged_in):
@@ -61,6 +60,7 @@ def main(argv):
     force = "--force" in argv
     apps = [a for a in argv if a != "--force"]
     gt = GroundTruth(paths(version)["ground_truth"])
+    OUT = ROOT / f"data/dast/coverage{paths(version)['suffix']}.json"  # one file per ground-truth version, never another's
     data = json.loads(OUT.read_text()) if OUT.exists() else {}
     for app in apps:
         if app in data and data[app].get("gt") == version and not force:

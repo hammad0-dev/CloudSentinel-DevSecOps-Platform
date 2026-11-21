@@ -1,0 +1,116 @@
+{
+ "nodejs-goof": {
+  "gt": "v5x",
+  "logged_out": {
+   "pages": 3,
+   "visited": [
+    "/",
+    "/account_details",
+    "/login"
+   ],
+   "points": 5,
+   "labelled_total": 11,
+   "labelled_reached": 5,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/login",
+     "redirectPage"
+    ],
+    [
+     "POST",
+     "/create",
+     "content"
+    ],
+    [
+     "POST",
+     "/login",
+     "password"
+    ],
+    [
+     "POST",
+     "/login",
+     "redirectPage"
+    ],
+    [
+     "POST",
+     "/login",
+     "username"
+    ]
+   ],
+   "unlisted_points": [],
+   "requests": 4
+  },
+  "logged_in": {
+   "pages": 4,
+   "visited": [
+    "/",
+    "/account_details",
+    "/admin",
+    "/login"
+   ],
+   "points": 10,
+   "labelled_total": 11,
+   "labelled_reached": 10,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/login",
+     "redirectPage"
+    ],
+    [
+     "POST",
+     "/account_details",
+     "country"
+    ],
+    [
+     "POST",
+     "/account_details",
+     "email"
+    ],
+    [
+     "POST",
+     "/account_details",
+     "firstname"
+    ],
+    [
+     "POST",
+     "/account_details",
+     "lastname"
+    ],
+    [
+     "POST",
+     "/account_details",
+     "phone"
+    ],
+    [
+     "POST",
+     "/create",
+     "content"
+    ],
+    [
+     "POST",
+     "/login",
+     "password"
+    ],
+    [
+     "POST",
+     "/login",
+     "redirectPage"
+    ],
+    [
+     "POST",
+     "/login",
+     "username"
+    ]
+   ],
+   "unlisted_points": [],
+   "requests": 6,
+   "auth": {
+    "logins": 1,
+    "relogins": 0
+   }
+  },
+  "union_labelled_reached": 10
+ }
+}
