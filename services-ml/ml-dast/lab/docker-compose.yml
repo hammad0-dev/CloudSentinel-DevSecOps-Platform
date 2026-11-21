@@ -249,6 +249,24 @@ services:
     healthcheck: { test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -pmysecretpassword --silent"], interval: 3s, timeout: 5s, retries: 60 }
     mem_limit: 512m
 
+  # v5x (stage 6) TRAINING-DATA app, not a held-out: snyk-labs/nodejs-goof @ add14ba (Apache-2.0). No model uses it yet.
+  # mongo:4.4 (upstream mongo:3); upstream's MySQL is not started (only the unlinked /users routes use it).
+  nodejs-goof:
+    <<: *lab
+    build: { context: ./vendor/nodejs-goof, dockerfile: ../../goof.Dockerfile }
+    image: mldast-lab/nodejs-goof:add14ba
+    profiles: ["v5x"]
+    depends_on: [goof-mongo]
+    environment: { DOCKER: "1" }
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5117:3001"]
+    mem_limit: 512m
+  goof-mongo:
+    <<: *lab
+    image: mongo:4.4
+    profiles: ["v5x"]
+    mem_limit: 512m
+
 networks:
   lab:
     internal: false   # published ports need a non-internal network; the apps get no outbound use

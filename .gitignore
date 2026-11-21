@@ -93,3 +93,5 @@ services-ml/ml-dast/data/**
 !services-ml/ml-dast/data/dast/collection_summary_v5.json
 !services-ml/ml-dast/data/dast/FREEZE_v5.json
 !services-ml/ml-dast/data/dast/coverage_v5.json
+!services-ml/ml-dast/data/dast/ground_truth_v5x.json
+!services-ml/ml-dast/data/dast/collection_summary_v5x.json

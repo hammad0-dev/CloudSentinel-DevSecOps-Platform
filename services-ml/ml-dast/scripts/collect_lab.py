@@ -30,7 +30,7 @@ from dastml.stored import stored_pass  # noqa: E402
 
 OUT = ROOT / "data/dast"
 # Collection-only allowlist (127.0.0.1/localhost): the lab ports. The service default is unchanged.
-LAB_PORTS = parse_ports("5101-5116")
+LAB_PORTS = parse_ports("5101-5117")
 ALL_CLASSES = ("CWE-89", "CWE-79", "CWE-78", "CWE-22", "CWE-601")
 
 # NodeGoat /learn's crawled link carries a URL (refused by the guards), so it is seeded with a same-site value.
@@ -50,6 +50,7 @@ SEEDS = {"nodegoat": [InjectionPoint("GET", "/learn", "url", "query", (("url", "
 # v3: one-off setup requests before collection (never probed). They pass the guards with an empty skip list.
 # sirappsec: the seed data pre-registered in FREEZE_v3.json (populate.sh lines 1-24, plus one beer).
 SETUP = {"vampi": [("GET", "/createdb", None)],
+         "nodejs-goof": [("POST", "/create", {"content": "csdast todo"})],
          "sirappsec": [("POST", "/v1/user/", {"name": "amit", "email": "amit@gmail.com", "password": "123", "role": "user", "address": "aadssd", "profile_pic": "20aab704e5532523652ac9d908d3b8de"}),
                        ("POST", "/v1/user/", {"name": "shir", "email": "shir@gmail.com", "password": "123", "role": "user", "address": "aadssd", "profile_pic": "20aab704e5532523652ac9d908d3b8de"}),
                        ("POST", "/v1/admin/new-beer/", {"name": "Beer!!!", "price": 12, "picture": "20aab704e5532523652ac9d908d3b8de"})]}
@@ -83,7 +84,8 @@ EXTRA_PAGES = {"vulnerable-node": ["/tools/ping", "/contact", "/login", "/orders
                "vulpy-bad": ["/user/create"], "vulpy-good": ["/user/create"], "nodegoat": ["/login", "/signup", "/profile"],
                "dvna": ["/app/usersearch", "/app/products", "/app/ping", "/login", "/forgotpw"],
                # v3: pages that set the session cookies of the v3 twins / the only HTML of the API apps
-               "labflask": ["/v3/settings"], "labexpress": ["/v3/account"], "node-api-goat": ["/cwe79/echo?text=hi"], "vampi": ["/users/v1"]}
+               "labflask": ["/v3/settings"], "labexpress": ["/v3/account"], "node-api-goat": ["/cwe79/echo?text=hi"], "vampi": ["/users/v1"],
+               "nodejs-goof": ["/login?redirectPage=/admin", "/account_details"]}
 
 
 # v5: authenticated collection (dastml.auth). These login profiles hold NO credentials: credentialRef is
@@ -99,6 +101,9 @@ LAB_AUTH_V5 = {
     "vulpy-good": {"loginPath": "/user/login", "success": {"cookie": "vulpy_session"}, "credentialRef": "VULPY"},
     "vulnerable-node": {"loginPath": "/login/auth", "success": {"text": 'href="/logout"'},
                         "loggedOut": {"redirectTo": "/login"}, "credentialRef": "VULNERABLE_NODE"},
+    # v5x: redirects to / are normal there (create/update), so no redirect-based expiry sign; sessions do not expire
+    "nodejs-goof": {"loginPath": "/login", "success": {"text": "Admin Access Granted"},
+                    "loggedOut": {"loginRedirect": False}, "credentialRef": "NODEJS_GOOF"},
 }
 
 
@@ -191,7 +196,7 @@ def main(apps, version="v1", final=False):
         base = f"http://127.0.0.1:{meta['port']}"
         policy = TargetPolicy(allowed_ports=LAB_PORTS, max_pages=200, max_requests=20000, rate_per_sec=25.0,
                               skip_paths=gt.skip_paths(app), skip_params=gt.skip_params(app), timeout_sec=TIMEOUT.get(app, 15.0))
-        auth = v5_auth(app, base, gt) if version == "v5" else None
+        auth = v5_auth(app, base, gt) if version in ("v5", "v5x") else None
         session = None
         if auth is not None:
             from dastml.auth import AuthSession
@@ -199,11 +204,11 @@ def main(apps, version="v1", final=False):
         client = GuardedClient(base, policy, auth=session)
         anon = GuardedClient(base, policy)  # v5: the login form itself is probed logged out
         t0 = time.time()
-        if version in ("v3", "v4", "v5"):
+        if version in ("v3", "v4", "v5", "v5x"):
             for method, path, body in SETUP.get(app, []):
                 setup_policy = TargetPolicy(allowed_ports=LAB_PORTS, max_requests=10, timeout_sec=30.0)
                 GuardedClient(base, setup_policy).request(method, path, **({"json": body} if body else {}))
-        if version == "v5":
+        if version in ("v5", "v5x"):
             if session is not None:
                 client.login()
         else:
@@ -213,13 +218,13 @@ def main(apps, version="v1", final=False):
             # v4: one seed per labelled test case, with the baseline value from the test's own HTML form
             seeds += [InjectionPoint(e["method"], e["path"], e["params"][0], e["in"], ((e["params"][0], e.get("baseline", "bar")),))
                       for e in gt.data["endpoints"] if e["app"] == app]
-        if version == "v5":
+        if version in ("v5", "v5x"):
             # v5: ground-truth seeds pre-registered for an app (scan_config.seed_endpoints), with their baselines
             sc = meta.get("scan_config") or {}
             if sc.get("seed_endpoints"):
                 seeds += v5_seeds(gt, app)
-        forms, pages = ([], []) if version in ("v3", "v4", "v5") else (None, None)
-        if version in ("v3", "v4", "v5") and app in OPENAPI:
+        forms, pages = ([], []) if version in ("v3", "v4", "v5", "v5x") else (None, None)
+        if version in ("v3", "v4", "v5", "v5x") and app in OPENAPI:
             from dastml.openapi import load_points
             seeds = list(seeds) + load_points(client, OPENAPI[app])
         landing = [session.landing] if session is not None and session.landing else []
@@ -244,7 +249,7 @@ def main(apps, version="v1", final=False):
         rows, errors = 0, []
         with gzip.open(P["raw"] / f"{app}.jsonl.gz", "wt") as raw, gzip.open(P["features"] / f"{app}.jsonl.gz", "wt") as feat:
             for point in sorted(listed, key=lambda p: p.key):
-                if version != "v5":
+                if version not in ("v5", "v5x"):
                     login(client, app)
                 use = client
                 if auth is not None and point.method == auth.method and point.path == auth.login_path:
@@ -268,10 +273,10 @@ def main(apps, version="v1", final=False):
         if v2:
             passive = passive_pass(base, policy, app, auth=auth)
             (P["raw"] / f"{app}.passive.json").write_text(json.dumps(passive, indent=0) + "\n")
-        if version in ("v3", "v4", "v5"):
+        if version in ("v3", "v4", "v5", "v5x"):
             # forms (CSRF heuristic) and the stored-XSS pass: only listed, non-skipped write points, after the ML probing
             (P["raw"] / f"{app}.forms.json").write_text(json.dumps(forms, indent=0) + "\n")
-            relogin = None if version == "v5" else (lambda: login(client, app))  # v5: re-login is automatic
+            relogin = None if version in ("v5", "v5x") else (lambda: login(client, app))  # v5: re-login is automatic
             stored = stored_pass(client, listed, pages, relogin=relogin)
             (P["raw"] / f"{app}.stored.json").write_text(json.dumps({"pages": list(dict.fromkeys(pages)), "records": stored}, indent=0) + "\n")
             summary_extra = {"forms": len(forms), "stored_points": len(stored), "stored_raw_hits": sum(any(h["raw"] for h in r["hits"]) for r in stored)}
