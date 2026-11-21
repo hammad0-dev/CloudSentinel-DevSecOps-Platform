@@ -171,3 +171,20 @@ security design, so for now authenticated scans are run against the service dire
 
 The same-records rule, the decision rule and the coverage requirement are fixed in stage 3's pre-registration file,
 before the scan.
+
+## 8. Corrections made before the freeze (stage 3)
+
+- **XSS on `GET /api/v2/passphrase/:username`.** Section 6 says this parameter is CWE-89 and CWE-79. The frozen ground
+  truth labels it CWE-89, with CWE-79 *unknown*. MySQL echoes only a fragment of the statement near the error, so
+  whether a whole XSS payload comes back raw cannot be decided from source; this follows the SirAppSec convention. The
+  qualification count is unchanged (3 SQLi parameters).
+- **Lab images.** dvws-node runs on `mysql:5.7` and `mongo:4.4`, the images already in the lab, instead of
+  upstream's `mysql:8` and `mongo:4.0.4`. It is built from the pinned source with `npm ci` and no frontend build
+  (`lab/dvws.Dockerfile`).
+- **vulpy login.** Logging in to vulpy is not possible in the lab build: `libsession.py:7` sets a bytes cookie, and
+  the pinned werkzeug answers 500. vulpy keeps its unauthenticated collection. The app is not patched.
+- **NodeGoat skip list.** Logged in, NodeGoat crawls fewer pages than logged out. Its ground-truth skip list blocks
+  `/contributions`, `/research`, `/allocations` and `/memos` (eval, SSRF and `$where`), and the logged-in dashboard
+  does not link the tutorial pages. All 14 labelled parameters are reached.
+- **DVPWA reset.** DVPWA's database still held the v4 scan's stored reviews, which break the HTML parse of its course
+  pages. The lab apps were recreated with fresh data before measuring coverage (allowed by rule 3).

@@ -111,6 +111,25 @@ def v5_auth(app, base, gt=None):
     return AuthConfig.from_spec(dict(spec, maxRelogins=200), base) if spec else None
 
 
+def v5_seeds(gt, app):
+    """One InjectionPoint per labelled parameter from each entry's pre-registered "seed" (path, baseline
+    params); a path entry injects segment "seg" of the seed path."""
+    out = []
+    for e in gt.data["endpoints"]:
+        if e["app"] != app or "seed" not in e:
+            continue
+        sd = e["seed"]
+        if e["in"] == "path":
+            segs = sd["path"].split("/")
+            prm = "{seg%d}" % e["seg"]
+            out.append(InjectionPoint(e["method"], sd["path"], prm, "path", ((prm, segs[e["seg"]]),),
+                                      "/".join(segs[:e["seg"]] + [prm] + segs[e["seg"] + 1:])))
+        else:
+            pairs = tuple(tuple(p) for p in sd["params"])
+            out += [InjectionPoint(e["method"], sd["path"], prm, e["in"], pairs) for prm in e["params"]]
+    return out
+
+
 def login(client, app, first=False):
     for method, path, data, once in AUTH.get(app, []):
         if once and not first:
@@ -198,9 +217,7 @@ def main(apps, version="v1", final=False):
             # v5: ground-truth seeds pre-registered for an app (scan_config.seed_endpoints), with their baselines
             sc = meta.get("scan_config") or {}
             if sc.get("seed_endpoints"):
-                seeds += [InjectionPoint(e["method"], e.get("seed_path", e["path"]), prm, e["in"],
-                                         tuple(map(tuple, e.get("baseline_params", [[prm, "test"]]))), e.get("template", ""))
-                          for e in gt.data["endpoints"] if e["app"] == app and not e.get("skip_listed") for prm in e["params"]]
+                seeds += v5_seeds(gt, app)
         forms, pages = ([], []) if version in ("v3", "v4", "v5") else (None, None)
         if version in ("v3", "v4", "v5") and app in OPENAPI:
             from dastml.openapi import load_points

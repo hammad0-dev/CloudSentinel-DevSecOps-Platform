@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 from collect_lab import EXTRA_PAGES, LAB_PORTS, SEEDS, START, v5_auth  # noqa: E402
-from dastml.auth import AuthSession  # noqa: E402
+from dastml.auth import AuthError, AuthSession  # noqa: E402
 from dastml.crawl import crawl  # noqa: E402
 from dastml.groundtruth import GroundTruth  # noqa: E402
 from dastml.guards import GuardedClient, TargetPolicy  # noqa: E402
@@ -48,7 +48,7 @@ def run(app, gt, logged_in):
             listed[(e["method"], e["path"], p.param if p.location != "path" else e["params"][0])] = p
     labelled = {(e["method"], e["path"], prm) for e in gt.data["endpoints"] if e["app"] == app for prm in e["params"]}
     unlisted = sorted(f"{p.method} {p.path} [{p.param}] ({p.location})" for p in uniq.values() if gt.entry(app, p) is None)
-    return {"pages": len(set(visited)), "points": len(uniq), "labelled_total": len(labelled),
+    return {"pages": len(set(visited)), "visited": sorted(set(visited)), "points": len(uniq), "labelled_total": len(labelled),
             "labelled_reached": len(set(listed) & labelled), "labelled_reached_list": sorted(map(list, set(listed) & labelled)),
             "unlisted_points": unlisted, "requests": client.requests_sent,
             **({"auth": {"logins": session.logins, "relogins": session.relogins}} if session is not None else {})}
@@ -65,11 +65,22 @@ def main(argv):
     for app in apps:
         if app in data and data[app].get("gt") == version and not force:
             raise SystemExit(f"refused: coverage for {app} with the {version} ground truth is already recorded (use --force)")
-        rec = {"gt": version, "logged_out": run(app, gt, False), "logged_in": run(app, gt, True)}
-        data[app] = rec
+        rec = {"gt": version, "logged_out": run(app, gt, False)}
+        try:
+            rec["logged_in"] = run(app, gt, True)
+        except AuthError as exc:  # recorded, not hidden: the app cannot be logged in to in the lab
+            rec["logged_in"] = None
+            rec["login_error"] = str(exc)
+            data[app] = rec
+            OUT.write_text(json.dumps(data, indent=1) + "\n")
+            print(f"{app}: logged out pages {rec['logged_out']['pages']}, points {rec['logged_out']['points']}; LOGIN FAILED: {exc}", flush=True)
+            continue
         lo, li = rec["logged_out"], rec["logged_in"]
+        # what the v5 collector probes: the logged-in crawl plus the logged-out one (the login form itself)
+        rec["union_labelled_reached"] = len({tuple(x) for x in lo["labelled_reached_list"]} | {tuple(x) for x in li["labelled_reached_list"]})
+        data[app] = rec
         print(f"{app}: pages {lo['pages']} -> {li['pages']}, points {lo['points']} -> {li['points']}, "
-              f"labelled reached {lo['labelled_reached']} -> {li['labelled_reached']} of {li['labelled_total']}, "
+              f"labelled reached {lo['labelled_reached']} -> {li['labelled_reached']} (union {rec['union_labelled_reached']}) of {li['labelled_total']}, "
               f"unlisted after login {len(li['unlisted_points'])}, auth {li.get('auth')}", flush=True)
         OUT.write_text(json.dumps(data, indent=1) + "\n")
 
