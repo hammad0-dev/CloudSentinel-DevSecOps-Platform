@@ -1,0 +1,111 @@
+{
+ "model_v4_sha256": "7a306aca5b07cf0360fe41e4bfbe517d56de24b669f89545d91a3461ee867322",
+ "model_v2_sha256": "5dc397d0b6c462d1ed30567920e51d2afbd7272560db6d1ebc78f887c84712eb",
+ "model_v3_sha256": "bbcd03d12b211271f21bfd540c634d1942c94724402d95c87ca516e2b2fcf36f",
+ "selection": {
+  "family": "lr",
+  "rule": "highest pooled LOAO endpoint-param macro-F1 over the non-benchmark groups, fixed before DVPWA is collected or scored",
+  "loao_real_macro_f1": {
+   "lr": 0.932995961194773,
+   "lgbm": 0.8259376833594992
+  },
+  "loao_real_ci95": {
+   "lr": [
+    0.8874916424145439,
+    0.9692494599119863
+   ],
+   "lgbm": [
+    0.756442169639513,
+    0.8830030907828836
+   ]
+  },
+  "apps": [
+   "benchmark",
+   "dsvw",
+   "juice-shop",
+   "labexpress",
+   "labfastapi",
+   "labflask",
+   "node-api-goat",
+   "nodegoat",
+   "vampi",
+   "vulnerable-node",
+   "vulpy"
+  ],
+  "n_rows": 13402,
+  "date": "2026-11-21",
+  "feature_sets": {
+   "v2_all": 74,
+   "v2_no_loc": 70,
+   "v3_all": 67,
+   "v3_no_loc": 63
+  },
+  "thresholds": [
+   0.2,
+   0.25,
+   0.3,
+   0.35,
+   0.4,
+   0.45,
+   0.5,
+   0.55,
+   0.6,
+   0.65,
+   0.7,
+   0.75,
+   0.8,
+   0.85,
+   0.9,
+   0.95,
+   0.97,
+   0.98,
+   0.99,
+   0.995
+  ]
+ },
+ "freeze": {
+  "app": "dvpwa",
+  "role": "final_heldout_v4",
+  "frozen_before_any_scan": true,
+  "source": "anxolerd/dvpwa @ 4a8f4a43fafcc1b304f1b97d0f0a8dea755a7756 (MIT)",
+  "commit": "4a8f4a43fafcc1b304f1b97d0f0a8dea755a7756",
+  "source_sha256": "9963135fbc0adda3a3dfe754addf982eb02bd985320f9b8cf7ab92765f113277",
+  "source_files": 58,
+  "source_hash_covers": "sha256 of the sorted lines '<sha256(file)>  <path>' over `git ls-files` at the commit",
+  "ground_truth_dvpwa_sha256": "aca7c5b10af1864ce04afca2d410baf2eb97b7f62bc9b1d7191336620f017639",
+  "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive, stored, csrf} for dvpwa, sort_keys=True)",
+  "scan_config": {
+   "start": "/",
+   "seed_data": "the shipped migrations only (migrations/000-init-schema.sql, 001-fixtures.sql)",
+   "openapi_url": null
+  },
+  "rule": "DVPWA is labelled from source only and never collected for training or tuning; it is collected and scored exactly once by scripts/eval_final_v4.py after the v4 model is fixed by SHA-256. v2 (deployed) and v3 are scored on the same collection.",
+  "counts": {
+   "CWE-89": 1,
+   "CWE-79": 4,
+   "safe_endpoint_params": 13,
+   "passive_positive": 5,
+   "passive_negative": 1,
+   "stored_xss": 6
+  }
+ },
+ "freeze_checks": {
+  "source_sha256": true,
+  "ground_truth_dvpwa_sha256": true
+ },
+ "scan_config": {
+  "start": "/",
+  "seed_data": "the shipped migrations only (migrations/000-init-schema.sql, 001-fixtures.sql)",
+  "openapi_url": null
+ },
+ "timeout_sec": 15.0,
+ "metric": "ML: endpoint-param macro-F1 over the classes present, per-class P/R/F1, cluster bootstrap 1000 (paired v4/v2/v3); rules/passive/stored/CSRF: counts",
+ "deployment_rule": "v4 replaces v2 as the deployed model only if (a) its DVPWA endpoint-param macro-F1 is higher than v2's on the same records AND (b) in leave-one-app-out on the same endpoint-params v4 is not significantly worse than v2 (the 95% CI of v2 - v4 does not lie entirely above 0, reports/before_after_v4.json). Otherwise v2 stays deployed and v4 is packaged as models/release_v4.",
+ "loao_v2_minus_v4": {
+  "mean": -0.14601188979298887,
+  "ci95": [
+   -0.22471206700227891,
+   -0.07577947026632029
+  ]
+ }
+}

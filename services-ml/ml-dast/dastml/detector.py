@@ -72,7 +72,7 @@ class DastDetector:
             client.check_url(openapi_url)
         # v1 artifacts (pickled before v2) have neither attribute and keep the exact v1 behaviour.
         version = getattr(self, "data_version", "v1")
-        v2, v3 = version in ("v2", "v3"), version == "v3"  # v3 = v2 behaviour + stored XSS + CSRF heuristic
+        v2, v3 = version in ("v2", "v3", "v4"), version in ("v3", "v4")  # v3 = v2 + stored XSS + CSRF heuristic; v4 scans like v3
         payload_path = PAYLOADS_DIR / getattr(self, "payloads_file", "payloads.json")
         payloads = load_payloads(tuple(self.classes) + (RULE_CLASSES if v2 else ()), payload_path)
         self.last_scan = {}  # errors from a previous scan must not leak into this one

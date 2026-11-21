@@ -62,13 +62,18 @@ def prf(y, p, n=len(CLASSES)):
     return {"n": int(len(y)), "macro_f1": float(np.mean(f1s)) if f1s else 0.0, "per_class": per, "confusion": conf, "binary": binary}
 
 
+def match(value, origin):
+    """origin None = everything; "real" (v4) = own + third-party apps, i.e. everything but the synthetic benchmark."""
+    return origin is None or value == origin or (origin == "real" and value in ("own", "third-party"))
+
+
 def endpoint_metrics(cl, origin=None):
-    items = [v for v in cl.values() if origin is None or v[2] == origin]
+    items = [v for v in cl.values() if match(v[2], origin)]
     return prf([v[0] for v in items], [v[1] for v in items])
 
 
 def row_metrics(rows, proba, t, origin=None):
-    idx = [i for i, r in enumerate(rows) if origin is None or r["origin"] == origin]
+    idx = [i for i, r in enumerate(rows) if match(r["origin"], origin)]
     y = [CLASSES.index(rows[i]["label"]) for i in idx]
     p = row_pred([rows[i] for i in idx], proba[idx], t)
     return prf(y, p)
@@ -77,7 +82,7 @@ def row_metrics(rows, proba, t, origin=None):
 def bootstrap_endpoints(systems, n=1000, seed=0, origin=None):
     """systems: {name: cluster dict}. Resample clusters (shared across systems) with replacement."""
     keys = sorted(next(iter(systems.values())))
-    keys = [k for k in keys if origin is None or next(iter(systems.values()))[k][2] == origin]
+    keys = [k for k in keys if match(next(iter(systems.values()))[k][2], origin)]
     rng = np.random.default_rng(seed)
     scores = {s: [] for s in systems}
     per_class = {s: {c: [] for c in CLASSES[1:]} for s in systems}

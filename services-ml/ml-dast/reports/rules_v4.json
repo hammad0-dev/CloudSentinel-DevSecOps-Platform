@@ -1,0 +1,488 @@
+{
+ "engine": "rule (deterministic, not ML)",
+ "real": {
+  "apps": [
+   "labflask",
+   "labexpress",
+   "labfastapi",
+   "juice-shop",
+   "nodegoat",
+   "vulpy-bad",
+   "vulpy-good",
+   "dsvw",
+   "vulnerable-node",
+   "vampi",
+   "node-api-goat"
+  ],
+  "active": {
+   "CWE-78": {
+    "known": [
+     "labflask|GET|/ping|host",
+     "labexpress|GET|/dns|host",
+     "dsvw|GET|/|domain",
+     "vulnerable-node|POST|/tools/ping|host"
+    ],
+    "found": [
+     "labflask|GET|/ping|host",
+     "labexpress|GET|/dns|host",
+     "dsvw|GET|/|domain"
+    ],
+    "missed": [
+     "vulnerable-node|POST|/tools/ping|host"
+    ],
+    "false_alarms": [],
+    "safe_units": 186
+   },
+   "CWE-22": {
+    "known": [
+     "labflask|GET|/download|file",
+     "labexpress|GET|/file|name",
+     "juice-shop|GET|/ftp/{file}|file",
+     "dsvw|GET|/|path",
+     "vulnerable-node|GET|/download|file"
+    ],
+    "found": [
+     "labflask|GET|/download|file",
+     "labexpress|GET|/file|name",
+     "dsvw|GET|/|path",
+     "vulnerable-node|GET|/download|file"
+    ],
+    "missed": [
+     "juice-shop|GET|/ftp/{file}|file"
+    ],
+    "false_alarms": [],
+    "safe_units": 185
+   },
+   "CWE-601": {
+    "known": [
+     "labflask|GET|/next|next",
+     "labexpress|GET|/next|next",
+     "nodegoat|GET|/learn|url",
+     "dsvw|GET|/|redir",
+     "vulnerable-node|POST|/login/auth|returnurl"
+    ],
+    "found": [
+     "labflask|GET|/next|next",
+     "labexpress|GET|/next|next",
+     "nodegoat|GET|/learn|url",
+     "dsvw|GET|/|redir"
+    ],
+    "missed": [
+     "vulnerable-node|POST|/login/auth|returnurl"
+    ],
+    "false_alarms": [],
+    "safe_units": 185
+   }
+  },
+  "passive": {
+   "missing-csp": {
+    "known": [
+     "labflask",
+     "labexpress",
+     "labfastapi",
+     "juice-shop",
+     "nodegoat",
+     "vulpy-bad",
+     "dsvw",
+     "vulnerable-node",
+     "node-api-goat"
+    ],
+    "found": [
+     "labflask",
+     "labexpress",
+     "labfastapi",
+     "juice-shop",
+     "nodegoat",
+     "vulpy-bad",
+     "dsvw",
+     "vulnerable-node",
+     "node-api-goat"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 1
+   },
+   "missing-nosniff": {
+    "known": [
+     "labflask",
+     "labexpress",
+     "labfastapi",
+     "nodegoat",
+     "vulpy-bad",
+     "vulpy-good",
+     "dsvw",
+     "vulnerable-node",
+     "vampi",
+     "node-api-goat"
+    ],
+    "found": [
+     "labflask",
+     "labexpress",
+     "labfastapi",
+     "nodegoat",
+     "vulpy-bad",
+     "vulpy-good",
+     "dsvw",
+     "vulnerable-node",
+     "vampi",
+     "node-api-goat"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 1
+   },
+   "missing-frame-protection": {
+    "known": [
+     "labflask",
+     "labexpress",
+     "labfastapi",
+     "nodegoat",
+     "vulpy-bad",
+     "vulpy-good",
+     "dsvw",
+     "vulnerable-node",
+     "node-api-goat"
+    ],
+    "found": [
+     "labflask",
+     "labexpress",
+     "labfastapi",
+     "nodegoat",
+     "vulpy-bad",
+     "vulpy-good",
+     "dsvw",
+     "vulnerable-node",
+     "node-api-goat"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 1
+   },
+   "cookie-no-httponly": {
+    "known": [
+     "dsvw"
+    ],
+    "found": [
+     "dsvw"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 6
+   },
+   "cookie-no-samesite": {
+    "known": [
+     "labflask",
+     "nodegoat",
+     "dsvw",
+     "vulnerable-node"
+    ],
+    "found": [
+     "labflask",
+     "nodegoat",
+     "dsvw",
+     "vulnerable-node"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 3
+   },
+   "cors-any-origin": {
+    "known": [],
+    "found": [],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 11
+   }
+  },
+  "stored_xss": {
+   "known": [
+    "labflask|POST /v3/guestbook [message]",
+    "nodegoat|POST /profile [lastName]",
+    "nodegoat|POST /profile [ssn]",
+    "nodegoat|POST /profile [dob]",
+    "nodegoat|POST /profile [bankAcc]",
+    "nodegoat|POST /profile [bankRouting]",
+    "nodegoat|POST /profile [address]",
+    "vulnerable-node|POST /products/{id}/reviews [body]"
+   ],
+   "found": [
+    "labflask|POST /v3/guestbook [message]",
+    "vulnerable-node|POST /products/{id}/reviews [body]"
+   ],
+   "missed": [
+    "nodegoat|POST /profile [lastName]",
+    "nodegoat|POST /profile [ssn]",
+    "nodegoat|POST /profile [dob]",
+    "nodegoat|POST /profile [bankAcc]",
+    "nodegoat|POST /profile [bankRouting]",
+    "nodegoat|POST /profile [address]"
+   ],
+   "outside_rule": [
+    "nodegoat|POST /memos [memo]: {{ marked(doc.memo) }} with marked sanitize:true: HTML tags are escaped, the known bypass is a markdown javascript: link",
+    "vulpy-bad|POST /posts/ [text]: bad/templates/posts.view.html line 23 '{{ post.text | safe }}'; posting needs a login, and vulpy's login fails in the la",
+    "vulpy-good|POST /posts/ [text]: good/templates/posts.view.html line 23 also '| safe'; behind login as above",
+    "dsvw|GET / [comment]: dsvw.py @ 9ca3c9a line 46: stored comments shown raw; written by a GET, outside the rule (POST/PUT only)"
+   ],
+   "false_alarms": [],
+   "safe_units": 8,
+   "unlabelled_findings": []
+  },
+  "csrf_heuristic": {
+   "known": [
+    "labflask|POST /find",
+    "labflask|POST /login",
+    "labflask|POST /login-safe",
+    "labflask|POST /v3/guestbook",
+    "labflask|POST /v3/guestbook-safe",
+    "labflask|POST /v3/settings",
+    "labflask|POST /find-safe",
+    "nodegoat|POST /login",
+    "nodegoat|POST /signup",
+    "nodegoat|POST /profile",
+    "nodegoat|POST /memos",
+    "vulnerable-node|POST /login/auth",
+    "vulnerable-node|POST /register",
+    "vulnerable-node|POST /contact",
+    "vulnerable-node|POST /account",
+    "vulnerable-node|POST /account/token",
+    "vulnerable-node|POST /checkout",
+    "vulnerable-node|POST /products/{id}/reviews",
+    "vulnerable-node|POST /tools/ping",
+    "vulnerable-node|POST /tools/regex"
+   ],
+   "found": [
+    "labflask|POST /find",
+    "labflask|POST /login",
+    "labflask|POST /login-safe",
+    "labflask|POST /v3/guestbook",
+    "labflask|POST /v3/guestbook-safe",
+    "labflask|POST /v3/settings",
+    "labflask|POST /find-safe",
+    "vulnerable-node|POST /login/auth",
+    "vulnerable-node|POST /contact",
+    "vulnerable-node|POST /checkout",
+    "vulnerable-node|POST /products/{id}/reviews",
+    "vulnerable-node|POST /tools/ping",
+    "vulnerable-node|POST /tools/regex"
+   ],
+   "missed": [
+    "nodegoat|POST /login (hidden _csrf field present but never validated (csurf commented out): the heuristic counts it as protected)",
+    "nodegoat|POST /signup (same unvalidated _csrf field)",
+    "nodegoat|POST /profile (same unvalidated _csrf field)",
+    "nodegoat|POST /memos (no token field)",
+    "vulnerable-node|POST /register (not reported)",
+    "vulnerable-node|POST /account (not reported)",
+    "vulnerable-node|POST /account/token (not reported)"
+   ],
+   "false_alarms": [],
+   "safe_units": 6,
+   "unlabelled_findings": [],
+   "not_evaluable": [
+    "vulpy-bad: vulpy_session never set in the lab (login 500, v2 note)",
+    "vulpy-good: as vulpy-bad"
+   ]
+  }
+ },
+ "benchmark": {
+  "apps": [
+   "benchmarkpython"
+  ],
+  "active": {
+   "CWE-78": {
+    "known": [
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00165|BenchmarkTest00165",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00166|BenchmarkTest00166",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00167|BenchmarkTest00167",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00168|BenchmarkTest00168",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00267|BenchmarkTest00267",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00268|BenchmarkTest00268",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00899|BenchmarkTest00899",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest01191|BenchmarkTest01191"
+    ],
+    "found": [
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00165|BenchmarkTest00165",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00166|BenchmarkTest00166",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00167|BenchmarkTest00167",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00168|BenchmarkTest00168",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00267|BenchmarkTest00267",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00268|BenchmarkTest00268",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest00899|BenchmarkTest00899",
+     "benchmarkpython|POST|/benchmark/cmdi-00/BenchmarkTest01191|BenchmarkTest01191"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "safe_units": 147
+   },
+   "CWE-22": {
+    "known": [
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00085|BenchmarkTest00085",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00087|BenchmarkTest00087",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00089|BenchmarkTest00089",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00092|BenchmarkTest00092",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00171|BenchmarkTest00171",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00172|BenchmarkTest00172",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00173|BenchmarkTest00173",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00175|BenchmarkTest00175",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00177|BenchmarkTest00177",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00178|BenchmarkTest00178",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00180|BenchmarkTest00180",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00182|BenchmarkTest00182",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00273|BenchmarkTest00273",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00277|BenchmarkTest00277",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00662|BenchmarkTest00662",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00665|BenchmarkTest00665",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00667|BenchmarkTest00667",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00737|BenchmarkTest00737",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00739|BenchmarkTest00739",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00741|BenchmarkTest00741",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00742|BenchmarkTest00742",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00749|BenchmarkTest00749",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00750|BenchmarkTest00750",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00751|BenchmarkTest00751",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00831|BenchmarkTest00831",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00834|BenchmarkTest00834",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00835|BenchmarkTest00835",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00906|BenchmarkTest00906",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00907|BenchmarkTest00907",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00910|BenchmarkTest00910",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00914|BenchmarkTest00914",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00915|BenchmarkTest00915",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00916|BenchmarkTest00916",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00918|BenchmarkTest00918",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00920|BenchmarkTest00920",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest01179|BenchmarkTest01179",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest01181|BenchmarkTest01181",
+     "benchmarkpython|POST|/benchmark/pathtraver-02/BenchmarkTest01183|BenchmarkTest01183",
+     "benchmarkpython|POST|/benchmark/pathtraver-02/BenchmarkTest01214|BenchmarkTest01214"
+    ],
+    "found": [],
+    "missed": [
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00085|BenchmarkTest00085",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00087|BenchmarkTest00087",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00089|BenchmarkTest00089",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00092|BenchmarkTest00092",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00171|BenchmarkTest00171",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00172|BenchmarkTest00172",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00173|BenchmarkTest00173",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00175|BenchmarkTest00175",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00177|BenchmarkTest00177",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00178|BenchmarkTest00178",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00180|BenchmarkTest00180",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00182|BenchmarkTest00182",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00273|BenchmarkTest00273",
+     "benchmarkpython|POST|/benchmark/pathtraver-00/BenchmarkTest00277|BenchmarkTest00277",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00662|BenchmarkTest00662",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00665|BenchmarkTest00665",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00667|BenchmarkTest00667",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00737|BenchmarkTest00737",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00739|BenchmarkTest00739",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00741|BenchmarkTest00741",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00742|BenchmarkTest00742",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00749|BenchmarkTest00749",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00750|BenchmarkTest00750",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00751|BenchmarkTest00751",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00831|BenchmarkTest00831",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00834|BenchmarkTest00834",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00835|BenchmarkTest00835",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00906|BenchmarkTest00906",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00907|BenchmarkTest00907",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00910|BenchmarkTest00910",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00914|BenchmarkTest00914",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00915|BenchmarkTest00915",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00916|BenchmarkTest00916",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00918|BenchmarkTest00918",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest00920|BenchmarkTest00920",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest01179|BenchmarkTest01179",
+     "benchmarkpython|POST|/benchmark/pathtraver-01/BenchmarkTest01181|BenchmarkTest01181",
+     "benchmarkpython|POST|/benchmark/pathtraver-02/BenchmarkTest01183|BenchmarkTest01183",
+     "benchmarkpython|POST|/benchmark/pathtraver-02/BenchmarkTest01214|BenchmarkTest01214"
+    ],
+    "false_alarms": [],
+    "safe_units": 116
+   },
+   "CWE-601": {
+    "known": [],
+    "found": [],
+    "missed": [],
+    "false_alarms": [],
+    "safe_units": 155
+   }
+  },
+  "passive": {
+   "missing-csp": {
+    "known": [
+     "benchmarkpython"
+    ],
+    "found": [
+     "benchmarkpython"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 0
+   },
+   "missing-nosniff": {
+    "known": [
+     "benchmarkpython"
+    ],
+    "found": [
+     "benchmarkpython"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 0
+   },
+   "missing-frame-protection": {
+    "known": [
+     "benchmarkpython"
+    ],
+    "found": [
+     "benchmarkpython"
+    ],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 0
+   },
+   "cookie-no-httponly": {
+    "known": [],
+    "found": [],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 0
+   },
+   "cookie-no-samesite": {
+    "known": [],
+    "found": [],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 0
+   },
+   "cors-any-origin": {
+    "known": [],
+    "found": [],
+    "missed": [],
+    "false_alarms": [],
+    "negatives": 1
+   }
+  },
+  "stored_xss": {
+   "known": [],
+   "found": [],
+   "missed": [],
+   "outside_rule": [],
+   "false_alarms": [],
+   "safe_units": 0,
+   "unlabelled_findings": []
+  },
+  "csrf_heuristic": {
+   "known": [],
+   "found": [],
+   "missed": [],
+   "false_alarms": [],
+   "safe_units": 0,
+   "unlabelled_findings": [],
+   "not_evaluable": [
+    "benchmarkpython: no session cookie"
+   ]
+  }
+ }
+}

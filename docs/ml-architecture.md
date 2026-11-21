@@ -452,3 +452,36 @@ is unset), and no earlier e2e ran it either; demo-forms is the vulnerable Python
 **One failed attempt, disclosed.** An earlier attempt (executions 83 to 85) failed for an infrastructure reason. My
 ml-dast restart had not come up, so python-clean's DAST stage got ECONNREFUSED and the gate blocked it. Re-run after
 restarting the service: the results above.
+
+
+## ML DAST v4: BenchmarkPython training data, DVPWA held-out, v2 stays deployed
+
+`ml-dast-lr` 4.0.0 (`services-ml/ml-dast/models/release_v4/`, gitignored) is **packaged separately and not deployed**.
+The engine on port 8002 kept serving v2 throughout. The rule, fixed before the held-out scan, required v4 to beat
+v2 on the new frozen held-out app DVPWA, and they tied (1.000 each). The unauthenticated crawl reached only
+8 endpoint-params there, because DVPWA renders its vulnerable forms only after login, so the held-out comparison is
+uninformative. Details: [`docs/ml-dast-model-card.md`](ml-dast-model-card.md), plan: [`docs/ml-dast-v4-plan.md`](ml-dast-v4-plan.md).
+
+| Evaluation | v2 (deployed) | v4 |
+|---|---|---|
+| Leave-one-app-out, same 111 endpoint-params | 0.827 | **0.970**: v2 − v4 −0.146 [−0.225, −0.076] |
+| Leave-one-app-out, enlarged real set (169) | 0.836 | **0.933** [0.887, 0.969] |
+| BenchmarkPython, in-benchmark only (80) | 0.812 | 1.000 (says nothing about real apps) |
+| DVPWA held-out (once, 8 endpoint-params reached) | 1.000 | 1.000 (v3 also 1.000) |
+| vs ZAP, real training apps (157) | ZAP significantly better (v2 run) | +0.020 [−0.037, +0.081], not significant |
+
+**Integration:** no backend or UI change. v4 emits the same finding types as v3, and the engine flags, guards and
+refusal of untrained models are unchanged. `tests/test_v2_compat_v4.py` pins the deployed v2 model's features and
+scores.
+
+### e2e with this branch (2026-11-21, v2 deployed)
+
+Engines: ml-sast-hybrid 2.0.0 and ml-dast-lr 2.0.0 (`5dc397d0b6c4…`). Executions 89 to 91.
+
+| Fixture | Result |
+|---|---|
+| node-express (vulnerable) | **blocked at SAST** (CRITICAL) |
+| python-clean | **passed every stage**, COMPLETED in 108 s. DAST: 1 INFO passive finding (`nosniff`), not gating |
+| demo-forms (vulnerable) | **blocked at SAST** (CRITICAL) |
+
+**Not run:** the vulnerable `python` fixture, because no repository is configured (`E2E_PYTHON_REPO`, as in v3).

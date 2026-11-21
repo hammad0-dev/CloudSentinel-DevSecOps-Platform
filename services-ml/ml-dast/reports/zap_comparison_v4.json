@@ -1,0 +1,672 @@
+{
+ "apps": [
+  "labflask",
+  "labexpress",
+  "labfastapi",
+  "juice-shop",
+  "nodegoat",
+  "vulpy-bad",
+  "vulpy-good",
+  "dsvw",
+  "vulnerable-node",
+  "vampi",
+  "node-api-goat"
+ ],
+ "zap_sources": {
+  "labflask": "v3 scan",
+  "labexpress": "v3 scan",
+  "labfastapi": "v3 scan",
+  "juice-shop": "v1 scan (app unchanged since v1)",
+  "nodegoat": "v1 scan (app unchanged since v1)",
+  "vulpy-bad": "v1 scan (app unchanged since v1)",
+  "vulpy-good": "v1 scan (app unchanged since v1)",
+  "dsvw": "v3 scan NOT USED (excluded parameters were requested by ZAP (172.18.0.18): 398 requests with include/object/xml/size/path, 204 of them include=; global excludes did not hold)",
+  "vulnerable-node": "v3 scan",
+  "vampi": "v3 scan",
+  "node-api-goat": "v3 scan"
+ },
+ "n_common_clusters": 157,
+ "ml_classes": {
+  "all": {
+   "ml": {
+    "n": 157,
+    "macro_f1": 0.9350868445109283,
+    "per_class": {
+     "safe": {
+      "precision": 0.9578947368421052,
+      "recall": 0.9479166666666666,
+      "f1": 0.9528795811518324,
+      "support": 96,
+      "tp": 91,
+      "fp": 4,
+      "fn": 5
+     },
+     "CWE-89": {
+      "precision": 0.9310344827586207,
+      "recall": 0.8709677419354839,
+      "f1": 0.9,
+      "support": 31,
+      "tp": 27,
+      "fp": 2,
+      "fn": 4
+     },
+     "CWE-79": {
+      "precision": 0.9090909090909091,
+      "recall": 1.0,
+      "f1": 0.9523809523809523,
+      "support": 30,
+      "tp": 30,
+      "fp": 3,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      91,
+      2,
+      3
+     ],
+     [
+      4,
+      27,
+      0
+     ],
+     [
+      0,
+      0,
+      30
+     ]
+    ],
+    "binary": {
+     "precision": 0.9193548387096774,
+     "recall": 0.9344262295081968
+    }
+   },
+   "zap": {
+    "n": 157,
+    "macro_f1": 0.9150110269287524,
+    "per_class": {
+     "safe": {
+      "precision": 0.897196261682243,
+      "recall": 1.0,
+      "f1": 0.9458128078817734,
+      "support": 96,
+      "tp": 96,
+      "fp": 11,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.7419354838709677,
+      "f1": 0.8518518518518519,
+      "support": 31,
+      "tp": 23,
+      "fp": 0,
+      "fn": 8
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526316,
+      "support": 30,
+      "tp": 27,
+      "fp": 0,
+      "fn": 3
+     }
+    },
+    "confusion": [
+     [
+      96,
+      0,
+      0
+     ],
+     [
+      8,
+      23,
+      0
+     ],
+     [
+      3,
+      0,
+      27
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.819672131147541
+    }
+   }
+  },
+  "own": {
+   "ml": {
+    "n": 105,
+    "macro_f1": 0.9193092219600095,
+    "per_class": {
+     "safe": {
+      "precision": 0.9558823529411765,
+      "recall": 0.9420289855072463,
+      "f1": 0.9489051094890512,
+      "support": 69,
+      "tp": 65,
+      "fp": 3,
+      "fn": 4
+     },
+     "CWE-89": {
+      "precision": 0.9444444444444444,
+      "recall": 0.85,
+      "f1": 0.8947368421052632,
+      "support": 20,
+      "tp": 17,
+      "fp": 1,
+      "fn": 3
+     },
+     "CWE-79": {
+      "precision": 0.8421052631578947,
+      "recall": 1.0,
+      "f1": 0.9142857142857143,
+      "support": 16,
+      "tp": 16,
+      "fp": 3,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      65,
+      1,
+      3
+     ],
+     [
+      3,
+      17,
+      0
+     ],
+     [
+      0,
+      0,
+      16
+     ]
+    ],
+    "binary": {
+     "precision": 0.8918918918918919,
+     "recall": 0.9166666666666666
+    }
+   },
+   "zap": {
+    "n": 105,
+    "macro_f1": 0.9535732916014606,
+    "per_class": {
+     "safe": {
+      "precision": 0.9452054794520548,
+      "recall": 1.0,
+      "f1": 0.971830985915493,
+      "support": 69,
+      "tp": 69,
+      "fp": 4,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.888888888888889,
+      "support": 20,
+      "tp": 16,
+      "fp": 0,
+      "fn": 4
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 16,
+      "tp": 16,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      69,
+      0,
+      0
+     ],
+     [
+      4,
+      16,
+      0
+     ],
+     [
+      0,
+      0,
+      16
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.8888888888888888
+    }
+   }
+  },
+  "third-party": {
+   "ml": {
+    "n": 52,
+    "macro_f1": 0.957351290684624,
+    "per_class": {
+     "safe": {
+      "precision": 0.9629629629629629,
+      "recall": 0.9629629629629629,
+      "f1": 0.9629629629629629,
+      "support": 27,
+      "tp": 26,
+      "fp": 1,
+      "fn": 1
+     },
+     "CWE-89": {
+      "precision": 0.9090909090909091,
+      "recall": 0.9090909090909091,
+      "f1": 0.9090909090909091,
+      "support": 11,
+      "tp": 10,
+      "fp": 1,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 14,
+      "tp": 14,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      26,
+      1,
+      0
+     ],
+     [
+      1,
+      10,
+      0
+     ],
+     [
+      0,
+      0,
+      14
+     ]
+    ],
+    "binary": {
+     "precision": 0.96,
+     "recall": 0.96
+    }
+   },
+   "zap": {
+    "n": 52,
+    "macro_f1": 0.8476745598057073,
+    "per_class": {
+     "safe": {
+      "precision": 0.7941176470588235,
+      "recall": 1.0,
+      "f1": 0.8852459016393442,
+      "support": 27,
+      "tp": 27,
+      "fp": 7,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.6363636363636364,
+      "f1": 0.7777777777777778,
+      "support": 11,
+      "tp": 7,
+      "fp": 0,
+      "fn": 4
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 0.7857142857142857,
+      "f1": 0.88,
+      "support": 14,
+      "tp": 11,
+      "fp": 0,
+      "fn": 3
+     }
+    },
+    "confusion": [
+     [
+      27,
+      0,
+      0
+     ],
+     [
+      4,
+      7,
+      0
+     ],
+     [
+      3,
+      0,
+      11
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.72
+    }
+   }
+  }
+ },
+ "bootstrap": {
+  "all": {
+   "n_clusters": 157,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.9339723663678379,
+     "ci95": [
+      0.8862620370528739,
+      0.9724779630376645
+     ]
+    },
+    "zap": {
+     "mean": 0.9141343955450945,
+     "ci95": [
+      0.8584532046580993,
+      0.9608048141381732
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.8068421052631579,
+      0.9696969696969697
+     ],
+     "CWE-79": [
+      0.888888888888889,
+      1.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.7317073170731707,
+      0.9454545454545454
+     ],
+     "CWE-79": [
+      0.8750000000000001,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": 0.019837970822743307,
+     "ci95": [
+      -0.03718685438890462,
+      0.08101120075832152
+     ]
+    }
+   }
+  },
+  "own": {
+   "n_clusters": 105,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.9164508107334587,
+     "ci95": [
+      0.8544750695845492,
+      0.96953655605367
+     ]
+    },
+    "zap": {
+     "mean": 0.951461477297978,
+     "ci95": [
+      0.9027513329129486,
+      0.9901615433728496
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.761904761904762,
+      0.9796118447378951
+     ],
+     "CWE-79": [
+      0.7996969696969698,
+      1.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.7586206896551725,
+      0.9778014184397162
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": -0.035010666564519385,
+     "ci95": [
+      -0.10148399933339013,
+      0.026240731736809318
+     ]
+    }
+   }
+  },
+  "third-party": {
+   "n_clusters": 52,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.9571310497749345,
+     "ci95": [
+      0.8931971042140534,
+      1.0
+     ]
+    },
+    "zap": {
+     "mean": 0.8419105513683337,
+     "ci95": [
+      0.703506144393241,
+      0.9406600740982891
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.7499999999999999,
+      1.0
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.47058823529411764,
+      0.9524844720496893
+     ],
+     "CWE-79": [
+      0.6956521739130436,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": 0.11522049840660076,
+     "ci95": [
+      0.00022459096283506985,
+      0.24837239366391908
+     ]
+    }
+   }
+  }
+ },
+ "rules": {
+  "CWE-78": {
+   "known": 3,
+   "ml_dast_found": 2,
+   "zap_found": 2,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 175,
+   "zap_missed": [
+    "vulnerable-node|POST|/tools/ping|host"
+   ]
+  },
+  "CWE-22": {
+   "known": 4,
+   "ml_dast_found": 3,
+   "zap_found": 2,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 1,
+   "safe_units": 174,
+   "zap_missed": [
+    "juice-shop|GET|/ftp/{file}|file",
+    "vulnerable-node|GET|/download|file"
+   ]
+  },
+  "CWE-601": {
+   "known": 4,
+   "ml_dast_found": 3,
+   "zap_found": 3,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 174,
+   "zap_missed": [
+    "vulnerable-node|POST|/login/auth|returnurl"
+   ]
+  }
+ },
+ "passive": {
+  "missing-csp": {
+   "known": 8,
+   "ml_dast_found": 8,
+   "zap_found": 7,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  },
+  "missing-nosniff": {
+   "known": 9,
+   "ml_dast_found": 9,
+   "zap_found": 8,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  },
+  "missing-frame-protection": {
+   "known": 8,
+   "ml_dast_found": 8,
+   "zap_found": 7,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  },
+  "cookie-no-httponly": {
+   "known": 0,
+   "ml_dast_found": 0,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 6
+  },
+  "cookie-no-samesite": {
+   "known": 3,
+   "ml_dast_found": 3,
+   "zap_found": 2,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 2,
+   "negatives": 3
+  },
+  "cors-any-origin": {
+   "known": 0,
+   "ml_dast_found": 0,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 1,
+   "negatives": 10
+  }
+ },
+ "stored_xss": {
+  "known": 8,
+  "ml_dast_found": 2,
+  "zap_found": 1,
+  "ml_dast_false_alarms": 0,
+  "safe_units": 8,
+  "zap_missed": [
+   "nodegoat|POST /profile [address]",
+   "nodegoat|POST /profile [bankAcc]",
+   "nodegoat|POST /profile [bankRouting]",
+   "nodegoat|POST /profile [dob]",
+   "nodegoat|POST /profile [lastName]",
+   "nodegoat|POST /profile [ssn]",
+   "vulnerable-node|POST /products/{id}/reviews [body]"
+  ],
+  "zap_persistent_alerts": {
+   "labflask": [
+    "message"
+   ],
+   "nodegoat": [
+    "memo"
+   ],
+   "vulnerable-node": []
+  }
+ },
+ "csrf_heuristic": {
+  "known": 20,
+  "ml_dast_found": 13,
+  "zap_found": 9,
+  "ml_dast_false_alarms": 0,
+  "safe_units": 6,
+  "zap_missed": [
+   "labflask|POST /v3/guestbook-safe",
+   "labflask|POST /v3/settings",
+   "nodegoat|POST /login",
+   "nodegoat|POST /memos",
+   "nodegoat|POST /profile",
+   "nodegoat|POST /signup",
+   "vulnerable-node|POST /account",
+   "vulnerable-node|POST /account/token",
+   "vulnerable-node|POST /register",
+   "vulnerable-node|POST /tools/ping",
+   "vulnerable-node|POST /tools/regex"
+  ],
+  "zap_10202_pages": {
+   "labflask": [
+    "/find",
+    "/find-safe",
+    "/login",
+    "/login-safe",
+    "/v3/guestbook"
+   ],
+   "labexpress": [
+    "/lookup",
+    "/lookup-safe",
+    "/v3/account"
+   ],
+   "vulpy-bad": [
+    "/user/create",
+    "/user/login"
+   ],
+   "vulpy-good": [
+    "/user/create",
+    "/user/login"
+   ],
+   "vulnerable-node": [
+    "/contact",
+    "/login",
+    "/products/1"
+   ],
+   "nodegoat": []
+  }
+ }
+}
