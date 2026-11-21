@@ -34,27 +34,49 @@ class _Form:
     action: str
     method: str
     fields: list = field(default_factory=list)
+    buttons: list = field(default_factory=list)  # v5: submit button texts (destructive-action skip list)
 
 
 class _Parser(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.links, self.forms, self._form = [], [], None
+        # v5: link texts parallel to ``links`` (one entry per link), for the authenticated skip list
+        self.link_texts, self._a, self._button = [], None, None
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         if tag == "a" and a.get("href"):
             self.links.append(a["href"])
+            self.link_texts.append("")
+            self._a = len(self.links) - 1
         elif tag == "form":
             self._form = _Form(a.get("action") or "", (a.get("method") or "get").upper())
             self.forms.append(self._form)
         elif tag in ("input", "textarea", "select") and self._form is not None and a.get("name"):
             if (a.get("type") or "").lower() not in ("submit", "button", "file", "image", "reset"):
                 self._form.fields.append((a["name"], a.get("value") or ""))
+        if self._form is not None:
+            if tag == "button":
+                self._button = len(self._form.buttons)
+                self._form.buttons.append(a.get("value") or "")
+            elif tag == "input" and (a.get("type") or "").lower() in ("submit", "button", "image"):
+                self._form.buttons.append(a.get("value") or a.get("alt") or "")
+
+    def handle_data(self, data):
+        if self._a is not None:
+            self.link_texts[self._a] += data
+        if self._button is not None and self._form is not None:
+            self._form.buttons[self._button] += data
 
     def handle_endtag(self, tag):
         if tag == "form":
             self._form = None
+            self._button = None
+        elif tag == "a":
+            self._a = None
+        elif tag == "button":
+            self._button = None
 
 
 def points_from_url(url, method="GET"):
@@ -89,6 +111,9 @@ def crawl(client, start="/", seeds=(), max_depth=3, start_paths=(), forms_out=No
     forms included; the CSRF heuristic needs them) and ``pages_out`` every visited HTML page as a
     path with its query string (the stored-XSS rule re-fetches these)."""
     seen, visited, points = set(), [], {}
+    authed = getattr(client, "auth", None) is not None  # v5: destructive links/forms are skipped only when logged in
+    if authed:
+        from .auth import destructive_text
     queue = deque([(start, 0)] + [(p, 0) for p in start_paths])
     for p in seeds:
         points.setdefault(p.key, p)
@@ -127,6 +152,8 @@ def crawl(client, start="/", seeds=(), max_depth=3, start_paths=(), forms_out=No
                 action = urlsplit(urljoin(norm, form.action or norm))
                 forms_out.append({"page": urlsplit(norm).path, "action": action.path, "method": form.method,
                                   "fields": [n for n, _ in form.fields]})
+            if authed and any(destructive_text(b) for b in form.buttons):
+                continue  # never submitted or probed (the CSRF heuristic only reads it, it sends nothing)
             for p in points_from_form(norm, form):
                 try:
                     client.check_url(p.path)
@@ -134,8 +161,10 @@ def crawl(client, start="/", seeds=(), max_depth=3, start_paths=(), forms_out=No
                     continue
                 points.setdefault(p.key, p)
         if depth < max_depth:
-            for href in parser.links:
+            for i, href in enumerate(parser.links):
                 if href.startswith(("mailto:", "javascript:", "tel:")):
+                    continue
+                if authed and destructive_text(parser.link_texts[i]):
                     continue
                 queue.append((urljoin(norm, href), depth + 1))
     return list(points.values()), visited
