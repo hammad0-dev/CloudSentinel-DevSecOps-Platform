@@ -17,16 +17,18 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "logs/zap_v3"
+import os  # noqa: E402
+V = os.environ.get("ZAP_DATA", "v3")  # v4: DVPWA -> logs/zap_v4 and ground_truth_v4.json; default unchanged
+OUT = ROOT / f"logs/zap_{V}"
 IMAGE = "cloudsentinel/zap-offline:verified-closure"
 TARGET = {"labflask": "labflask:8080", "labexpress": "labexpress:8080", "labfastapi": "labfastapi:8080", "vulnerable-node": "vulnerable-node:3000",
-          "vampi": "vampi:5000", "node-api-goat": "node-api-goat:3001", "dsvw": "dsvw:8080", "sirappsec": "sirappsec:5000", "nodegoat": "nodegoat:4000"}
+          "vampi": "vampi:5000", "node-api-goat": "node-api-goat:3001", "dsvw": "dsvw:8080", "sirappsec": "sirappsec:5000", "nodegoat": "nodegoat:4000", "dvpwa": "dvpwa:8080"}
 # parameters that make the target fetch a URL (never on the ml-dast skip list because ml-dast refuses URL values itself)
 REMOTE_FETCH = {"dsvw": [("/", "path")]}  # (SirAppSec's SSRF route /v1/test is a skip path already)
 
 
 def excludes(app):
-    gt = json.loads((ROOT / "data/dast/ground_truth_v3.json").read_text())
+    gt = json.loads((ROOT / f"data/dast/ground_truth_{V}.json").read_text())
     host = "http://" + TARGET[app]
     rx = []
     for s in gt["skip"]:
@@ -78,7 +80,7 @@ def scan(app):
     if status == "ok" and rx:
         logs = subprocess.run(["docker", "logs", "--since", since, name], capture_output=True, text=True, timeout=60)
         text = logs.stdout + logs.stderr
-        skips = [s for s in json.loads((ROOT / "data/dast/ground_truth_v3.json").read_text())["skip"] if s["app"] == app]
+        skips = [s for s in json.loads((ROOT / f"data/dast/ground_truth_{V}.json").read_text())["skip"] if s["app"] == app]
         bad = [p for _, p in REMOTE_FETCH.get(app, [])] + [s["param"] for s in skips if s.get("param")]
         hits = sorted({p for p in bad if re.search(rf"[?&]{re.escape(p)}=", text)})
         paths = sorted({s["path"] for s in skips if "param" not in s
