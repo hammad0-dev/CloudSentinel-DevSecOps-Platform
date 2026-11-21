@@ -1,0 +1,898 @@
+{
+ "preregistration": {
+  "model_v3_sha256": "bbcd03d12b211271f21bfd540c634d1942c94724402d95c87ca516e2b2fcf36f",
+  "model_v2_sha256": "5dc397d0b6c462d1ed30567920e51d2afbd7272560db6d1ebc78f887c84712eb",
+  "selection": {
+   "family": "lr",
+   "rule": "highest pooled LOAO endpoint-param macro-F1 (all training apps), fixed before SirAppSec is collected or scored",
+   "loao_macro_f1": {
+    "lr": 0.862872931368113,
+    "rf": 0.8132494666372398,
+    "lgbm": 0.8313994718136387
+   },
+   "loao_ci95": {
+    "lr": [
+     0.8048193504584127,
+     0.9136210315317584
+    ],
+    "rf": [
+     0.7464265089786077,
+     0.8698380274185165
+    ],
+    "lgbm": [
+     0.7610611332693453,
+     0.890449232364725
+    ]
+   },
+   "apps": [
+    "dsvw",
+    "juice-shop",
+    "labexpress",
+    "labfastapi",
+    "labflask",
+    "node-api-goat",
+    "nodegoat",
+    "vampi",
+    "vulnerable-node",
+    "vulpy"
+   ],
+   "n_rows": 9402,
+   "date": "2026-11-21",
+   "feature_set_frozen_at": "v3 F1-F6 (docs/ml-dast-v3-plan.md, section A), fixed before any v3 training; no feature changes after the v3 collection"
+  },
+  "freeze": {
+   "app": "sirappsec",
+   "role": "final_heldout_v3",
+   "frozen_before_any_scan": true,
+   "source": "SirAppSec/vuln-node.js-express.js-app @ b977c7407f328da929577745ad509639e26c428a (no license file)",
+   "commit": "b977c7407f328da929577745ad509639e26c428a",
+   "source_sha256": "b5349285b8bae18be42395bedb42e25c9703e2026f3f083446a4ca549840cbc2",
+   "source_files": 115,
+   "source_hash_covers": "sha256 of the sorted lines '<sha256(file)>  <path>' over `git ls-files` at the commit",
+   "ground_truth_sirappsec_sha256": "26c0683c186d03053d2516313b453663122fafe6a2b2d75adbb619c14d49b90f",
+   "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive, stored, csrf} for sirappsec, sort_keys=True)",
+   "scan_config": {
+    "start": "/",
+    "openapi_url": "/v1/api-docs",
+    "seed_data": "populate.sh lines 1-24 (POST /v1/user/ amit, shir) and one POST /v1/admin/new-beer/ (name 'Beer!!!', price 12), before the scan"
+   },
+   "rule": "SirAppSec is labelled from source only and never collected for training or tuning; it is collected and scored exactly once by scripts/eval_final_v3.py after the v3 model is fixed by SHA-256. v2 is scored on the same collection.",
+   "counts": {
+    "CWE-79": 2,
+    "CWE-22": 1,
+    "CWE-89": 2,
+    "CWE-601": 1,
+    "safe_endpoint_params": 33,
+    "passive_positive": 4,
+    "passive_negative": 2,
+    "stored_xss": 2
+   }
+  },
+  "freeze_checks": {
+   "source_sha256": true,
+   "ground_truth_sirappsec_sha256": true
+  },
+  "scan_config": {
+   "start": "/",
+   "openapi_url": "/v1/api-docs",
+   "seed_data": "populate.sh lines 1-24 (POST /v1/user/ amit, shir) and one POST /v1/admin/new-beer/ (name 'Beer!!!', price 12), before the scan"
+  },
+  "timeout_sec": 5.0,
+  "metric": "ML: endpoint-param macro-F1 over the classes present, per-class P/R/F1, cluster bootstrap 1000 (paired v3 vs v2); rules/passive/stored/CSRF: counts",
+  "default_model_rule": "v3 becomes the packaged default only if (a) its SirAppSec endpoint-param macro-F1 is higher than v2's on the same records AND (b) in leave-one-app-out on the same endpoint-params v3 is not significantly worse than v2 (the 95% CI of v2 - v3 does not lie entirely above 0, reports/before_after_v3.json). Otherwise v2 stays the default and v3 is packaged separately.",
+  "loao_v2_minus_v3": {
+   "mean": -0.10858837099427643,
+   "ci95": [
+    -0.1930707358891704,
+    -0.031257456116396035
+   ]
+  }
+ },
+ "raw_sha256": "c67764b4c8a4d3b10666bd94b44a13c2158f3a6d7157f5b42f284c9d5de3b4c9",
+ "collection": {
+  "pages_crawled": 3,
+  "points_found": 46,
+  "points_probed": 38,
+  "gt_params_listed": 39,
+  "gt_params_found": 38,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/beer",
+    "relationship"
+   ]
+  ],
+  "unlisted_points_not_probed": [
+   "GET /login [message]",
+   "GET /profile [message]",
+   "GET /register [address]",
+   "GET /register [email]",
+   "GET /register [name]",
+   "GET /register [password]",
+   "GET /v1/status/test [{seg3}]",
+   "GET /v1/test/ [url]"
+  ],
+  "requests": 3811,
+  "rows": 2438,
+  "seconds": 1332,
+  "point_errors": [],
+  "forms": 2,
+  "stored_points": 13,
+  "stored_raw_hits": 0
+ },
+ "ml": {
+  "v3": {
+   "threshold": 0.95,
+   "endpoint": {
+    "n": 38,
+    "macro_f1": 0.652224824355972,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.7941176470588235,
+      "f1": 0.8852459016393442,
+      "support": 34,
+      "tp": 27,
+      "fp": 0,
+      "fn": 7
+     },
+     "CWE-89": {
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "f1": 0.5,
+      "support": 2,
+      "tp": 2,
+      "fp": 4,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.4,
+      "recall": 1.0,
+      "f1": 0.5714285714285715,
+      "support": 2,
+      "tp": 2,
+      "fp": 3,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      27,
+      4,
+      3
+     ],
+     [
+      0,
+      2,
+      0
+     ],
+     [
+      0,
+      0,
+      2
+     ]
+    ],
+    "binary": {
+     "precision": 0.36363636363636365,
+     "recall": 1.0
+    }
+   },
+   "row": {
+    "n": 1868,
+    "macro_f1": 0.7621666412061789,
+    "per_class": {
+     "safe": {
+      "precision": 0.9813084112149533,
+      "recall": 0.9502262443438914,
+      "f1": 0.9655172413793103,
+      "support": 1768,
+      "tp": 1680,
+      "fp": 32,
+      "fn": 88
+     },
+     "CWE-89": {
+      "precision": 0.3089430894308943,
+      "recall": 0.5588235294117647,
+      "f1": 0.3979057591623037,
+      "support": 68,
+      "tp": 38,
+      "fp": 85,
+      "fn": 30
+     },
+     "CWE-79": {
+      "precision": 0.9090909090909091,
+      "recall": 0.9375,
+      "f1": 0.923076923076923,
+      "support": 32,
+      "tp": 30,
+      "fp": 3,
+      "fn": 2
+     }
+    },
+    "confusion": [
+     [
+      1680,
+      85,
+      3
+     ],
+     [
+      30,
+      38,
+      0
+     ],
+     [
+      2,
+      0,
+      30
+     ]
+    ],
+    "binary": {
+     "precision": 0.4358974358974359,
+     "recall": 0.68
+    }
+   },
+   "clusters": {
+    "sirappsec|GET|/|message": {
+     "true": 2,
+     "pred": 2
+    },
+    "sirappsec|GET|/beer|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/beer|user": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/login|email": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/login|password": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/profile|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/register|message": {
+     "true": 2,
+     "pred": 2
+    },
+    "sirappsec|GET|/registerform|address": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/registerform|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/registerform|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/registerform|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/beer-pic/|picture": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/love/{beer_id}|front": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/love/{beer_id}|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/love/{beer_id}|beer_id": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/redirect/|url": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/search/{filter}/{query}|query": {
+     "true": 1,
+     "pred": 1
+    },
+    "sirappsec|GET|/v1/search/{filter}/{query}|filter": {
+     "true": 1,
+     "pred": 1
+    },
+    "sirappsec|GET|/v1/user/{user_id}|user_id": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/admin/new-beer/|name": {
+     "true": 0,
+     "pred": 2
+    },
+    "sirappsec|POST|/v1/admin/new-beer/|picture": {
+     "true": 0,
+     "pred": 2
+    },
+    "sirappsec|POST|/v1/admin/new-beer/|price": {
+     "true": 0,
+     "pred": 2
+    },
+    "sirappsec|POST|/v1/love/{beer_id}|front": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/love/{beer_id}|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/love/{beer_id}|beer_id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|POST|/v1/user/|address": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|profile_pic": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|role": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/{user_id}/validate-otp|seed": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/{user_id}/validate-otp|token": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/login|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/login|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/token|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/token|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/{user_id}/validate-otp|user_id": {
+     "true": 0,
+     "pred": 0
+    }
+   }
+  },
+  "v2": {
+   "threshold": 0.9,
+   "endpoint": {
+    "n": 38,
+    "macro_f1": 0.7183833116036507,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.7352941176470589,
+      "f1": 0.8474576271186441,
+      "support": 34,
+      "tp": 25,
+      "fp": 0,
+      "fn": 9
+     },
+     "CWE-89": {
+      "precision": 0.18181818181818182,
+      "recall": 1.0,
+      "f1": 0.3076923076923077,
+      "support": 2,
+      "tp": 2,
+      "fp": 9,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      25,
+      9,
+      0
+     ],
+     [
+      0,
+      2,
+      0
+     ],
+     [
+      0,
+      0,
+      2
+     ]
+    ],
+    "binary": {
+     "precision": 0.3076923076923077,
+     "recall": 1.0
+    }
+   },
+   "row": {
+    "n": 1868,
+    "macro_f1": 0.7108991673045161,
+    "per_class": {
+     "safe": {
+      "precision": 0.9924717691342535,
+      "recall": 0.8947963800904978,
+      "f1": 0.9411064842355741,
+      "support": 1768,
+      "tp": 1582,
+      "fp": 12,
+      "fn": 186
+     },
+     "CWE-89": {
+      "precision": 0.2677165354330709,
+      "recall": 1.0,
+      "f1": 0.42236024844720504,
+      "support": 68,
+      "tp": 68,
+      "fp": 186,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 0.625,
+      "f1": 0.7692307692307693,
+      "support": 32,
+      "tp": 20,
+      "fp": 0,
+      "fn": 12
+     }
+    },
+    "confusion": [
+     [
+      1582,
+      186,
+      0
+     ],
+     [
+      0,
+      68,
+      0
+     ],
+     [
+      12,
+      0,
+      20
+     ]
+    ],
+    "binary": {
+     "precision": 0.32116788321167883,
+     "recall": 0.88
+    }
+   },
+   "clusters": {
+    "sirappsec|GET|/|message": {
+     "true": 2,
+     "pred": 2
+    },
+    "sirappsec|GET|/beer|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/beer|user": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/login|email": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/login|password": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/profile|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/register|message": {
+     "true": 2,
+     "pred": 2
+    },
+    "sirappsec|GET|/registerform|address": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/registerform|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/registerform|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/registerform|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/beer-pic/|picture": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/love/{beer_id}|front": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/love/{beer_id}|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|GET|/v1/love/{beer_id}|beer_id": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/redirect/|url": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|GET|/v1/search/{filter}/{query}|query": {
+     "true": 1,
+     "pred": 1
+    },
+    "sirappsec|GET|/v1/search/{filter}/{query}|filter": {
+     "true": 1,
+     "pred": 1
+    },
+    "sirappsec|GET|/v1/user/{user_id}|user_id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|POST|/v1/admin/new-beer/|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/admin/new-beer/|picture": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/admin/new-beer/|price": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/love/{beer_id}|front": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/love/{beer_id}|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|POST|/v1/love/{beer_id}|beer_id": {
+     "true": 0,
+     "pred": 1
+    },
+    "sirappsec|POST|/v1/user/|address": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|profile_pic": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/|role": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/{user_id}/validate-otp|seed": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/{user_id}/validate-otp|token": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/login|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/login|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/token|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/token|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "sirappsec|POST|/v1/user/{user_id}/validate-otp|user_id": {
+     "true": 0,
+     "pred": 0
+    }
+   }
+  }
+ },
+ "bootstrap": {
+  "n_clusters": 38,
+  "macro_f1": {
+   "v3": {
+    "mean": 0.6856768838416009,
+    "ci95": [
+     0.5023809523809524,
+     0.8791666666666665
+    ]
+   },
+   "v2": {
+    "mean": 0.732996041668627,
+    "ci95": [
+     0.5249169580419579,
+     0.9375
+    ]
+   }
+  },
+  "per_class_f1_ci95": {
+   "v3": {
+    "CWE-89": [
+     0.0,
+     0.8571428571428571
+    ],
+    "CWE-79": [
+     0.0,
+     1.0
+    ]
+   },
+   "v2": {
+    "CWE-89": [
+     0.0,
+     0.6153846153846153
+    ],
+    "CWE-79": [
+     0.0,
+     1.0
+    ]
+   }
+  },
+  "differences": {
+   "v3 - v2": {
+    "mean": -0.04731915782702602,
+    "ci95": [
+     -0.276805057968851,
+     0.1687509162194138
+    ]
+   }
+  }
+ },
+ "rules": {
+  "CWE-78": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 38
+  },
+  "CWE-22": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 37
+  },
+  "CWE-601": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 37
+  }
+ },
+ "passive": {
+  "missing-csp": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "missing-nosniff": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "missing-frame-protection": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "cookie-no-httponly": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "cookie-no-samesite": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  },
+  "cors-any-origin": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  }
+ },
+ "stored_xss": {
+  "known": [
+   "sirappsec|POST /v1/user/ [address]"
+  ],
+  "found": [],
+  "missed": [
+   "sirappsec|POST /v1/user/ [address]"
+  ],
+  "outside_rule": [
+   "sirappsec|GET /registerform [address]: GET write; the stored-XSS rule submits POST/PUT fields only"
+  ],
+  "false_alarms": [],
+  "safe_units": 0,
+  "unlabelled_findings": []
+ },
+ "csrf_heuristic": {
+  "known": [],
+  "found": [],
+  "missed": [],
+  "false_alarms": [],
+  "safe_units": 0,
+  "unlabelled_findings": [],
+  "not_evaluable": []
+ },
+ "summary": {
+  "collection_seconds": 1344,
+  "n_rows": 1868,
+  "n_clusters": 38,
+  "ml": {
+   "v3": {
+    "macro_f1": 0.652224824355972,
+    "ci95": [
+     0.5023809523809524,
+     0.8791666666666665
+    ],
+    "per_class": {
+     "CWE-89": {
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "f1": 0.5,
+      "support": 2
+     },
+     "CWE-79": {
+      "precision": 0.4,
+      "recall": 1.0,
+      "f1": 0.5714285714285715,
+      "support": 2
+     }
+    },
+    "per_class_f1_ci95": {
+     "CWE-89": [
+      0.0,
+      0.8571428571428571
+     ],
+     "CWE-79": [
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "v2": {
+    "macro_f1": 0.7183833116036507,
+    "ci95": [
+     0.5249169580419579,
+     0.9375
+    ],
+    "per_class": {
+     "CWE-89": {
+      "precision": 0.18181818181818182,
+      "recall": 1.0,
+      "f1": 0.3076923076923077,
+      "support": 2
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 2
+     }
+    },
+    "per_class_f1_ci95": {
+     "CWE-89": [
+      0.0,
+      0.6153846153846153
+     ],
+     "CWE-79": [
+      0.0,
+      1.0
+     ]
+    }
+   }
+  },
+  "v3_minus_v2": {
+   "mean": -0.04731915782702602,
+   "ci95": [
+    -0.276805057968851,
+    0.1687509162194138
+   ]
+  },
+  "rules": {
+   "CWE-78": "found 0 of 0, 0 false alarms on 38 safe",
+   "CWE-22": "found 1 of 1, 0 false alarms on 37 safe",
+   "CWE-601": "found 1 of 1, 0 false alarms on 37 safe"
+  },
+  "passive": {
+   "missing-csp": "found 1 of 1, 0 false alarms on 0 safe",
+   "missing-nosniff": "found 1 of 1, 0 false alarms on 0 safe",
+   "missing-frame-protection": "found 1 of 1, 0 false alarms on 0 safe",
+   "cookie-no-httponly": "found 1 of 1, 0 false alarms on 0 safe",
+   "cookie-no-samesite": "found 0 of 0, 0 false alarms on 1 safe",
+   "cors-any-origin": "found 0 of 0, 0 false alarms on 1 safe"
+  },
+  "stored_xss": "found 0 of 1, 0 false alarms on 0 safe",
+  "stored_xss_outside_rule": [
+   "sirappsec|GET /registerform [address]: GET write; the stored-XSS rule submits POST/PUT fields only"
+  ],
+  "csrf_heuristic": "found 0 of 0, 0 false alarms on 0 safe",
+  "decision": {
+   "v3_heldout_macro_f1": 0.652224824355972,
+   "v2_heldout_macro_f1": 0.7183833116036507,
+   "a_v3_beats_v2_on_heldout": false,
+   "b_v3_not_significantly_worse_in_loao": true,
+   "v3_is_default": false,
+   "rule": "v3 becomes the packaged default only if (a) its SirAppSec endpoint-param macro-F1 is higher than v2's on the same records AND (b) in leave-one-app-out on the same endpoint-params v3 is not significantly worse than v2 (the 95% CI of v2 - v3 does not lie entirely above 0, reports/before_after_v3.json). Otherwise v2 stays the default and v3 is packaged separately."
+  }
+ }
+}

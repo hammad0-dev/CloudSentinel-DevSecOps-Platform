@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
   const links = ["/books?category=scifi", "/books-safe?category=scifi", "/book/1", "/book-safe/1", "/hello?name=guest", "/hello-safe?name=guest",
     "/banner?msg=welcome", "/banner-safe?msg=welcome", "/api/echo?q=hi", "/members", "/members-safe", "/lookup", "/lookup-safe",
     "/sort?by=title", "/sort-safe?by=title", "/convert?amount=3", "/dns?host=localhost", "/dns-safe?host=localhost",
-    "/file?name=guide.txt", "/file-safe?name=guide.txt", "/v2"];
+    "/file?name=guide.txt", "/file-safe?name=guide.txt", "/v2", "/v3"];
   res.send(page("labexpress", "<ul>" + links.map((l) => `<li><a href="${l}">${l}</a></li>`).join("") + "</ul>"));
 });
 
@@ -161,6 +161,51 @@ app.get("/upstream-safe", (req, res) => { // SAFE (hard negative): unknown SKUs 
   if (SKUS.has(sku)) return res.send(page("stock", `<p>${escapeHtml(sku)}: in stock</p>`));
   setTimeout(() => res.send(page("stock", "<p>unknown item</p>")), 1200);
 });
+
+// ---------- v3: targeted twins (docs/ml-dast-v3-plan.md, B/D1) ----------
+app.get("/v3", (req, res) => {
+  const links = ["/v3/api/book?title=Dune", "/v3/api/book-safe?title=Dune", "/v3/text/book?id=1", "/v3/text/book-safe?id=1",
+    "/v3/badge?label=new", "/v3/badge-safe?label=new", "/v3/account"];
+  res.send(page("labexpress v3", "<ul>" + links.map((l) => `<li><a href="${l}">${l}</a></li>`).join("") + "</ul>"));
+});
+app.get("/v3/api/book", async (req, res) => { // VULN CWE-89: string-built; the pg error comes back as JSON 500
+  try {
+    const r = await pool.query("SELECT title, category FROM books WHERE title = '" + String(req.query.title || "") + "'");
+    res.json({ book: r.rows[0] || null });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.get("/v3/api/book-safe", async (req, res) => { // SAFE (hard negative): parameterized; over-long or empty input -> JSON 422
+  const t = String(req.query.title || "");
+  if (!t || t.length > 30) return res.status(422).json({ error: "title must be 1-30 characters" });
+  const r = await pool.query("SELECT title, category FROM books WHERE title = $1", [t]);
+  res.json({ book: r.rows[0] || null });
+});
+app.get("/v3/text/book", async (req, res) => { // VULN CWE-89: string-built (numeric); the pg error comes back as text/plain 500
+  try {
+    const r = await pool.query("SELECT title FROM books WHERE id = " + String(req.query.id || "1"));
+    res.type("text/plain").send((r.rows[0] ? r.rows[0].title : "no such book") + "\n");
+  } catch (e) {
+    res.status(500).type("text/plain").send("database error: " + e.message + "\n");
+  }
+});
+app.get("/v3/text/book-safe", async (req, res) => { // SAFE (hard negative): integer check; bad input -> text/plain 400
+  const id = String(req.query.id || "1");
+  if (!/^\d{1,6}$/.test(id)) return res.status(400).type("text/plain").send(`bad request: id must be a number, got ${JSON.stringify(id)}\n`);
+  const r = await pool.query("SELECT title FROM books WHERE id = $1", [Number(id)]);
+  res.type("text/plain").send((r.rows[0] ? r.rows[0].title : "no such book") + "\n");
+});
+app.get("/v3/badge", (req, res) => res.send(page("badge", `<p><span class=${req.query.label || "new"}>badge</span></p>`))); // VULN CWE-79: unquoted attribute
+app.get("/v3/badge-safe", (req, res) => res.send(page("badge", `<p><span class="${escapeHtml(req.query.label || "new")}">badge</span></p>`))); // SAFE
+const account = { nickname: "reader" };
+const accountPage = (res) => {
+  // session cookie with SameSite=Lax: a cross-site POST does not carry it (CSRF rule: protected by the cookie)
+  res.cookie("lx_session", "lab-session", { httpOnly: true, sameSite: "lax" });
+  res.send(page("account", `<form method="post" action="/v3/account"><input name="nickname" value="${escapeHtml(account.nickname)}"><button>save</button></form>`));
+};
+app.get("/v3/account", (req, res) => accountPage(res));
+app.post("/v3/account", (req, res) => { account.nickname = String(req.body.nickname || "").slice(0, 40); accountPage(res); }); // SAFE (CSRF): no token, but SameSite=Lax
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => res.status(500).send(page("error", "<p>Internal error</p>")));

@@ -1,0 +1,259 @@
+{
+ "labflask": {
+  "pages_crawled": 53,
+  "points_found": 52,
+  "points_probed": 52,
+  "gt_params_listed": 52,
+  "gt_params_found": 52,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 4887,
+  "rows": 3380,
+  "seconds": 298,
+  "forms": 9,
+  "stored_points": 12,
+  "stored_raw_hits": 1
+ },
+ "labexpress": {
+  "pages_crawled": 38,
+  "points_found": 31,
+  "points_probed": 31,
+  "gt_params_listed": 31,
+  "gt_params_found": 31,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 2580,
+  "rows": 2015,
+  "seconds": 219,
+  "point_errors": [],
+  "forms": 4,
+  "stored_points": 3,
+  "stored_raw_hits": 0
+ },
+ "labfastapi": {
+  "pages_crawled": 27,
+  "points_found": 23,
+  "points_probed": 22,
+  "gt_params_listed": 22,
+  "gt_params_found": 22,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "GET /docs [topic]"
+  ],
+  "requests": 1699,
+  "rows": 1430,
+  "seconds": 162,
+  "point_errors": [],
+  "forms": 2,
+  "stored_points": 2,
+  "stored_raw_hits": 0
+ },
+ "juice-shop": {
+  "pages_crawled": 1,
+  "points_found": 5,
+  "points_probed": 5,
+  "gt_params_listed": 6,
+  "gt_params_found": 5,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/rest/track-order/{id}",
+    "id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 375,
+  "rows": 325,
+  "seconds": 17,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 2,
+  "stored_raw_hits": 0
+ },
+ "nodegoat": {
+  "pages_crawled": 6,
+  "points_found": 17,
+  "points_probed": 14,
+  "gt_params_listed": 14,
+  "gt_params_found": 14,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /profile [website]",
+   "POST /signup [password]",
+   "POST /signup [verify]"
+  ],
+  "requests": 1274,
+  "rows": 910,
+  "seconds": 172,
+  "point_errors": [],
+  "forms": 4,
+  "stored_points": 13,
+  "stored_raw_hits": 0
+ },
+ "vulpy-bad": {
+  "pages_crawled": 3,
+  "points_found": 6,
+  "points_probed": 4,
+  "gt_params_listed": 4,
+  "gt_params_found": 4,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /user/create [email]",
+   "POST /user/login [otp]"
+  ],
+  "requests": 419,
+  "rows": 260,
+  "seconds": 19,
+  "point_errors": [],
+  "forms": 3,
+  "stored_points": 4,
+  "stored_raw_hits": 0
+ },
+ "vulpy-good": {
+  "pages_crawled": 3,
+  "points_found": 6,
+  "points_probed": 4,
+  "gt_params_listed": 4,
+  "gt_params_found": 4,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST /user/create [email]",
+   "POST /user/login [otp]"
+  ],
+  "requests": 311,
+  "rows": 260,
+  "seconds": 16,
+  "point_errors": [],
+  "forms": 3,
+  "stored_points": 4,
+  "stored_raw_hits": 0
+ },
+ "vulnerable-node": {
+  "pages_crawled": 45,
+  "points_found": 34,
+  "points_probed": 34,
+  "gt_params_listed": 18,
+  "gt_params_found": 12,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/categories/{slug}",
+    "slug"
+   ],
+   [
+    "GET",
+    "/labs/docs/{file}",
+    "file"
+   ],
+   [
+    "GET",
+    "/login",
+    "error"
+   ],
+   [
+    "GET",
+    "/login",
+    "returnurl"
+   ],
+   [
+    "GET",
+    "/orders/{id}",
+    "id"
+   ],
+   [
+    "POST",
+    "/products/{id}/reviews",
+    "id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 5676,
+  "rows": 2178,
+  "seconds": 709,
+  "point_errors": [],
+  "forms": 65,
+  "stored_points": 30,
+  "stored_raw_hits": 12
+ },
+ "vampi": {
+  "pages_crawled": 2,
+  "points_found": 6,
+  "points_probed": 6,
+  "gt_params_listed": 6,
+  "gt_params_found": 6,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 451,
+  "rows": 390,
+  "seconds": 19,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 5,
+  "stored_raw_hits": 0
+ },
+ "node-api-goat": {
+  "pages_crawled": 2,
+  "points_found": 6,
+  "points_probed": 6,
+  "gt_params_listed": 6,
+  "gt_params_found": 6,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 446,
+  "rows": 390,
+  "seconds": 18,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 0,
+  "stored_raw_hits": 0
+ },
+ "dsvw": {
+  "pages_crawled": 28,
+  "points_found": 13,
+  "points_probed": 12,
+  "gt_params_listed": 12,
+  "gt_params_found": 12,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "GET / [foobar]"
+  ],
+  "requests": 988,
+  "rows": 714,
+  "seconds": 54,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 0,
+  "stored_raw_hits": 0
+ },
+ "sirappsec": {
+  "pages_crawled": 3,
+  "points_found": 46,
+  "points_probed": 38,
+  "gt_params_listed": 39,
+  "gt_params_found": 38,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/beer",
+    "relationship"
+   ]
+  ],
+  "unlisted_points_not_probed": [
+   "GET /login [message]",
+   "GET /profile [message]",
+   "GET /register [address]",
+   "GET /register [email]",
+   "GET /register [name]",
+   "GET /register [password]",
+   "GET /v1/status/test [{seg3}]",
+   "GET /v1/test/ [url]"
+  ],
+  "requests": 3811,
+  "rows": 2438,
+  "seconds": 1332,
+  "point_errors": [],
+  "forms": 2,
+  "stored_points": 13,
+  "stored_raw_hits": 0
+ }
+}

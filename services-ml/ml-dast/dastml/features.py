@@ -61,6 +61,28 @@ ALL_FEATURES = FEATURE_NAMES + NEW_FEATURES
 # and the raw-reflection / special-character features that count harmless characters (parentheses,
 # slashes) in favour of raw_reflected_dangerous and html_specials_kept_frac.
 FEATURE_NAMES_V2 = [f for f in FEATURE_NAMES if f not in ("time_delta", "time_ratio_log", "payload_raw_reflected", "specials_kept_frac")] + NEW_FEATURES
+# v3 additions (docs/ml-dast-v3-plan.md, section A; fixed before any v3 training). v1/v2 features are
+# computed exactly as before, so the v1 and v2 models still score v3 data unchanged.
+#   x_* XSS evidence counts only for RENDERED HTML (an HTML content type, not a 3xx: a redirect body is
+#       never shown) and is taken at the occurrence where the reflection STARTS (v2 looked at the marker,
+#       which for '"><svg onload={M}>' sits inside the injected tag):
+#   x_dangerous   some occurrence breaks out of its context: text needs a raw '<'; a quoted attribute
+#                 its own quote; an unquoted attribute a raw space or '>'; a URL attribute a raw
+#                 javascript: value; a script block an unescaped quote matching the enclosing JS string
+#                 (or code context, or a raw '</script'). Inside <title>/<textarea>/<style> or a comment
+#                 nothing in our payloads can break out.
+#   x_ctx_*       the context of the first dangerous occurrence (all zero when none is dangerous), so a
+#                 harmless reflection in an attribute no longer looks like XSS (F3).
+#   x_script_breakout  the dangerous occurrence is in a script block (F4).
+#   x_specials_kept_frac / x_angle_kept / x_quote_kept  as before, zero unless rendered.
+# Dropped for v3 as app priors (F1): len_log, the content-type one-hots and nosniff.
+V3_CONTEXTS = ["text", "attr_dq", "attr_sq", "attr_unquoted", "url_attr", "script"]
+NEW_FEATURES_V3 = ["x_dangerous", "x_specials_kept_frac", "x_angle_kept", "x_quote_kept", "x_script_breakout"] + [f"x_ctx_{c}" for c in V3_CONTEXTS]
+DROP_V3 = {"len_log", "ct_html", "ct_json", "ct_text", "ct_other", "nosniff", "raw_reflected_dangerous", "html_specials_kept_frac",
+           "angle_kept", "quote_kept", "ctx_url_attr"} | {f"ctx_{c}" for c in CONTEXTS}
+FEATURE_NAMES_V3 = [f for f in FEATURE_NAMES_V2 if f not in DROP_V3] + NEW_FEATURES_V3
+ALL_FEATURES = ALL_FEATURES + NEW_FEATURES_V3
+RCDATA = re.compile(r"<(title|textarea|style|xmp|noscript)\b", re.I)
 LOCATION_FEATURES = [f"loc_{l}" for l in LOCATIONS]
 HTML_SPECIAL = "<>\"'`"
 URL_ATTR = re.compile(r"(?:href|src|action|formaction|data|poster|xlink:href)\s*=\s*[\"']?\s*$", re.I)
@@ -110,6 +132,111 @@ def reflection_context(body, marker):
             return "attr_sq"
         return "attr_unquoted"
     return "text"
+
+
+def context_at(body, s):
+    """HTML context at offset s (where a reflection starts): v3 contexts plus comment / rcdata / none."""
+    before = body[:s]
+    low = before.lower()
+    if before.rfind("<!--") > before.rfind("-->"):
+        return "comment"
+    if low.rfind("<script") > low.rfind("</script"):
+        return "script"
+    m = list(RCDATA.finditer(before))
+    if m and low.rfind("</" + m[-1].group(1).lower()) < m[-1].start():
+        return "rcdata"
+    lt, gt = before.rfind("<"), before.rfind(">")
+    if lt > gt:
+        tag = before[lt:]
+        if URL_ATTR.search(tag[-60:]):
+            return "url_attr"
+        if tag.count('"') % 2 == 1:
+            return "attr_dq"
+        if tag.count("'") % 2 == 1:
+            return "attr_sq"
+        if re.search(r"=\s*$", tag):
+            return "attr_unquoted"
+        return "tag"
+    return "text"
+
+
+def _escaped(body, k):
+    """True if body[k] is preceded by an odd number of backslashes (JS string escape)."""
+    n = 0
+    while k - 1 - n >= 0 and body[k - 1 - n] == "\\":
+        n += 1
+    return n % 2 == 1
+
+
+def _js_string_state(script):
+    """The quote of the JS string open at the end of `script` ('' = code context)."""
+    state, i = "", 0
+    while i < len(script):
+        ch = script[i]
+        if state:
+            if ch == "\\":
+                i += 1
+            elif ch == state:
+                state = ""
+        elif ch in "'\"`":
+            state = ch
+        i += 1
+    return state
+
+
+def xss_occurrences(body, payload, marker):
+    """[(context, dangerous)] for every occurrence of the marker, judged where the reflection starts."""
+    k = payload.find(marker)
+    if k < 0:
+        return []
+    prefix, suffix = payload[:k], payload[k + len(marker):]
+    out, start = [], 0
+    while True:
+        i = body.find(marker, start)
+        if i < 0:
+            return out
+        start = i + 1
+        s = i - len(prefix)
+        raw_prefix = s >= 0 and body[s:i] == prefix
+        raw_suffix = body[i + len(marker): i + len(marker) + len(suffix)] == suffix
+        ctx = context_at(body, max(s, 0)) if raw_prefix else context_at(body, i)
+        pos = lambda c: [s + j for j, ch in enumerate(prefix) if ch == c] if raw_prefix else []
+        dangerous = False
+        if ctx == "text":
+            dangerous = bool(pos("<")) or (raw_suffix and "<" in suffix and not prefix)
+        elif ctx in ("attr_dq", "attr_sq"):
+            dangerous = bool(pos('"' if ctx == "attr_dq" else "'"))
+        elif ctx == "attr_unquoted":
+            dangerous = raw_prefix and (" " in prefix or ">" in prefix)
+        elif ctx == "url_attr":
+            tag = body[body.rfind("<", 0, max(s, 0)):max(s, 0)]
+            q = '"' if tag.count('"') % 2 == 1 else ("'" if tag.count("'") % 2 == 1 else "")
+            dangerous = raw_prefix and (prefix.lower().lstrip().startswith("javascript:")
+                                        or (bool(pos(q)) if q else (" " in prefix or ">" in prefix)))
+        elif ctx == "script":
+            low = body[:max(s, 0)].lower()
+            open_at = body.find(">", low.rfind("<script")) + 1
+            q = _js_string_state(body[open_at:max(s, 0)])
+            if q:
+                dangerous = any(not _escaped(body, p) for p in pos(q))
+            else:
+                dangerous = raw_prefix and bool(prefix.strip())
+            dangerous = dangerous or (raw_prefix and "</script" in prefix.lower())
+        out.append((ctx, dangerous))
+
+
+def v3_xss_features(body, sent, marker, rendered):
+    f = dict.fromkeys(NEW_FEATURES_V3, 0.0)
+    if not rendered:
+        return f
+    frac, angle, qk = specials_kept(body, sent, marker, HTML_SPECIAL)
+    f.update(x_specials_kept_frac=frac, x_angle_kept=float(angle), x_quote_kept=float(qk))
+    hit = next((c for c, d in xss_occurrences(body, sent, marker) if d), None)
+    if hit in V3_CONTEXTS:
+        f["x_dangerous"] = 1.0
+        f["x_ctx_" + hit] = 1.0
+        f["x_script_breakout"] = float(hit == "script")
+    return f
 
 
 def url_attr_context(body, payload, marker):
@@ -243,6 +370,7 @@ def row_features(payload, location, resp, marker, base1, base2, probe, pair=None
         f["html_specials_kept_frac"] = specials_kept(body, sent, marker, HTML_SPECIAL)[0]
         f["ctx_url_attr"] = url_attr_context(body, sent, marker) if kind == "html" else 0.0
         f["raw_reflected_dangerous"] = float(bool(f["payload_raw_reflected"]) and (f["html_specials_kept_frac"] > 0 or f["ctx_url_attr"] > 0))
+        f.update(v3_xss_features(body, sent, marker, rendered=(kind == "html" and not 300 <= st < 400)))
     else:
         f["ctx_none"] = 1.0
     f["time_slow_delta"] = max(0.0, f["time_delta"])

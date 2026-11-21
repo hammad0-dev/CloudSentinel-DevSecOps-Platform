@@ -1,0 +1,672 @@
+{
+ "apps": [
+  "labflask",
+  "labexpress",
+  "labfastapi",
+  "juice-shop",
+  "nodegoat",
+  "vulpy-bad",
+  "vulpy-good",
+  "dsvw",
+  "vulnerable-node",
+  "vampi",
+  "node-api-goat"
+ ],
+ "zap_sources": {
+  "labflask": "v3 scan",
+  "labexpress": "v3 scan",
+  "labfastapi": "v3 scan",
+  "juice-shop": "v1 scan (app unchanged since v1)",
+  "nodegoat": "v1 scan (app unchanged since v1)",
+  "vulpy-bad": "v1 scan (app unchanged since v1)",
+  "vulpy-good": "v1 scan (app unchanged since v1)",
+  "dsvw": "v3 scan NOT USED (excluded parameters were requested by ZAP (172.18.0.18): 398 requests with include/object/xml/size/path, 204 of them include=; global excludes did not hold)",
+  "vulnerable-node": "v3 scan",
+  "vampi": "v3 scan",
+  "node-api-goat": "v3 scan"
+ },
+ "n_common_clusters": 157,
+ "ml_classes": {
+  "all": {
+   "ml": {
+    "n": 157,
+    "macro_f1": 0.8736077251502722,
+    "per_class": {
+     "safe": {
+      "precision": 0.9753086419753086,
+      "recall": 0.8229166666666666,
+      "f1": 0.8926553672316384,
+      "support": 96,
+      "tp": 79,
+      "fp": 2,
+      "fn": 17
+     },
+     "CWE-89": {
+      "precision": 0.8787878787878788,
+      "recall": 0.9354838709677419,
+      "f1": 0.90625,
+      "support": 31,
+      "tp": 29,
+      "fp": 4,
+      "fn": 2
+     },
+     "CWE-79": {
+      "precision": 0.6976744186046512,
+      "recall": 1.0,
+      "f1": 0.8219178082191781,
+      "support": 30,
+      "tp": 30,
+      "fp": 13,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      79,
+      4,
+      13
+     ],
+     [
+      2,
+      29,
+      0
+     ],
+     [
+      0,
+      0,
+      30
+     ]
+    ],
+    "binary": {
+     "precision": 0.7763157894736842,
+     "recall": 0.9672131147540983
+    }
+   },
+   "zap": {
+    "n": 157,
+    "macro_f1": 0.9150110269287524,
+    "per_class": {
+     "safe": {
+      "precision": 0.897196261682243,
+      "recall": 1.0,
+      "f1": 0.9458128078817734,
+      "support": 96,
+      "tp": 96,
+      "fp": 11,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.7419354838709677,
+      "f1": 0.8518518518518519,
+      "support": 31,
+      "tp": 23,
+      "fp": 0,
+      "fn": 8
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526316,
+      "support": 30,
+      "tp": 27,
+      "fp": 0,
+      "fn": 3
+     }
+    },
+    "confusion": [
+     [
+      96,
+      0,
+      0
+     ],
+     [
+      8,
+      23,
+      0
+     ],
+     [
+      3,
+      0,
+      27
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.819672131147541
+    }
+   }
+  },
+  "own": {
+   "ml": {
+    "n": 105,
+    "macro_f1": 0.825037037037037,
+    "per_class": {
+     "safe": {
+      "precision": 0.9642857142857143,
+      "recall": 0.782608695652174,
+      "f1": 0.864,
+      "support": 69,
+      "tp": 54,
+      "fp": 2,
+      "fn": 15
+     },
+     "CWE-89": {
+      "precision": 0.9,
+      "recall": 0.9,
+      "f1": 0.9,
+      "support": 20,
+      "tp": 18,
+      "fp": 2,
+      "fn": 2
+     },
+     "CWE-79": {
+      "precision": 0.5517241379310345,
+      "recall": 1.0,
+      "f1": 0.7111111111111111,
+      "support": 16,
+      "tp": 16,
+      "fp": 13,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      54,
+      2,
+      13
+     ],
+     [
+      2,
+      18,
+      0
+     ],
+     [
+      0,
+      0,
+      16
+     ]
+    ],
+    "binary": {
+     "precision": 0.6938775510204082,
+     "recall": 0.9444444444444444
+    }
+   },
+   "zap": {
+    "n": 105,
+    "macro_f1": 0.9535732916014606,
+    "per_class": {
+     "safe": {
+      "precision": 0.9452054794520548,
+      "recall": 1.0,
+      "f1": 0.971830985915493,
+      "support": 69,
+      "tp": 69,
+      "fp": 4,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.888888888888889,
+      "support": 20,
+      "tp": 16,
+      "fp": 0,
+      "fn": 4
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 16,
+      "tp": 16,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      69,
+      0,
+      0
+     ],
+     [
+      4,
+      16,
+      0
+     ],
+     [
+      0,
+      0,
+      16
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.8888888888888888
+    }
+   }
+  },
+  "third-party": {
+   "ml": {
+    "n": 52,
+    "macro_f1": 0.9594017094017094,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.9259259259259259,
+      "f1": 0.9615384615384615,
+      "support": 27,
+      "tp": 25,
+      "fp": 0,
+      "fn": 2
+     },
+     "CWE-89": {
+      "precision": 0.8461538461538461,
+      "recall": 1.0,
+      "f1": 0.9166666666666666,
+      "support": 11,
+      "tp": 11,
+      "fp": 2,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 14,
+      "tp": 14,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      25,
+      2,
+      0
+     ],
+     [
+      0,
+      11,
+      0
+     ],
+     [
+      0,
+      0,
+      14
+     ]
+    ],
+    "binary": {
+     "precision": 0.9259259259259259,
+     "recall": 1.0
+    }
+   },
+   "zap": {
+    "n": 52,
+    "macro_f1": 0.8476745598057073,
+    "per_class": {
+     "safe": {
+      "precision": 0.7941176470588235,
+      "recall": 1.0,
+      "f1": 0.8852459016393442,
+      "support": 27,
+      "tp": 27,
+      "fp": 7,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.6363636363636364,
+      "f1": 0.7777777777777778,
+      "support": 11,
+      "tp": 7,
+      "fp": 0,
+      "fn": 4
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 0.7857142857142857,
+      "f1": 0.88,
+      "support": 14,
+      "tp": 11,
+      "fp": 0,
+      "fn": 3
+     }
+    },
+    "confusion": [
+     [
+      27,
+      0,
+      0
+     ],
+     [
+      4,
+      7,
+      0
+     ],
+     [
+      3,
+      0,
+      11
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.72
+    }
+   }
+  }
+ },
+ "bootstrap": {
+  "all": {
+   "n_clusters": 157,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.8721770007574214,
+     "ci95": [
+      0.8140818652102421,
+      0.9230115121278605
+     ]
+    },
+    "zap": {
+     "mean": 0.9141343955450945,
+     "ci95": [
+      0.8584532046580993,
+      0.9608048141381732
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.823529411764706,
+      0.9714484126984126
+     ],
+     "CWE-79": [
+      0.7118309545049063,
+      0.904799107142857
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.7317073170731707,
+      0.9454545454545454
+     ],
+     "CWE-79": [
+      0.8750000000000001,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": -0.041957394787673005,
+     "ci95": [
+      -0.11331401123851367,
+      0.026946686240704606
+     ]
+    }
+   }
+  },
+  "own": {
+   "n_clusters": 105,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.820741091347377,
+     "ci95": [
+      0.745884405191055,
+      0.895655545522422
+     ]
+    },
+    "zap": {
+     "mean": 0.951461477297978,
+     "ci95": [
+      0.9027513329129486,
+      0.9901615433728496
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.7804878048780488,
+      0.9795918367346939
+     ],
+     "CWE-79": [
+      0.5405405405405406,
+      0.8444444444444443
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.7586206896551725,
+      0.9778014184397162
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": -0.13072038595060093,
+     "ci95": [
+      -0.2059550901097411,
+      -0.05309554850592007
+     ]
+    }
+   }
+  },
+  "third-party": {
+   "n_clusters": 52,
+   "macro_f1": {
+    "ml": {
+     "mean": 0.957144359450711,
+     "ci95": [
+      0.891934223184223,
+      1.0
+     ]
+    },
+    "zap": {
+     "mean": 0.8419105513683337,
+     "ci95": [
+      0.703506144393241,
+      0.9406600740982891
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "ml": {
+     "CWE-89": [
+      0.7616071428571429,
+      1.0
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    },
+    "zap": {
+     "CWE-89": [
+      0.47058823529411764,
+      0.9524844720496893
+     ],
+     "CWE-79": [
+      0.6956521739130436,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "ml - zap": {
+     "mean": 0.11523380808237735,
+     "ci95": [
+      -0.018122638928727293,
+      0.25330650844395375
+     ]
+    }
+   }
+  }
+ },
+ "rules": {
+  "CWE-78": {
+   "known": 3,
+   "ml_dast_found": 2,
+   "zap_found": 2,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 175,
+   "zap_missed": [
+    "vulnerable-node|POST|/tools/ping|host"
+   ]
+  },
+  "CWE-22": {
+   "known": 4,
+   "ml_dast_found": 3,
+   "zap_found": 2,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 1,
+   "safe_units": 174,
+   "zap_missed": [
+    "juice-shop|GET|/ftp/{file}|file",
+    "vulnerable-node|GET|/download|file"
+   ]
+  },
+  "CWE-601": {
+   "known": 4,
+   "ml_dast_found": 3,
+   "zap_found": 3,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms_on_listed_safe": 0,
+   "safe_units": 174,
+   "zap_missed": [
+    "vulnerable-node|POST|/login/auth|returnurl"
+   ]
+  }
+ },
+ "passive": {
+  "missing-csp": {
+   "known": 8,
+   "ml_dast_found": 8,
+   "zap_found": 7,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  },
+  "missing-nosniff": {
+   "known": 9,
+   "ml_dast_found": 9,
+   "zap_found": 8,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  },
+  "missing-frame-protection": {
+   "known": 8,
+   "ml_dast_found": 8,
+   "zap_found": 7,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 1
+  },
+  "cookie-no-httponly": {
+   "known": 0,
+   "ml_dast_found": 0,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 0,
+   "negatives": 6
+  },
+  "cookie-no-samesite": {
+   "known": 3,
+   "ml_dast_found": 3,
+   "zap_found": 2,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 2,
+   "negatives": 3
+  },
+  "cors-any-origin": {
+   "known": 0,
+   "ml_dast_found": 0,
+   "zap_found": 0,
+   "ml_dast_false_alarms": 0,
+   "zap_false_alarms": 1,
+   "negatives": 10
+  }
+ },
+ "stored_xss": {
+  "known": 8,
+  "ml_dast_found": 2,
+  "zap_found": 1,
+  "ml_dast_false_alarms": 0,
+  "safe_units": 8,
+  "zap_missed": [
+   "nodegoat|POST /profile [address]",
+   "nodegoat|POST /profile [bankAcc]",
+   "nodegoat|POST /profile [bankRouting]",
+   "nodegoat|POST /profile [dob]",
+   "nodegoat|POST /profile [lastName]",
+   "nodegoat|POST /profile [ssn]",
+   "vulnerable-node|POST /products/{id}/reviews [body]"
+  ],
+  "zap_persistent_alerts": {
+   "labflask": [
+    "message"
+   ],
+   "nodegoat": [
+    "memo"
+   ],
+   "vulnerable-node": []
+  }
+ },
+ "csrf_heuristic": {
+  "known": 20,
+  "ml_dast_found": 13,
+  "zap_found": 9,
+  "ml_dast_false_alarms": 0,
+  "safe_units": 6,
+  "zap_missed": [
+   "labflask|POST /v3/guestbook-safe",
+   "labflask|POST /v3/settings",
+   "nodegoat|POST /login",
+   "nodegoat|POST /memos",
+   "nodegoat|POST /profile",
+   "nodegoat|POST /signup",
+   "vulnerable-node|POST /account",
+   "vulnerable-node|POST /account/token",
+   "vulnerable-node|POST /register",
+   "vulnerable-node|POST /tools/ping",
+   "vulnerable-node|POST /tools/regex"
+  ],
+  "zap_10202_pages": {
+   "labflask": [
+    "/find",
+    "/find-safe",
+    "/login",
+    "/login-safe",
+    "/v3/guestbook"
+   ],
+   "labexpress": [
+    "/lookup",
+    "/lookup-safe",
+    "/v3/account"
+   ],
+   "vulpy-bad": [
+    "/user/create",
+    "/user/login"
+   ],
+   "vulpy-good": [
+    "/user/create",
+    "/user/login"
+   ],
+   "vulnerable-node": [
+    "/contact",
+    "/login",
+    "/products/1"
+   ],
+   "nodegoat": []
+  }
+ }
+}

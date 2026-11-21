@@ -15,6 +15,17 @@ const SEV_COLORS = {
   INFORMATIONAL: "border-blue-500/40 bg-blue-950/20",
 };
 
+// ml-dast rule findings carry their kind in attack_type / response_details: the CSRF check is a
+// heuristic (LOW, medium confidence), stored XSS and the other rules are deterministic, not ML.
+export function findingKind(f) {
+  const t = String(f?.attack_type || "");
+  if (t === "csrf_heuristic") return "heuristic · medium confidence";
+  if (t === "stored_xss") return "stored · rule-based";
+  if (t.startsWith("passive_")) return "passive check";
+  if (String(f?.response_details || "").startsWith("[rule-based")) return "rule-based";
+  return "";
+}
+
 export default function DASTResults() {
   const { id } = useParams();                        // project id from URL
   const [searchParams] = useSearchParams();
@@ -242,7 +253,14 @@ export default function DASTResults() {
               <>
                 <tr key={f.id} className="border-b border-[#1e2d4a] hover:bg-[#0d1117]/40">
                   <td className="p-3"><SeverityBadge severity={f.severity} /></td>
-                  <td className="max-w-[200px] truncate font-medium" title={f.alert}>{f.alert}</td>
+                  <td className="max-w-[200px] truncate font-medium" title={f.alert}>
+                    {f.alert}
+                    {findingKind(f) && (
+                      <span data-testid="dast-kind" className="ml-2 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-[#1e2d4a] text-[#94a3b8]">
+                        {findingKind(f)}
+                      </span>
+                    )}
+                  </td>
                   <td className="font-mono text-xs text-blue-400 max-w-[220px] truncate" title={f.endpoint}>
                     {f.endpoint || "—"}
                   </td>

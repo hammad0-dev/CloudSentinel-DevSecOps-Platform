@@ -135,6 +135,23 @@ services:
     command: ["--quiet", "--bind_ip_all", "--wiredTigerCacheSizeGB", "0.25"]
     mem_limit: 384m
 
+  # v3 third-party TRAINING apps (ground_truth_v3.json). No resolver; dangerous routes are skip-listed.
+  vampi:                                  # erev0s/VAmPI @ f16052d (MIT), upstream Dockerfile, vulnerable=1
+    <<: *lab
+    build: ./vendor/VAmPI
+    image: mldast-lab/vampi:f16052d
+    environment: { vulnerable: "1", tokentimetolive: "600" }
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5111:5000"]
+    mem_limit: 256m
+  node-api-goat:                          # layro01/node-api-goat @ 868ee6c (ISC)
+    <<: *lab
+    build: { context: ./vendor/node-api-goat, dockerfile: ../../node-api-goat.Dockerfile }
+    image: mldast-lab/node-api-goat:868ee6c
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5112:3001"]
+    mem_limit: 128m
+
   # v2 FINAL HELD-OUT APP (frozen in data/dast/FREEZE_v2.json): only started with --profile final-v2,
   # only by scripts/eval_final_v2.py. dns 127.0.0.1 = no resolver, so /?domain (nslookup) cannot
   # query the internet; the guards never send URL-carrying parameters (its /?path, /?include, /?xml
@@ -147,6 +164,19 @@ services:
     dns: ["127.0.0.1"]
     ports: ["127.0.0.1:5109:8080"]
     mem_limit: 2g   # its own index page links a time-based SQLi exploit (RANDOMBLOB(300000000)); 128m was OOM-killed
+
+  # v3 FINAL HELD-OUT APP (frozen in data/dast/FREEZE_v3.json): SirAppSec vuln-node.js-express.js-app
+  # @ b977c74. Labelled from source and frozen before any request; only started with --profile final-v3,
+  # only by scripts/eval_final_v3.py. No resolver; /v1/status/{brand} (execSync curl), /v1/test (SSRF)
+  # and /v1/init (deserialization) are on the ground-truth skip list and are never requested.
+  sirappsec:
+    <<: *lab
+    build: { context: ./vendor/sirappsec, dockerfile: ../../sirappsec.Dockerfile }
+    image: mldast-lab/sirappsec:b977c74
+    profiles: ["final-v3"]
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5113:5000"]
+    mem_limit: 1g
 
 networks:
   lab:

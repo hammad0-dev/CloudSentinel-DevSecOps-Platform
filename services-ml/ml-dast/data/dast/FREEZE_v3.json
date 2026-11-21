@@ -1,0 +1,28 @@
+{
+ "app": "sirappsec",
+ "role": "final_heldout_v3",
+ "frozen_before_any_scan": true,
+ "source": "SirAppSec/vuln-node.js-express.js-app @ b977c7407f328da929577745ad509639e26c428a (no license file)",
+ "commit": "b977c7407f328da929577745ad509639e26c428a",
+ "source_sha256": "b5349285b8bae18be42395bedb42e25c9703e2026f3f083446a4ca549840cbc2",
+ "source_files": 115,
+ "source_hash_covers": "sha256 of the sorted lines '<sha256(file)>  <path>' over `git ls-files` at the commit",
+ "ground_truth_sirappsec_sha256": "26c0683c186d03053d2516313b453663122fafe6a2b2d75adbb619c14d49b90f",
+ "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive, stored, csrf} for sirappsec, sort_keys=True)",
+ "scan_config": {
+  "start": "/",
+  "openapi_url": "/v1/api-docs",
+  "seed_data": "populate.sh lines 1-24 (POST /v1/user/ amit, shir) and one POST /v1/admin/new-beer/ (name 'Beer!!!', price 12), before the scan"
+ },
+ "rule": "SirAppSec is labelled from source only and never collected for training or tuning; it is collected and scored exactly once by scripts/eval_final_v3.py after the v3 model is fixed by SHA-256. v2 is scored on the same collection.",
+ "counts": {
+  "CWE-79": 2,
+  "CWE-22": 1,
+  "CWE-89": 2,
+  "CWE-601": 1,
+  "safe_endpoint_params": 33,
+  "passive_positive": 4,
+  "passive_negative": 2,
+  "stored_xss": 2
+ }
+}

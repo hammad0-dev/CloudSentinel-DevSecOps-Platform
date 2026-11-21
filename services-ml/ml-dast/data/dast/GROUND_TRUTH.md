@@ -216,3 +216,97 @@ and frozen by SHA-256 in `FREEZE_v2.json` before any request was sent to it. CWE
 - `skip` entries may name a parameter (`{"path": "/", "param": "object"}`): requests carrying it are refused.
 - Any request whose query or body parameters carry a URL (`scheme://`, raw or %-encoded) is refused, so a
   crawled link can never make a target fetch another host.
+
+## v3 ground truth (`ground_truth_v3.json`)
+
+v1 and v2 files are never edited (their hashes are tested). v3 is a separate file. `changes_v3` in it lists
+every change with what prompted it. All labels were read from source before any v3 collection; the
+held-out subset was labelled and frozen before any request (`FREEZE_v3.json`).
+
+**Changes to existing apps**
+- **DSVW: `final_heldout_v2` → `train_loao`.** It was scored once as the v2 held-out (`reports/final_dsvw.json`),
+  so it is burned as a test set and becomes training data. Its labels are unchanged.
+- **labflask passive `cookie-no-samesite`: no → yes.** The v3 block adds a session cookie without SameSite.
+  This is an app-code change, not a label correction.
+- **vulnerable-node: the skip entry for `POST /products/{id}/reviews` is removed.** Its v2 reason was "stored
+  XSS only (out of scope)"; v3 labels the review form.
+- **`seg` key added.** An entry may name its path segment, so two path parameters of one route are separate
+  entries. No v1/v2 entry uses it.
+
+**New training endpoints.** Each VULN route has a SAFE twin that differs only in the sink.
+
+*labflask `/v3/*`:*
+- **SQL errors as text/plain or JSON:** `/v3/item-text` (text/plain) and `/v3/api/item` (JSON).
+- **SQLi with no error shown:** `/v3/note`, an INSERT whose only signal is quote parity; `/v3/sort`, an ORDER BY
+  injection where errors fall back to the default order.
+- **Safe answers to bad input:** `/v3/item-text-safe` (text/plain 400), `/v3/api/price-safe` (JSON 500, non-SQL),
+  `/v3/convert-safe` (text/plain 500 traceback).
+- **XSS contexts:** an unquoted attribute (`/v3/tag`), a double-quoted JS string (`/v3/js`), a 404 page
+  (`/v3/lookup`), and stored XSS (`/v3/guestbook` `message`, shown raw; `name` escaped).
+- **CSRF forms:** `/v3/settings` (no token; session cookie without SameSite) and `/v3/settings-safe` (token checked).
+
+*labexpress `/v3/*`:* JSON and text/plain pg errors (`/v3/api/book`, `/v3/text/book`) with validated twins, an
+unquoted-attribute XSS (`/v3/badge`), and `/v3/account` (no token, but its SameSite=Lax cookie protects it).
+
+*labfastapi `/v3/*`:* a MySQL error as text/plain (`/v3/order-text`) and a single-quoted JS-string XSS
+(`/v3/greet-js`), with twins.
+
+*vulnerable-node:*
+- `POST /products/{id}/reviews` `body`: XSS. The body is stored raw (`<%- r.body %>`) and shown on the 302 target.
+- `rating` and the product id: safe.
+
+**New third-party training apps**
+- **VAmPI** (erev0s/VAmPI @ f16052d, MIT):
+  - SQLi: `GET /users/v1/{username}` (f-string query, `models/user_model.py` lines 70-79). JSON responses; an
+    SQL error is an escaped Flask debug 500.
+  - Safe: the register and login JSON fields (ORM).
+  - `/createdb` runs once as setup and is never probed.
+- **node-api-goat** (layro01 @ 868ee6c, ISC):
+  - XSS: `/cwe79/echo` and `/cwe201/exposure` (raw strings sent as text/html).
+  - Safe: `/hexToRgb`; `/cwe113/split`, which answers bad input with 500 pages that carry stack traces; and
+    `/cwe601/redirect`, whose host is fixed, so it is not an open redirect.
+  - Skipped: the eval, deserialization, `exec` and file-read routes.
+
+| App | Origin | Role | CWE-89 | CWE-79 | CWE-78 | CWE-22 | CWE-601 | Safe params | Stored XSS in rule scope (all known) | CSRF forms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| labflask | own | train_loao | 9 | 8 | 1 | 1 | 1 | 32 | 1 (1) | 6 |
+| labexpress | own | train_loao | 6 | 4 | 1 | 1 | 1 | 18 | 0 (0) | 0 |
+| labfastapi | own | train_loao | 5 | 4 | 0 | 0 | 0 | 13 | 0 (0) | 0 |
+| juice-shop | third-party | train_loao | 2 | 0 | 0 | 1 | 0 | 3 | 0 (0) | 0 |
+| nodegoat | third-party | train_loao | 0 | 10 | 0 | 0 | 1 | 3 | 6 (7) | 4 |
+| vulpy-bad | third-party | train_loao | 4 | 0 | 0 | 0 | 0 | 0 | 0 (1) | not evaluable |
+| vulpy-good | third-party | train_loao | 0 | 0 | 0 | 0 | 0 | 4 | 0 (1) | not evaluable |
+| dsvw | third-party | train_loao (v2 held-out) | 3 | 2 | 1 | 1 | 1 | 4 | 0 (1) | 0 |
+| vulnerable-node | third-party | train_loao | 4 | 2 | 1 | 1 | 1 | 10 | 1 (1) | 8 |
+| vampi | third-party | train_loao | 1 | 0 | 0 | 0 | 0 | 5 | 0 (0) | 0 |
+| node-api-goat | third-party | train_loao | 0 | 2 | 0 | 0 | 0 | 4 | 0 (0) | 0 |
+| **sirappsec** | third-party | **final_heldout_v3** | 2 | 2 | 0 | 1 | 1 | 33 | 1 (2) | 0 |
+
+**Stored XSS (`stored`).** One entry per written field: the write (method, path, parameter), the page where
+it is shown (`sink`), and `vuln`. `covered_by_rule: false` marks known instances the rule cannot reach by design;
+they are reported separately:
+- GET writes: DSVW `/?comment`, SirAppSec `/registerform`;
+- writes behind a login the lab cannot perform: vulpy posts;
+- a markdown-only bypass: NodeGoat memos, where `marked` with `sanitize: true` escapes HTML tags.
+
+**CSRF (`csrf`).** Per app: whether its session cookie leaves forms unprotected (`form_csrf`, or `None` when it
+is not evaluable in the lab), and one entry per POST form with `vuln`. The rule is a heuristic, and the ground
+truth records the true status, so the heuristic's known blind spots appear as misses:
+- NodeGoat's login, signup and profile templates render a hidden `_csrf` field that is never validated
+  (`csurf` is commented out);
+- SirAppSec changes state on a GET (`/v1/love/{beer_id}`).
+
+**SirAppSec** (v3 final held-out, SirAppSec/vuln-node.js-express.js-app @ b977c74): labelled from
+`src/router/routes/*.js` and `src/templates/*.html`. The autoescape behaviour was checked in the installed
+packages (express-nunjucks 2.2.5 does not set autoescape; nunjucks 3.2.3 defaults it to true).
+- **CWE-89:** `/v1/search/{filter}/{query}`, both segments. CWE-79 is unknown there: whether SQLite's error
+  message echoes HTML cannot be read from source.
+- **CWE-79:** `/?message` and `/register?message`, both `{{message | safe}}`.
+- **CWE-22:** `/v1/beer-pic/?picture`.
+- **CWE-601:** `/v1/redirect/?url`.
+- **Stored XSS:** `address` (`{{ user.address |safe }}`).
+- **Passive:** CSP, nosniff and framing missing; the session cookie has no HttpOnly (`httpOnly: false`); SameSite=Lax.
+- **Never requested:** `/v1/status` (`execSync` curl), `/v1/test` (SSRF), `/v1/init` (deserialization) and the
+  multipart uploads.
+- **Scan configuration, pre-registered:** crawl from `/` plus `/v1/api-docs`; seed data from `populate.sh`
+  lines 1-24 and one beer; a 5 s timeout, because some handlers never answer.

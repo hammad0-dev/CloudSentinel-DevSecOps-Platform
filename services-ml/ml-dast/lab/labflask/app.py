@@ -54,7 +54,7 @@ def index():
     links = ["/search?q=lamp", "/search-safe?q=lamp", "/item?id=1", "/item-safe?id=1", "/greet?name=guest", "/greet-safe?name=guest",
              "/profile?color=blue", "/profile-safe?color=blue", "/widget?cb=render", "/widget-safe?cb=render", "/api/echo?msg=hi",
              "/plain?msg=hi", "/calc?x=2", "/slow?n=1", "/ping?host=127.0.0.1", "/ping-safe?host=127.0.0.1",
-             "/download?file=readme.txt", "/download-safe?file=readme.txt", "/login", "/login-safe", "/v2"]
+             "/download?file=readme.txt", "/download-safe?file=readme.txt", "/login", "/login-safe", "/v2", "/v3"]
     return page("labflask", "<ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in links) + "</ul>")
 
 
@@ -303,7 +303,214 @@ def index_v2():
     return page("labflask v2", "<ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in V2_LINKS) + "</ul>")
 
 
+# ---------- v3: targeted twins (docs/ml-dast-v3-plan.md, B/D1). Each VULN route has a SAFE twin that
+# differs only in the sink. Patterns the v2 data lacked: SQL errors as text/plain or JSON, SQLi whose
+# only signal is quote parity or ORDER BY, safe endpoints that answer bad input with text/JSON/500
+# errors, XSS in an unquoted attribute / a JS string / an error page, stored XSS and CSRF forms.
+def init_v3():
+    con = db()
+    con.executescript("""
+    DROP TABLE IF EXISTS notes; DROP TABLE IF EXISTS guestbook;
+    CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT);
+    CREATE TABLE guestbook (id INTEGER PRIMARY KEY, name TEXT, message TEXT, safe INTEGER);
+    """)
+    con.commit()
+
+
+def text(body, status=200):
+    return Response(body, status, mimetype="text/plain")
+
+
+@app.get("/v3/item-text")  # VULN CWE-89: string-built (numeric); the database error comes back as a text/plain 500
+def v3_item_text():
+    try:
+        r = db().execute("SELECT name FROM products WHERE id = " + request.args.get("id", "1")).fetchone()
+    except sqlite3.Error as exc:
+        return text(f"query failed: {exc}\n", 500)
+    return text((r["name"] if r else "no such item") + "\n")
+
+
+@app.get("/v3/item-text-safe")  # SAFE (hard negative): parameterized; bad input -> text/plain 400 with the parse error
+def v3_item_text_safe():
+    try:
+        item_id = int(request.args.get("id", "1"))
+    except ValueError as exc:
+        return text(f"bad request: {exc}\n", 400)
+    r = db().execute("SELECT name FROM products WHERE id = ?", (item_id,)).fetchone()
+    return text((r["name"] if r else "no such item") + "\n")
+
+
+@app.get("/v3/api/item")  # VULN CWE-89: string-built (string context); the database error comes back as JSON 500
+def v3_api_item():
+    try:
+        r = db().execute("SELECT name, price FROM products WHERE name = '" + request.args.get("name", "lamp") + "'").fetchone()
+    except sqlite3.Error as exc:
+        return jsonify(error=str(exc)), 500
+    return jsonify(item=dict(r) if r else None)
+
+
+@app.get("/v3/api/price-safe")  # SAFE (hard negative): parameterized; bad input -> JSON 500 with a non-SQL error
+def v3_api_price_safe():
+    try:
+        limit = float(request.args.get("max", "20"))
+    except ValueError as exc:
+        return jsonify(error=f"internal error: {exc}"), 500
+    rows = db().execute("SELECT name FROM products WHERE price <= ?", (limit,)).fetchall()
+    return jsonify(items=[r["name"] for r in rows])
+
+
+@app.get("/v3/note")  # VULN CWE-89: INSERT built from a string; errors are swallowed (only saved / not saved)
+def v3_note():
+    con = db()
+    try:
+        con.execute("INSERT INTO notes (body) VALUES ('" + request.args.get("body", "hello") + "')")
+        con.commit()
+        msg = "saved"
+    except sqlite3.Error:
+        msg = "could not save the note"
+    return page("note", f"<p>{msg}</p>")
+
+
+@app.get("/v3/note-safe")  # SAFE: parameterized INSERT
+def v3_note_safe():
+    con = db()
+    con.execute("INSERT INTO notes (body) VALUES (?)", (request.args.get("body", "hello"),))
+    con.commit()
+    return page("note", "<p>saved</p>")
+
+
+@app.get("/v3/sort")  # VULN CWE-89: ORDER BY built from a string; errors fall back to the default order
+def v3_sort():
+    try:
+        rows = db().execute("SELECT name, category FROM products ORDER BY " + request.args.get("order", "name")).fetchall()
+    except sqlite3.Error:
+        rows = db().execute("SELECT name, category FROM products ORDER BY id").fetchall()
+    return page("sorted", rows_html(rows))
+
+
+@app.get("/v3/sort-safe")  # SAFE: column whitelist, anything else -> default order
+def v3_sort_safe():
+    order = request.args.get("order", "name")
+    order = order if order in ("name", "price", "category") else "id"
+    return page("sorted", rows_html(db().execute(f"SELECT name, category FROM products ORDER BY {order}").fetchall()))
+
+
+@app.get("/v3/convert-safe")  # SAFE (hard negative): no SQL; bad input -> text/plain 500 with a Python traceback
+def v3_convert_safe():
+    try:
+        return text(f"{float(request.args.get('amount', '1')) * 1.1:.2f}\n")
+    except ValueError:
+        return text(traceback.format_exc(), 500)
+
+
+@app.get("/v3/tag")  # VULN CWE-79: raw into an UNQUOTED attribute
+def v3_tag():
+    return page("tag", f"<p><span class={request.args.get('label', 'info')}>tagged</span></p>")
+
+
+@app.get("/v3/tag-safe")  # SAFE: quoted and escaped
+def v3_tag_safe():
+    return page("tag", f'<p><span class="{html.escape(request.args.get("label", "info"), quote=True)}">tagged</span></p>')
+
+
+@app.get("/v3/js")  # VULN CWE-79: raw into a double-quoted JS string
+def v3_js():
+    return page("js", '<script>var term = "' + request.args.get("term", "lamp") + '"; console.log(term);</script>')
+
+
+@app.get("/v3/js-safe")  # SAFE: JS-string escaping (backslash, both quotes, <)
+def v3_js_safe():
+    t = request.args.get("term", "lamp").replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'").replace("<", "\\x3c")
+    return page("js", f'<script>var term = "{t}"; console.log(term);</script>')
+
+
+@app.get("/v3/lookup")  # VULN CWE-79: unknown names -> 404 HTML error page with the raw name
+def v3_lookup():
+    q = request.args.get("q", "lamp")
+    if db().execute("SELECT 1 FROM products WHERE name = ?", (q,)).fetchone():
+        return page("lookup", "<p>found</p>")
+    return page("not found", f"<p>No product called {q}</p>"), 404
+
+
+@app.get("/v3/lookup-safe")  # SAFE: same, escaped
+def v3_lookup_safe():
+    q = request.args.get("q", "lamp")
+    if db().execute("SELECT 1 FROM products WHERE name = ?", (q,)).fetchone():
+        return page("lookup", "<p>found</p>")
+    return page("not found", f"<p>No product called {html.escape(q)}</p>"), 404
+
+
+def _guestbook(path, safe):
+    rows = db().execute("SELECT name, message FROM guestbook WHERE safe = ? ORDER BY id DESC LIMIT 20", (int(safe),)).fetchall()
+    show = html.escape if safe else (lambda s: s)
+    items = "".join(f"<li><b>{html.escape(r['name'])}</b>: {show(r['message'])}</li>" for r in rows)
+    form = (f"<form method='post' action='{path}'><input name='name' value='guest'>"
+            "<textarea name='message'>hello</textarea><button>sign</button></form>")
+    return page("guestbook", f"<ul>{items}</ul>{form}")
+
+
+@app.route("/v3/guestbook", methods=["GET", "POST"])  # VULN CWE-79 (stored): message shown raw on this page (name escaped)
+def v3_guestbook():
+    if request.method == "POST":
+        con = db()
+        con.execute("INSERT INTO guestbook (name, message, safe) VALUES (?, ?, 0)", (request.form.get("name", ""), request.form.get("message", "")))
+        con.commit()
+        return redirect("/v3/guestbook", code=303)
+    return _guestbook("/v3/guestbook", safe=False)
+
+
+@app.route("/v3/guestbook-safe", methods=["GET", "POST"])  # SAFE: both fields escaped
+def v3_guestbook_safe():
+    if request.method == "POST":
+        con = db()
+        con.execute("INSERT INTO guestbook (name, message, safe) VALUES (?, ?, 1)", (request.form.get("name", ""), request.form.get("message", "")))
+        con.commit()
+        return redirect("/v3/guestbook-safe", code=303)
+    return _guestbook("/v3/guestbook-safe", safe=True)
+
+
+SETTINGS = {"display_name": "guest"}
+CSRF_TOKEN = "lab-v3-" + os.urandom(8).hex()
+
+
+def _with_session(resp):
+    """Lab session cookie: HttpOnly, but no SameSite (so a cross-site POST carries it)."""
+    resp.set_cookie("lf_session", "lab-session", httponly=True)
+    return resp
+
+
+@app.route("/v3/settings", methods=["GET", "POST"])  # VULN CWE-352 (heuristic): state-changing form, no token, cookie without SameSite
+def v3_settings():
+    if request.method == "POST":
+        SETTINGS["display_name"] = request.form.get("display_name", "")[:40]
+    form = f"<form method='post' action='/v3/settings'><input name='display_name' value='{html.escape(SETTINGS['display_name'], quote=True)}'><button>save</button></form>"
+    return _with_session(app.make_response(page("settings", form)))
+
+
+@app.route("/v3/settings-safe", methods=["GET", "POST"])  # SAFE: anti-CSRF token field, checked on POST
+def v3_settings_safe():
+    if request.method == "POST":
+        if request.form.get("csrf_token") != CSRF_TOKEN:
+            return page("settings", "<p>invalid token</p>"), 403
+        SETTINGS["display_name"] = request.form.get("display_name", "")[:40]
+    form = (f"<form method='post' action='/v3/settings-safe'><input type='hidden' name='csrf_token' value='{CSRF_TOKEN}'>"
+            f"<input name='display_name' value='{html.escape(SETTINGS['display_name'], quote=True)}'><button>save</button></form>")
+    return _with_session(app.make_response(page("settings", form)))
+
+
+V3_LINKS = ["/v3/item-text?id=1", "/v3/item-text-safe?id=1", "/v3/api/item?name=lamp", "/v3/api/price-safe?max=20",
+            "/v3/note?body=hello", "/v3/note-safe?body=hello", "/v3/sort?order=name", "/v3/sort-safe?order=name",
+            "/v3/convert-safe?amount=1", "/v3/tag?label=info", "/v3/tag-safe?label=info", "/v3/js?term=lamp", "/v3/js-safe?term=lamp",
+            "/v3/lookup?q=lamp", "/v3/lookup-safe?q=lamp", "/v3/guestbook", "/v3/guestbook-safe", "/v3/settings", "/v3/settings-safe"]
+
+
+@app.get("/v3")
+def index_v3():
+    return page("labflask v3", "<ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in V3_LINKS) + "</ul>")
+
+
 init()
+init_v3()
 
 if __name__ == "__main__":
     from waitress import serve

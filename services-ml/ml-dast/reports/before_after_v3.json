@@ -1,0 +1,677 @@
+{
+ "kind": "lr",
+ "n_common": 111,
+ "only_before": [],
+ "only_after": [
+  "dsvw|GET|/login|password",
+  "dsvw|GET|/login|username",
+  "dsvw|GET|/users.json|callback",
+  "dsvw|GET|/|charset",
+  "dsvw|GET|/|comment",
+  "dsvw|GET|/|domain",
+  "dsvw|GET|/|id",
+  "dsvw|GET|/|name",
+  "dsvw|GET|/|path",
+  "dsvw|GET|/|redir",
+  "dsvw|GET|/|tmpl",
+  "dsvw|GET|/|v",
+  "labexpress|GET|/v3/api/book-safe|title",
+  "labexpress|GET|/v3/api/book|title",
+  "labexpress|GET|/v3/badge-safe|label",
+  "labexpress|GET|/v3/badge|label",
+  "labexpress|GET|/v3/text/book-safe|id",
+  "labexpress|GET|/v3/text/book|id",
+  "labexpress|POST|/v3/account|nickname",
+  "labfastapi|GET|/v3/greet-js-safe|name",
+  "labfastapi|GET|/v3/greet-js|name",
+  "labfastapi|GET|/v3/order-text-safe|id",
+  "labfastapi|GET|/v3/order-text|id",
+  "labflask|GET|/v3/api/item|name",
+  "labflask|GET|/v3/api/price-safe|max",
+  "labflask|GET|/v3/convert-safe|amount",
+  "labflask|GET|/v3/item-text-safe|id",
+  "labflask|GET|/v3/item-text|id",
+  "labflask|GET|/v3/js-safe|term",
+  "labflask|GET|/v3/js|term",
+  "labflask|GET|/v3/lookup-safe|q",
+  "labflask|GET|/v3/lookup|q",
+  "labflask|GET|/v3/note-safe|body",
+  "labflask|GET|/v3/note|body",
+  "labflask|GET|/v3/sort-safe|order",
+  "labflask|GET|/v3/sort|order",
+  "labflask|GET|/v3/tag-safe|label",
+  "labflask|GET|/v3/tag|label",
+  "labflask|POST|/v3/guestbook-safe|message",
+  "labflask|POST|/v3/guestbook-safe|name",
+  "labflask|POST|/v3/guestbook|message",
+  "labflask|POST|/v3/guestbook|name",
+  "labflask|POST|/v3/settings-safe|display_name",
+  "labflask|POST|/v3/settings|display_name",
+  "node-api-goat|GET|/cwe113/split|key",
+  "node-api-goat|GET|/cwe113/split|value",
+  "node-api-goat|GET|/cwe201/exposure|text",
+  "node-api-goat|GET|/cwe601/redirect|text",
+  "node-api-goat|GET|/cwe79/echo|text",
+  "node-api-goat|GET|/hexToRgb|hex",
+  "vampi|GET|/users/v1/{username}|username",
+  "vampi|POST|/users/v1/login|password",
+  "vampi|POST|/users/v1/login|username",
+  "vampi|POST|/users/v1/register|email",
+  "vampi|POST|/users/v1/register|password",
+  "vampi|POST|/users/v1/register|username",
+  "vulnerable-node|POST|/products/{id}/reviews|body",
+  "vulnerable-node|POST|/products/{id}/reviews|rating"
+ ],
+ "all": {
+  "metrics": {
+   "before": {
+    "n": 111,
+    "macro_f1": 0.8274913018642572,
+    "per_class": {
+     "safe": {
+      "precision": 0.890625,
+      "recall": 0.8507462686567164,
+      "f1": 0.8702290076335878,
+      "support": 67,
+      "tp": 57,
+      "fp": 7,
+      "fn": 10
+     },
+     "CWE-89": {
+      "precision": 0.8461538461538461,
+      "recall": 0.9565217391304348,
+      "f1": 0.8979591836734695,
+      "support": 23,
+      "tp": 22,
+      "fp": 4,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 0.7142857142857143,
+      "recall": 0.7142857142857143,
+      "f1": 0.7142857142857143,
+      "support": 21,
+      "tp": 15,
+      "fp": 6,
+      "fn": 6
+     }
+    },
+    "confusion": [
+     [
+      57,
+      4,
+      6
+     ],
+     [
+      1,
+      22,
+      0
+     ],
+     [
+      6,
+      0,
+      15
+     ]
+    ],
+    "binary": {
+     "precision": 0.7872340425531915,
+     "recall": 0.8409090909090909
+    }
+   },
+   "after": {
+    "n": 111,
+    "macro_f1": 0.9328684313396995,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.8955223880597015,
+      "f1": 0.9448818897637796,
+      "support": 67,
+      "tp": 60,
+      "fp": 0,
+      "fn": 7
+     },
+     "CWE-89": {
+      "precision": 0.9583333333333334,
+      "recall": 1.0,
+      "f1": 0.9787234042553191,
+      "support": 23,
+      "tp": 23,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.7777777777777778,
+      "recall": 1.0,
+      "f1": 0.8750000000000001,
+      "support": 21,
+      "tp": 21,
+      "fp": 6,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      60,
+      1,
+      6
+     ],
+     [
+      0,
+      23,
+      0
+     ],
+     [
+      0,
+      0,
+      21
+     ]
+    ],
+    "binary": {
+     "precision": 0.8627450980392157,
+     "recall": 1.0
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 111,
+   "macro_f1": {
+    "before": {
+     "mean": 0.8229221600704781,
+     "ci95": [
+      0.744205725189228,
+      0.8943250918462388
+     ]
+    },
+    "after": {
+     "mean": 0.9315105310647546,
+     "ci95": [
+      0.874499699348539,
+      0.9756283487990806
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.7999999999999999,
+      0.9767441860465117
+     ],
+     "CWE-79": [
+      0.5384615384615384,
+      0.8485227272727273
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.9268292682926829,
+      1.0
+     ],
+     "CWE-79": [
+      0.7545990566037737,
+      0.9615384615384615
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.10858837099427643,
+     "ci95": [
+      -0.1930707358891704,
+      -0.031257456116396035
+     ]
+    }
+   }
+  }
+ },
+ "own": {
+  "metrics": {
+   "before": {
+    "n": 73,
+    "macro_f1": 0.8710144927536231,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.84,
+      "f1": 0.9130434782608696,
+      "support": 50,
+      "tp": 42,
+      "fp": 0,
+      "fn": 8
+     },
+     "CWE-89": {
+      "precision": 0.7647058823529411,
+      "recall": 1.0,
+      "f1": 0.8666666666666666,
+      "support": 13,
+      "tp": 13,
+      "fp": 4,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.7142857142857143,
+      "recall": 1.0,
+      "f1": 0.8333333333333333,
+      "support": 10,
+      "tp": 10,
+      "fp": 4,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      42,
+      4,
+      4
+     ],
+     [
+      0,
+      13,
+      0
+     ],
+     [
+      0,
+      0,
+      10
+     ]
+    ],
+    "binary": {
+     "precision": 0.7419354838709677,
+     "recall": 1.0
+    }
+   },
+   "after": {
+    "n": 73,
+    "macro_f1": 0.9018003273322422,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.88,
+      "f1": 0.9361702127659575,
+      "support": 50,
+      "tp": 44,
+      "fp": 0,
+      "fn": 6
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 13,
+      "tp": 13,
+      "fp": 0,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.625,
+      "recall": 1.0,
+      "f1": 0.7692307692307693,
+      "support": 10,
+      "tp": 10,
+      "fp": 6,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      44,
+      0,
+      6
+     ],
+     [
+      0,
+      13,
+      0
+     ],
+     [
+      0,
+      0,
+      10
+     ]
+    ],
+    "binary": {
+     "precision": 0.7931034482758621,
+     "recall": 1.0
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 73,
+   "macro_f1": {
+    "before": {
+     "mean": 0.866438514090014,
+     "ci95": [
+      0.7670691989906467,
+      0.9447865853658537
+     ]
+    },
+    "after": {
+     "mean": 0.8985453297891883,
+     "ci95": [
+      0.8086303284416493,
+      0.969112013080617
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.6956521739130436,
+      0.9743589743589743
+     ],
+     "CWE-79": [
+      0.6,
+      0.9655172413793104
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      1.0,
+      1.0
+     ],
+     "CWE-79": [
+      0.5263157894736842,
+      0.9286904761904761
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.032106815699174264,
+     "ci95": [
+      -0.1314269419049628,
+      0.05706483110073533
+     ]
+    }
+   }
+  }
+ },
+ "third-party": {
+  "metrics": {
+   "before": {
+    "n": 38,
+    "macro_f1": 0.7573849152796521,
+    "per_class": {
+     "safe": {
+      "precision": 0.6818181818181818,
+      "recall": 0.8823529411764706,
+      "f1": 0.7692307692307693,
+      "support": 17,
+      "tp": 15,
+      "fp": 7,
+      "fn": 2
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526316,
+      "support": 10,
+      "tp": 9,
+      "fp": 0,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 0.7142857142857143,
+      "recall": 0.45454545454545453,
+      "f1": 0.5555555555555556,
+      "support": 11,
+      "tp": 5,
+      "fp": 2,
+      "fn": 6
+     }
+    },
+    "confusion": [
+     [
+      15,
+      0,
+      2
+     ],
+     [
+      1,
+      9,
+      0
+     ],
+     [
+      6,
+      0,
+      5
+     ]
+    ],
+    "binary": {
+     "precision": 0.875,
+     "recall": 0.6666666666666666
+    }
+   },
+   "after": {
+    "n": 38,
+    "macro_f1": 0.9740259740259741,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.9411764705882353,
+      "f1": 0.9696969696969697,
+      "support": 17,
+      "tp": 16,
+      "fp": 0,
+      "fn": 1
+     },
+     "CWE-89": {
+      "precision": 0.9090909090909091,
+      "recall": 1.0,
+      "f1": 0.9523809523809523,
+      "support": 10,
+      "tp": 10,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 11,
+      "tp": 11,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      16,
+      1,
+      0
+     ],
+     [
+      0,
+      10,
+      0
+     ],
+     [
+      0,
+      0,
+      11
+     ]
+    ],
+    "binary": {
+     "precision": 0.9545454545454546,
+     "recall": 1.0
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 38,
+   "macro_f1": {
+    "before": {
+     "mean": 0.7522101282024342,
+     "ci95": [
+      0.6094957673905043,
+      0.8841140730614414
+     ]
+    },
+    "after": {
+     "mean": 0.9719274403778175,
+     "ci95": [
+      0.9073684210526315,
+      1.0
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.8,
+      1.0
+     ],
+     "CWE-79": [
+      0.2,
+      0.8000000000000002
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.8235294117647058,
+      1.0
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.21971731217538337,
+     "ci95": [
+      -0.37752036296840114,
+      -0.07273393151682628
+     ]
+    }
+   }
+  }
+ },
+ "errors": {
+  "before": [
+   [
+    "labexpress|GET|/api/items-safe|q",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labfastapi|GET|/docs-link-safe|topic",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/calc|x",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/next|next",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/ping|host",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/profile-safe|color",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/slow|n",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/widget-safe|cb",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "nodegoat|POST|/profile|address",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|bankAcc",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|bankRouting",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|dob",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|lastName",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|ssn",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "vulnerable-node|GET|/orders|sort",
+    "CWE-89",
+    "safe"
+   ],
+   [
+    "vulnerable-node|POST|/login/auth|returnurl",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "vulnerable-node|POST|/tools/ping|host",
+    "safe",
+    "CWE-79"
+   ]
+  ],
+  "after": [
+   [
+    "labexpress|GET|/banner-safe|msg",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labexpress|GET|/hello-safe|name",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labfastapi|GET|/note-safe|text",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/greet-safe|name",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/profile-safe|color",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/widget-safe|cb",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "vulnerable-node|GET|/products/{id}|id",
+    "safe",
+    "CWE-89"
+   ]
+  ]
+ }
+}

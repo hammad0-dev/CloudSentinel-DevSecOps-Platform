@@ -1,4 +1,261 @@
-# Model card: ml-dast 2.0.0 (`ml-dast-lr`)
+# Model card: ml-dast 3.0.0 (`ml-dast-lr`), packaged separately; v2 stays the model in use
+
+v3 is a targeted accuracy round for SQL injection and reflected XSS. It also adds two rule-based checks,
+stored XSS and a CSRF heuristic.
+
+**v3 is not the default.** The rule was fixed before the held-out app was scored: v3 had to beat v2 on the
+new frozen held-out app and not be significantly worse in leave-one-app-out. The second condition held. The
+first did not:
+- **Held-out (SirAppSec):** v3 0.652 against v2 0.718 on the same records. The difference, −0.047
+  [−0.277, +0.169], is not significant.
+- **Leave-one-app-out:** v3 is significantly better than v2 on the same endpoint-params.
+
+So `models/release_v2` stays the ml-dast model in use, and v3 is opt-in at `models/release_v3`. The
+service's built-in default directory is still v1's `models/release`, as it has been since v1. Deployments
+set `ML_DAST_MODEL_DIR`. ZAP stays the default DAST engine.
+
+| | |
+|---|---|
+| Artifact | `services-ml/ml-dast/models/release_v3/model.joblib` (gitignored), metadata in `model.json` (`"default": false`) |
+| SHA-256 | `bbcd03d12b21…` (full value in `reports/final_preregistration_v3.json`) |
+| ML component | Logistic regression (`C=0.1`, balanced class weights, standardized inputs) over 63 response features. The location one-hot was dropped by the inner selection |
+| Decision rule (ML) | A row with a class-C payload is C if P(C) ≥ **0.95**; an endpoint parameter is C if any of its C rows is. The threshold was chosen by inner leave-one-app-out over a grid of 0.20 to 0.95, and every outer fold chose 0.95, the top of the grid (see Threats) |
+| Rule-based component | As v2 (CWE-78, CWE-22, CWE-601, passive), plus **stored XSS (HIGH)** and a **CSRF heuristic (LOW, confidence 0.5)**. Passive and CSRF findings are LOW/INFO and never gate-blocking |
+| Payloads | `payloads_v2.json`, unchanged. The stored-XSS marker is built by `dastml/stored.py` |
+| Selection | Highest pooled leave-one-app-out macro-F1 among LR, RF and LightGBM (`reports/selection_v3.json`), fixed and committed before SirAppSec was started |
+| Previous | v2 `ml-dast-lr` 2.0.0, [below](#v2-ml-dast-lr-200-kept-for-reference) |
+
+## What changed from v2, and why
+
+**Error analysis first** (`docs/ml-dast-v3-plan.md`, section A). Every v2 leave-one-app-out error (LR: 6 missed
+vulnerable endpoint-params, 11 false alarms) and the 3 DSVW SQLi misses was traced to its deciding row:
+
+| v2 error | Cause | v3 change |
+|---|---|---|
+| DSVW `/?id` SQLi missed (p=0.017): a real SQL error in a text/plain 500 | `ct_text` −5.87: every text/plain response in training was safe | F1: content-type one-hots dropped; text/plain and JSON SQL-error twins; DSVW as training data |
+| DSVW `/login`, `/?comment` SQLi missed (0.882, 0.894 < 0.9) | Every LR fold chose t=0.9, the top of the grid | F6: threshold grid extended to 0.95 (still chosen by inner leave-one-app-out); parity-only SQLi twins |
+| NodeGoat `/profile` XSS × 6 missed (p≈0.73) | `len_log` −3.48: long pages looked safe (an app-size prior); the first occurrence sat in a script block | F1: `len_log` dropped; F5: the context of the most dangerous occurrence, taken where the reflection starts |
+| `javascript:` false alarms × 4 | The attribute-context one-hot fired for a harmless reflection | F3: context one-hots only for a reflection that breaks out of its context |
+| labflask `/next` false alarm | The body of a 302 echoes `href="javascript:…"`; browsers never render it | F2: XSS evidence only for rendered HTML (HTML content type, not 3xx) |
+| labflask `/widget-safe` false alarm | A `'` inside a JSON-encoded `"…"` JS string cannot break out | F4: `x_script_breakout` (the quote must match the enclosing JS string) |
+| SQLi false alarms on JSON 200 / non-SQL 500 / union payload | Content-type priors and the threshold edge | F1, F6, and safe twins that answer bad input with text/JSON/500 errors |
+| vulnerable-node `/orders sort` SQLi missed | ORDER BY injection with a reflected parameter was rare in training | ORDER BY twins |
+
+No label errors were found among the v2 errors (each endpoint re-read in source).
+
+**Disclosed iterations.** The v2 features had already been iterated twice on the same leave-one-app-out folds;
+the v3 changes above were chosen from the v2 leave-one-app-out errors (and the DSVW misses), so the v3
+leave-one-app-out numbers are **somewhat optimistic**. The feature set was fixed before any v3 training and not
+changed after; the new frozen held-out app is the honest estimate.
+
+**Rule-based checks added (not ML):**
+- **Stored XSS (CWE-79, HIGH):** each POST/PUT form or JSON field gets a random marker `cs<hex>'"<i>cs<hex></i>`;
+  after each submission the crawled pages are re-fetched and the field is reported only if `<i>marker</i>`
+  comes back unescaped in a rendered HTML page. Markers are random per submission, so leftovers from earlier
+  scans never match; lab apps are reset before every collection; writes go only through the guarded client
+  (allowlisted targets). `ML_DAST_STORED_XSS=0` disables the pass.
+- **CSRF (CWE-352) heuristic, LOW, confidence 0.5, never gate-blocking:** a POST form without an anti-CSRF token
+  field while the session cookie has no `SameSite=Lax/Strict`. Known blind spots: a token field that is never
+  validated counts as protected, and state-changing GETs are out of scope.
+
+**Data:**
+- Own-app `/v3/*` twins (labflask, labexpress, labfastapi). VULN and SAFE versions differ only in the sink.
+- Third-party training apps **VAmPI** (JSON API, SQLi) and **node-api-goat** (XSS), plus vulnerable-node's review form.
+- **DSVW moves from held-out to training.** It was scored once as the v2 held-out and is burned as a test set.
+- **New frozen held-out app: SirAppSec** `vuln-node.js-express.js-app` @ b977c74. It is unused anywhere else in
+  the project. It was labelled from source and frozen by SHA-256 (115 source files plus its ground-truth subset,
+  `data/dast/FREEZE_v3.json`) before any request, and scored once.
+- **DVNA stays frozen and untouched** (all freeze hashes are tested). v2 files are byte-identical.
+
+**Backend:**
+- `stored_xss` → HIGH DAST `VULNERABILITY` (OWASP A03).
+- `csrf_heuristic` → LOW `HOTSPOT_REVIEW`.
+- Passive and heuristic findings are clamped to LOW/INFO.
+- The gate never reads DAST findings (tested).
+- The UI tags rule, stored, passive and heuristic findings.
+
+## Data (v3)
+
+| App group | Origin | Rows (ML) | SQLi / XSS endpoint-params | Safe |
+|---|---|---|---|---|
+| labflask, labexpress, labfastapi (with the `/v3` twins) | own | 5,250 | 20 / 16 | 69 |
+| Juice Shop, NodeGoat, vulpy (bad+good), vulnerable-node, DSVW, VAmPI, node-api-goat | third-party | 4,152 | 14 / 16 | 34 |
+| **Training total** (10 LOAO groups) | | **9,402** (7,558 safe, 1,156 SQLi, **688 XSS**, up from 336) | **34 / 32** | 103 |
+| SirAppSec (v3 final held-out) | third-party | 1,868 | 2 / 2 | 34 |
+
+Ground truth: `data/dast/ground_truth_v3.json`, summarized in `data/dast/GROUND_TRUTH.md` (v3 section). The v2
+raw records are never reused: every training app was collected again under v3, with fresh databases.
+
+## Results
+
+The metric is the same as in v1 and v2: endpoint-param macro-F1 with 95% cluster bootstrap intervals (1,000
+resamples), also per class. Rule-based checks are reported as counts.
+
+### Main: leave-one-app-out (10 groups, 169 endpoint-params)
+
+| Model | macro-F1 [95% CI] | SQLi P/R/F1 (n) [F1 CI] | XSS P/R/F1 (n) [F1 CI] | Own (105) | Third-party (64) |
+|---|---|---|---|---|---|
+| **LR** (selected) | **0.863 [0.805, 0.914]** | 0.84/0.91/0.87 (34) [0.78, 0.95] | 0.71/1.00/0.83 (32) [0.72, 0.91] | 0.825 [0.746, 0.896] | 0.921 [0.843, 0.982] |
+| RF | 0.813 [0.746, 0.870] | 0.74/0.76/0.75 (34) | 0.75/0.94/0.83 (32) | 0.814 | 0.795 |
+| LightGBM | 0.831 [0.761, 0.890] | 0.76/0.76/0.76 (34) | 0.77/0.94/0.85 (32) | 0.868 | 0.762 |
+
+The family differences over all apps are not significant (LR − RF +0.050 [−0.009, +0.115]). On the
+third-party apps, LR is significantly better than both RF and LightGBM. Full tables: `reports/loao_v3.md`.
+
+**Remaining errors (LR):**
+- **XSS:** 13 false alarms, all on our own escaped `-safe` twins. A harmless reflection, such as
+  `javascript:x()` echoed as text or a quote that cannot leave its JS string, still scores ≥ 0.95. Once the
+  context one-hots are gated, the model leans on the marker-reflection and payload-family priors. The new
+  features themselves are correct (`x_dangerous` = 0 on these rows).
+- **SQLi:** 6 false alarms and 3 misses.
+
+### v2 against v3 on the same endpoint-params
+
+| Set | v2 | v3 | v2 − v3 [95% CI] |
+|---|---|---|---|
+| **Same 111 endpoint-params** as v2's leave-one-app-out | 0.827 [0.744, 0.894] | **0.933 [0.874, 0.976]** | **−0.109 [−0.193, −0.031]** |
+| … own (73) | 0.871 | 0.902 | −0.032 [−0.131, +0.057] |
+| … third-party (38) | 0.757 | **0.974** | **−0.220 [−0.378, −0.073]** |
+| **Enlarged set (169)**, the v2 system re-run on v3 data | 0.808 [0.745, 0.864] | **0.863 [0.805, 0.914]** | **−0.055 [−0.105, −0.008]** |
+
+In leave-one-app-out, v3 is significantly better, mainly on third-party apps (`reports/before_after_v3.json`,
+`before_after_v3_enlarged.json`). This leave-one-app-out gain is **somewhat optimistic**, because the changes
+were chosen from the v2 errors on these folds (see Threats).
+
+### Final held-out app: SirAppSec, single run, v2 scored on the same records
+
+The scan configuration was pre-registered (`reports/final_preregistration_v3.json`): crawl plus
+`/v1/api-docs`, the `populate.sh` seed data, a 5 s timeout, and both model hashes. It found 38 of 39 labelled
+parameters; `/beer?relationship` is never reachable because that handler throws before responding.
+
+| | v2 | v3 |
+|---|---|---|
+| Endpoint-param macro-F1 [95% CI] | **0.718 [0.525, 0.938]** | 0.652 [0.502, 0.879] |
+| SQLi (2 known, `/v1/search/{filter}/{query}`) | found 2/2, **9 false alarms** (F1 0.31) | found 2/2, 4 false alarms (F1 0.50) |
+| Reflected XSS (2 known, `/?message`, `/register?message`) | found 2/2, **0 false alarms** (F1 1.00) | found 2/2, 3 false alarms (F1 0.57) |
+| v3 − v2 | | −0.047 [−0.277, +0.169], not significant |
+
+**What this shows:**
+- **The SQLi gap is closed for both models.** Both find SirAppSec's SQL injection, whose error is a
+  501 text response; v2 found none of DSVW's 3.
+- **v3 halves the SQLi false alarms** (9 → 4).
+- **v3's 3 XSS false alarms** are the JSON fields of `POST /v1/admin/new-beer/`, whose JSON response echoes
+  the marker. Dropping the content-type features (F1) removed v2's only signal that a JSON response is not
+  rendered. This is the price of F1, and the same marker-reflection prior seen in the leave-one-app-out errors.
+- **Nothing was changed after this result.**
+
+| Rule-based (same rules in v2 and v3) | SirAppSec |
+|---|---|
+| CWE-22 / CWE-601 | found 1 of 1 / 1 of 1, 0 false alarms on 37 safe endpoints. CWE-78 is not evaluable: its only instance, `/v1/status`, is never requested |
+| Passive | found 4 of 4 (CSP, nosniff, framing, cookie without HttpOnly); 0 false alarms on 2 negatives (SameSite present, no CORS) |
+| Stored XSS (v3) | found 0 of 1. The sink is the new user's own `/profile?id=<new>`, which is never a crawled page, as expected in the ground truth. Outside the rule's scope: `GET /registerform` |
+| CSRF heuristic (v3) | 0 known instances in scope (only GET forms, SameSite=Lax). Its real CSRF is a state-changing GET, outside the heuristic by design |
+
+### Rule-based checks on the training apps (counts, not rates)
+
+| Check | Found / known | False alarms | Missed |
+|---|---|---|---|
+| CWE-78 | 3 of 4 | 0 on 186 safe endpoints | vulnerable-node `/tools/ping` (no ping binary) |
+| CWE-22 | 4 of 5 | 0 on 185 | Juice Shop `/ftp/{file}` |
+| CWE-601 | 4 of 5 | 0 on 185 | vulnerable-node `returnurl` (only after a successful login) |
+| Passive (6 checks × apps) | 33 of 33 | 0 | – |
+| **Stored XSS** | **2 of 8** | 0 on 8 safe fields | NodeGoat `/profile` × 6. Its update is refused unless `bankRouting` matches `/([0-9]+)+\#/`, so a crawl that sends the form's empty value as "test" never stores anything |
+| **CSRF heuristic** | **13 of 20** | 0 on 6 safe forms | NodeGoat login/signup/profile (unvalidated `_csrf` field: the known blind spot); NodeGoat `/memos` (page not crawled); vulnerable-node `/register`, `/account`, `/account/token` (skip-listed pages, so the forms are never seen) |
+
+Known stored-XSS instances outside the rule's scope: DSVW `/?comment` (a GET write), vulpy posts (behind a login
+that fails in the lab), and NodeGoat memos (a markdown-only bypass). Full report: `reports/rules_v3.md`.
+
+### ZAP comparison
+
+**Setup:**
+- Offline ZAP, unmodified `zap-full-scan.py`, unauthenticated, no seeds, as in v1 and v2.
+- **Exclusions:** this time every skip-listed and remote-fetch parameter was put on ZAP's global exclude list.
+- **Usability rule:** a scan is used only if the wrapper exits 0, the target was not killed or restarted, and
+  its request log shows no excluded parameter or path (`scripts/zap_run_v3.py`, `logs/zap_v3/*.status`).
+- **The DSVW scan is unusable again.** ZAP itself sent 398 requests carrying excluded parameters (204 with
+  `include=`), so the global exclude list did not hold either. DSVW has no resolver, so nothing left the lab.
+  DSVW is excluded from the comparison, not scored as a ZAP miss.
+
+| Set (endpoint-params) | ml-dast v3 | ZAP | ml-dast − ZAP [95% CI] |
+|---|---|---|---|
+| All usable (157) | 0.874 [0.814, 0.923] | 0.915 [0.858, 0.961] | −0.042 [−0.113, +0.027], not significant |
+| Own (105) | 0.825 | **0.954** | **−0.131 [−0.206, −0.053]** |
+| Third-party (52) | 0.959 | 0.848 | +0.115 [−0.018, +0.253] |
+
+| Check (counts) | Known | ml-dast | ZAP |
+|---|---|---|---|
+| CWE-78 / CWE-22 / CWE-601 | 4 / 5 / 5 | 3 / 4 / 4 | 2 / 2 / 3 |
+| Stored XSS | 8 | 2 | 1 |
+| CSRF (forms) | 20 | 13 | 9 |
+
+In v2, ZAP was significantly better overall (−0.112). In v3 the gap is no longer significant. ZAP is still
+better on our own apps, where all of ml-dast's XSS false alarms are; ml-dast is ahead on the third-party apps.
+Full tables: `reports/zap_comparison_v3.md`.
+
+**ZAP on SirAppSec:** **not available.** The scan did not finish within its 45-minute limit (: wrapper timeout). Several SirAppSec handlers never answer, so ZAP waits out its timeout on each such request. Under the rule fixed before the run, a scan that did not complete is not used, so there is no ZAP comparison on the held-out app. It was not re-run with a longer limit.
+
+## Intended use
+
+- **Intended:** an experimental, opt-in second opinion (`DAST_ENGINE=ml`) on authorized staging targets,
+  with v2 as the model in use. v3 is for comparison and further work.
+- **Not intended:** replacing ZAP, certifying an app as free of injection, or gating a pipeline on DAST
+  findings. The security gate never reads DAST findings (tested).
+
+## Limitations
+
+1. **ML covers SQLi and reflected XSS only.** Every other class is rule-based and was evaluated on very few
+   instances.
+2. **SQLi with plain-text or JSON errors is no longer missed on the held-out app**, but the training evidence
+   is still thin: own twins, DSVW and VAmPI.
+3. **XSS is the thinnest class** (688 rows; 32 endpoint-params). v3 over-flags harmless reflections,
+   including JSON echoes, because the content type is no longer a feature.
+4. **No authenticated scanning in `/scan`.** Lab collection logs in for some apps, but the service cannot.
+5. **No stored XSS behind a login.** The stored-XSS rule also misses:
+   - sinks that are not crawled pages (a new record's own page);
+   - writes the server refuses because of format checks it cannot satisfy (NodeGoat);
+   - GET writes;
+   - markdown-only bypasses.
+6. **CSRF is a heuristic** (LOW, confidence 0.5):
+   - a token field that is never validated counts as protected;
+   - state-changing GETs are out of scope;
+   - forms on skip-listed or uncrawled pages are not seen.
+7. **The rule limitations carry over from v2:** CWE-78 needs observable output or a delay, and CWE-22
+   recognizes `/etc/passwd` only.
+
+## Threats to validity
+
+- **Optimistic leave-one-app-out:** the v3 feature changes (F1 to F6) were chosen from the v2 errors on these
+  folds, after two earlier feature rounds. The held-out app is the honest estimate.
+- **Threshold at the grid edge, again:** every outer fold chose t=0.95, the top of the grid that was extended
+  for v3. It was not extended again (that would be another round of tuning).
+- **Tiny held-out:** 38 endpoint-params, with 2 SQLi and 2 XSS. The 95% CIs are wide, and the decision rests
+  on a non-significant difference.
+- **Author bias:** 3 of 10 training groups and all `/v3` twins were written by me, as were the payloads and rules.
+- **Ground-truth additions prompted by results:** the rule-based CSRF labels for labflask `/find-safe` and
+  vulnerable-node `/tools/regex`. Both forms were missing from the first labelling, were flagged by the rule,
+  then verified in source. The vulnerable-node review form was un-skipped before its collection. All of these
+  are logged in `changes_v3`. No ML label changed after v3 results.
+- **DSVW reuse:** it was the v2 held-out (scored once) and is a v3 training app.
+
+## Reproduce (v3)
+
+```bash
+cd services-ml/ml-dast
+lab/fetch-vendor.sh && (cd lab && docker compose --profile final-v2 up -d --build labflask labexpress labexpress-db labfastapi labfastapi-db juice-shop nodegoat nodegoat-db vulpy-bad vulpy-good vulnerable-node vn-db vn-mongo vampi node-api-goat dsvw)
+for a in labflask labexpress labfastapi juice-shop nodegoat vulpy-bad vulpy-good vulnerable-node vampi node-api-goat dsvw; do python scripts/collect_lab.py --data v3 $a; done
+python scripts/eval_rules_v3.py                                   # rule counts -> reports/rules_v3.md
+python scripts/loao.py --data v3                                  # main evaluation -> reports/loao_v3.md
+python scripts/loao.py --data v3 --features v2 --kinds lr         # the v2 system on the enlarged data
+python scripts/compare_before_after.py --before reports/loao_clusters_v2.json --after reports/loao_clusters_v3.json --out reports/before_after_v3.json
+python scripts/compare_before_after.py --before reports/loao_clusters_v3data_v2feat.json --after reports/loao_clusters_v3.json --out reports/before_after_v3_enlarged.json
+python scripts/select_v3.py && python scripts/train_final_v3.py
+python scripts/eval_final_v3.py                                   # once only: SirAppSec, v3 and v2 on the same records
+python scripts/zap_run_v3.py labflask labexpress labfastapi vulnerable-node vampi node-api-goat dsvw && python scripts/zap_compare_v3.py
+```
+
+---
+
+## v2 (`ml-dast-lr` 2.0.0), kept for reference
 
 v2 of the CloudSentinel `ml-dast` service (`DAST_ENGINE=ml`). It has two parts:
 
@@ -25,7 +282,7 @@ added. On the new frozen held-out app (DSVW, scored once) it found both reflecte
 | Selection | Highest pooled leave-one-app-out macro-F1 among LR, RF and LightGBM (`reports/selection_v2.json`), fixed before DSVW was collected |
 | Previous | v1 `ml-dast-lr` 1.0.0, see [v1](#v1-ml-dast-lr-100-kept-for-reference) |
 
-## What changed from v1, and why
+### What changed from v1, and why
 
 **Error analysis first.** The v1 leave-one-app-out errors were 3 false positives and 2 false negatives
 per class. I traced each one to its deciding row and the endpoint's source:
@@ -60,7 +317,7 @@ per class. I traced each one to its deciding row and the endpoint's source:
   another host.
 - Session cookies are now read from every hop of a same-origin redirect chain.
 
-## Data (v2)
+### Data (v2)
 
 | App group | Origin | Rows (ML) | SQLi / XSS endpoint-params | Safe |
 |---|---|---|---|---|
@@ -71,13 +328,13 @@ per class. I traced each one to its deciding row and the endpoint's source:
 
 Ground truth: `data/dast/ground_truth_v2.json`, summarized in `data/dast/GROUND_TRUTH.md` (v2 section).
 
-## Results
+### Results
 
 The metric is the same as v1:
 - **ML:** endpoint-param macro-F1, with 95% cluster bootstrap intervals (1,000 resamples), per class too.
 - **Rules:** counts, because n is too small for rates.
 
-### Main: leave-one-app-out (final data, 7 groups, 111 endpoint-params)
+#### Main: leave-one-app-out (final data, 7 groups, 111 endpoint-params)
 
 | Set | LR (selected) | RF | LightGBM |
 |---|---|---|---|
@@ -94,7 +351,7 @@ LR per class over all apps:
 
 On the third-party apps, XSS recall is 0.45 (11), F1 CI [0.20, 0.80]. NodeGoat's XSS fold fell to 0.571.
 
-### Before / after on the same 78 endpoint-params
+#### Before / after on the same 78 endpoint-params
 
 Paired cluster bootstrap. "Before" is the v1 model re-scored on the corrected labels.
 
@@ -112,7 +369,7 @@ What this shows:
   patterns moved the decision away from NodeGoat's attribute-context reflections.
 - **I did not tune anything in response.**
 
-### Rule-based checks on the training apps (counts, not rates)
+#### Rule-based checks on the training apps (counts, not rates)
 
 | Check | Result | Missed (cause) |
 |---|---|---|
@@ -126,7 +383,7 @@ What this shows:
 | Cookie without HttpOnly | 0 known instances, 0 false alarms on 6 apps | vulpy is not evaluable: login crashes on a bytes cookie value |
 | CORS echoes any origin | 0 known instances, 0 false alarms on 8 apps | |
 
-### Final held-out app: DSVW, single run
+#### Final held-out app: DSVW, single run
 
 DSVW was frozen before any request. The model was fixed by SHA-256 before collection
 (`reports/final_preregistration_v2.json`), and the script refuses a second run.
@@ -153,7 +410,7 @@ was a 2 GB memory limit; nothing else changed (`reports/final_dsvw_aborted_attem
 The DSVW interval is wide (12 endpoint-params) and should not be compared with v1's DVNA 0.389 (a
 different app).
 
-### ZAP comparison
+#### ZAP comparison
 
 **Setup.** Offline ZAP, unmodified `zap-full-scan.py`, unauthenticated and without seeds, on the same units
 (`reports/zap_comparison_v2.md`). The own apps and vulnerable-node were re-scanned for v2
@@ -195,14 +452,14 @@ ml-dast's 0.608; it is not used as evidence. This is a lesson for future ZAP run
 URL-exclusion rule for the spider (`-config spider.excludes…`) in addition to the context, or a smaller
 spider scope.
 
-## Intended use
+### Intended use
 
 - **Intended:** an experimental, opt-in second opinion (`DAST_ENGINE=ml`) on authorized staging targets.
   The rule-based checks are a cheap complement.
 - **Not intended:** replacing ZAP, certifying an app as free of injection, or gating a pipeline on DAST
   findings. The security gate never blocks on DAST.
 
-## Limitations
+### Limitations
 
 1. **The ML classes are SQLi and reflected XSS only.** Everything else is rule-based and was evaluated on
    very few known instances.
@@ -216,7 +473,7 @@ spider scope.
 7. **v1 timing features made v1 results load-dependent:** a shipped-model test failed under heavy
    machine load. v2 drops the signed timing features.
 
-## Threats to validity
+### Threats to validity
 
 - **Small evaluation sets:** DSVW has 12 endpoint-params, and rule classes have 1 to 4 known instances.
 - **Author bias:** 3 of 8 training app groups and all B3 endpoints were written by me, as were the payloads.
@@ -228,7 +485,7 @@ spider scope.
 - **Supplementary collection:** the CWE-601 payloads were added after the final collection to the same
   recorded points (`scripts/collect_supplement_v2.py`). ML rows were not affected.
 
-## Reproduce (v2)
+### Reproduce (v2)
 
 ```bash
 cd services-ml/ml-dast
@@ -244,7 +501,7 @@ python scripts/select_v2.py && python scripts/train_final_v2.py
 
 ---
 
-## v1 (`ml-dast-lr` 1.0.0), kept for reference
+### v1 (`ml-dast-lr` 1.0.0), kept for reference
 
 This is a request/response classifier for the CloudSentinel `ml-dast` service (`DAST_ENGINE=ml`). It
 covers SQL injection (CWE-89) and reflected XSS (CWE-79) in Python and Node.js web apps. **ZAP stays
@@ -262,7 +519,7 @@ found 1 of 2 vulnerable parameters and raised 1 false class.
 | Classes | `safe`, CWE-89, CWE-79. CWE-78 and CWE-22 are not covered: phase 2 was not started |
 | Selection | Highest pooled leave-one-app-out macro-F1 among LR, RF and LightGBM, written down in `reports/selection.json` before DVNA was scored |
 
-### How it scans
+#### How it scans
 
 `/scan` runs these steps:
 
@@ -298,7 +555,7 @@ found 1 of 2 vulnerable parameters and raised 1 false class.
 
 A target outside the allowlist is refused with HTTP 400 before any traffic is sent.
 
-### Data
+#### Data
 
 The lab is `services-ml/ml-dast/lab/docker-compose.yml`, published on 127.0.0.1 only. Labels come
 from the ground truth (`data/dast/GROUND_TRUTH.md`, `ground_truth.json`). Each endpoint was read in
@@ -324,7 +581,7 @@ Rows: 2,624 safe, 504 SQLi and 304 XSS (3.3 safe rows per positive). The safe en
 safe twins of every vulnerable endpoint in my apps, plus hard negatives: raw reflection in JSON and
 `text/plain`, non-SQL stack traces, and input-dependent timing.
 
-### Results
+#### Results
 
 The metric is macro-F1 over the classes present (`safe`, CWE-89, CWE-79). The headline is
 **endpoint-param level**; row-level results are also given.
@@ -332,7 +589,7 @@ The metric is macro-F1 over the classes present (`safe`, CWE-89, CWE-79). The he
 - **Endpoint-param level:** each (endpoint, parameter) is one unit, flagged C if any of its C rows is.
 - **Intervals:** 95% bootstrap with 1,000 resamples **over endpoint-params**, not rows.
 
-#### Main: leave-one-app-out over the 6 training groups
+##### Main: leave-one-app-out over the 6 training groups
 
 Each group is the unseen test app once. Hyperparameters and the threshold are chosen by an inner
 leave-one-app-out over the other 5 groups only. Predictions are pooled.
@@ -383,7 +640,7 @@ confusion over all apps, endpoint level:
   set is small, though: 6 SQLi endpoint-params (about 3 independent sinks) and 12 XSS endpoint-params,
   all from NodeGoat and mostly one template.
 
-#### ZAP comparison (same 78 endpoint-params)
+##### ZAP comparison (same 78 endpoint-params)
 
 ZAP 2.17.0 ran from the offline image `cloudsentinel/zap-offline:verified-closure`:
 
@@ -413,7 +670,7 @@ TP/FP/FN are counts of endpoint-params.
   - Both were fixed (`06a2065`) and re-scanned. The ML data had been collected before, and the
     crash path was never hit.
 
-#### Final held-out app: DVNA, single run
+##### Final held-out app: DVNA, single run
 
 DVNA was frozen (`data/dast/FREEZE.json`) and excluded from all loading. It was scored once by
 `scripts/eval_final.py`, which records the model SHA-256 first and refuses a second run. Its features
@@ -444,7 +701,7 @@ wrong class.
 **ZAP on DVNA: timed out, no report.** The unauthenticated full scan produced no report, and it was
 not retried. Note that without login, ZAP sees almost nothing of DVNA anyway.
 
-### Intended use
+#### Intended use
 
 - **Intended:** an experimental, opt-in second opinion on the baseline DAST path (`DAST_ENGINE=ml`),
   on staging deployments the backend has authorized. Configure the allowlist to the staging host and
@@ -452,7 +709,7 @@ not retried. Note that without login, ZAP sees almost nothing of DVNA anyway.
 - **Not intended:** replacing ZAP as the DAST gate, scanning anything not explicitly allowlisted, or
   claiming an app is free of SQLi or XSS.
 
-### Limitations
+#### Limitations
 
 1. **Only two classes.** It covers CWE-89 and reflected CWE-79. Command injection and path traversal
    are not covered; DVNA shows the model calling a command-injection endpoint XSS.
@@ -473,7 +730,7 @@ not retried. Note that without login, ZAP sees almost nothing of DVNA anyway.
 8. **Coverage depends on budget.** Each injection point costs about 47 requests, and with the default
    500-request budget only about 10 points are scanned.
 
-### Threats to validity
+#### Threats to validity
 
 - **Few independent positives.** Third-party evidence rests on about 3 SQLi sinks and one NodeGoat
   XSS template. DVNA has 4 endpoint-params. All intervals are wide.
@@ -496,7 +753,7 @@ not retried. Note that without login, ZAP sees almost nothing of DVNA anyway.
 - **Teaching apps.** All the third-party apps are deliberately vulnerable teaching apps; production
   apps behave differently.
 
-### Reproduce
+#### Reproduce
 
 See [`services-ml/ml-dast/README.md`](../services-ml/ml-dast/README.md#lab-data-and-reproduction).
 

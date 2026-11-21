@@ -7,7 +7,13 @@ GuardedClient (allowlist, same origin, budgets, rate limit). When the request bu
 scan stops and returns what it has; ``last_scan`` records coverage so callers can see it.
 Optional ``seed_paths`` (extra start pages) and ``openapi_url`` (an OpenAPI document) widen the crawl
 for apps whose endpoints are not linked from HTML; they pass the same guards as everything else.
+
+v3 detectors (data_version "v3") add two rule-based checks: stored XSS (dastml.stored: a marker is
+written to POST/PUT form and JSON fields and the crawled pages are re-fetched; disable with
+ML_DAST_STORED_XSS=0) and the CSRF heuristic (LOW, confidence 0.5). Writes go through the same
+guarded client, so they only ever reach allowlisted targets.
 """
+import os
 from urllib.parse import urljoin
 
 import numpy as np
@@ -16,7 +22,8 @@ from . import CLASSES
 from .crawl import crawl
 from .guards import BudgetExceeded, GuardedClient, GuardError, TargetPolicy
 from .probe import CORS_ORIGIN, PAYLOADS_PATH, load_payloads, new_marker, point_rows, probe_point, snapshot
-from .rules import active_findings, passive_findings
+from .rules import active_findings, csrf_findings, passive_findings, stored_xss_findings
+from .stored import stored_pass
 
 PAYLOADS_DIR = PAYLOADS_PATH.parent
 RULE_CLASSES = ("CWE-78", "CWE-22", "CWE-601")  # deterministic rules in v2 detectors (dastml.rules), never ML
@@ -64,7 +71,8 @@ class DastDetector:
         if openapi_url:
             client.check_url(openapi_url)
         # v1 artifacts (pickled before v2) have neither attribute and keep the exact v1 behaviour.
-        v2 = getattr(self, "data_version", "v1") == "v2"
+        version = getattr(self, "data_version", "v1")
+        v2, v3 = version in ("v2", "v3"), version == "v3"  # v3 = v2 behaviour + stored XSS + CSRF heuristic
         payload_path = PAYLOADS_DIR / getattr(self, "payloads_file", "payloads.json")
         payloads = load_payloads(tuple(self.classes) + (RULE_CLASSES if v2 else ()), payload_path)
         self.last_scan = {}  # errors from a previous scan must not leak into this one
@@ -72,7 +80,9 @@ class DastDetector:
         if openapi_url:
             from .openapi import load_points
             seeds += load_points(client, openapi_url)
-        points, visited = crawl(client, "/", seeds=seeds, start_paths=seed_paths)
+        forms, pages = ([], []) if v3 else (None, None)
+        points, visited = crawl(client, "/", seeds=seeds, start_paths=seed_paths, forms_out=forms, pages_out=pages)
+        headers = []  # header snapshots of the baselines (v2+), for the CSRF heuristic
         findings, probed, stopped = [], 0, None
         for point in points:
             try:
@@ -85,6 +95,7 @@ class DastDetector:
                 self.last_scan.setdefault("errors", []).append(f"{point.method} {point.path}: {type(exc).__name__}")
                 continue
             probed += 1
+            headers += [r for r in rec["responses"] if r.get("headers") is not None]
             endpoint = urljoin(base_url, point.path)[:500]
             rule_findings = active_findings(rec, payloads, base_url, endpoint) if v2 else []
             findings += rule_findings
@@ -112,14 +123,25 @@ class DastDetector:
                                  "method": point.method, "param": point.param[:200], "request_payload": resp["value"][:1000],
                                  "response_details": evidence(f, resp, base)[:1000], "cwe_id": cwe, "solution": solution,
                                  "confidence": round(float(proba[best, ci]), 4), **({"engine": "ml"} if v2 else {})})
+        stored_records = []
+        if v3 and stopped is None and os.environ.get("ML_DAST_STORED_XSS", "1") != "0":
+            # before the passive pass, which clears the session's cookies
+            stored_records = stored_pass(client, points, pages, max_pages=20)
+            findings += stored_xss_findings(stored_records, base_url)
+            if any(r.get("stopped") for r in stored_records):
+                stopped = "request budget reached during the stored-XSS pass"
         if v2 and stopped is None:
-            findings += self._passive(client, visited, base_url)
+            passive, snaps = self._passive(client, visited, base_url, with_snaps=True)
+            findings += passive
+            if v3:
+                findings += csrf_findings(forms, headers + snaps, base_url)
         self.last_scan = {"pages": len(visited), "points_found": len(points), "points_probed": probed,
+                          **({"forms": len(forms), "stored_xss_fields_written": len(stored_records)} if v3 else {}),
                           "requests": client.requests_sent, "stopped": stopped, **({"errors": self.last_scan["errors"]} if "errors" in self.last_scan else {})}
         return findings
 
     @staticmethod
-    def _passive(client, visited, base_url, max_pages=10):
+    def _passive(client, visited, base_url, max_pages=10, with_snaps=False):
         """Rule-based passive checks (LOW/INFO) on up to 10 crawled pages, re-requested without the
         session's cookies so a cookie set on first visit is seen, plus one foreign-Origin request.
         Uses the same guarded client, so it counts against the scan's request budget."""
@@ -136,4 +158,5 @@ class DastDetector:
             pass
         except Exception:  # an unreachable page only shortens the passive pass
             pass
-        return passive_findings(snaps, base_url)
+        found = passive_findings(snaps, base_url)
+        return (found, snaps) if with_snaps else found

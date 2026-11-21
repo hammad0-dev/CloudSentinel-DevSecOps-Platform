@@ -9,7 +9,10 @@ import json
 import secrets
 from pathlib import Path
 
+import requests
+
 from .features import row_features
+from .guards import GuardError
 
 BODY_LIMIT = 200_000
 PAYLOADS_PATH = Path(__file__).resolve().parents[1] / "data/dast/payloads/payloads.json"
@@ -78,7 +81,15 @@ def send(client, point, value, headers=False, extra_headers=None):
         path = "/".join(quote(s, safe="") if i else s for i, s in enumerate(path.split("/")))
     if extra_headers:
         kw["headers"] = extra_headers
-    resp, elapsed = client.request(point.method, path, **kw)
+    try:
+        resp, elapsed = client.request(point.method, path, **kw)
+    except GuardError:
+        raise  # refusals and the request budget are never swallowed
+    except requests.RequestException as exc:
+        # v3: a target that never answers (timeout) or drops the connection is recorded as an error
+        # response instead of aborting the whole point (several SirAppSec handlers never respond).
+        return {"status": 0, "ctype": "", "body": "", "elapsed": round(float(client.policy.timeout_sec), 4), "location": "",
+                "nosniff": False, "error": type(exc).__name__, **({"headers": None} if headers else {})}
     return snapshot(resp, elapsed, headers)
 
 

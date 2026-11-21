@@ -46,7 +46,7 @@ def rows_page(title, rows, note=""):
 @app.get("/", response_class=HTMLResponse)
 def index():
     links = ["/orders?status=shipped", "/orders-safe?status=shipped", "/order?id=1", "/order-safe?id=1", "/note?text=hi", "/note-safe?text=hi",
-             "/docs-link?topic=intro", "/docs-link-safe?topic=intro", "/api/status?item=kettle", "/api/status-safe?item=kettle", "/text?msg=hi", "/report", "/report-safe", "/v2"]
+             "/docs-link?topic=intro", "/docs-link-safe?topic=intro", "/api/status?item=kettle", "/api/status-safe?item=kettle", "/text?msg=hi", "/report", "/report-safe", "/v2", "/v3"]
     return "<!doctype html><html><body><h3>labfastapi</h3><ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in links) + "</ul></body></html>"
 
 
@@ -209,3 +209,45 @@ def carrier_safe(code: str = ""):
         return HTMLResponse(T_NOTE.render(title="carrier", note=CARRIERS[code]))
     time.sleep(1.2)
     return HTMLResponse(T_NOTE.render(title="carrier", note="unknown carrier"))
+
+
+# ---------- v3: targeted twins (docs/ml-dast-v3-plan.md, B/D1) ----------
+@app.get("/v3", response_class=HTMLResponse)
+def index_v3():
+    links = ["/v3/order-text?id=1", "/v3/order-text-safe?id=1", "/v3/greet-js?name=guest", "/v3/greet-js-safe?name=guest"]
+    return "<!doctype html><html><body><h3>labfastapi v3</h3><ul>" + "".join(f"<li><a href='{l}'>{l}</a></li>" for l in links) + "</ul></body></html>"
+
+
+@app.get("/v3/order-text")  # VULN CWE-89: string-built (numeric); the MySQL error comes back as a text/plain 500
+def v3_order_text(id: str = "1"):
+    try:
+        c = conn().cursor()
+        c.execute("SELECT item FROM orders WHERE id = " + id)
+        r = c.fetchone()
+    except pymysql.MySQLError as exc:
+        return PlainTextResponse(f"query failed: {exc}\n", status_code=500)
+    return PlainTextResponse((r[0] if r else "no such order") + "\n")
+
+
+@app.get("/v3/order-text-safe")  # SAFE (hard negative): parameterized; bad input -> text/plain 400 with the parse error
+def v3_order_text_safe(id: str = "1"):
+    try:
+        oid = int(id)
+    except ValueError as exc:
+        return PlainTextResponse(f"bad request: {exc}\n", status_code=400)
+    c = conn().cursor()
+    c.execute("SELECT item FROM orders WHERE id = %s", (oid,))
+    r = c.fetchone()
+    return PlainTextResponse((r[0] if r else "no such order") + "\n")
+
+
+@app.get("/v3/greet-js", response_class=HTMLResponse)  # VULN CWE-79: raw into a single-quoted JS string
+def v3_greet_js(name: str = "guest"):
+    return "<!doctype html><html><body><script>var who = '" + name + "'; document.write('hi');</script></body></html>"
+
+
+@app.get("/v3/greet-js-safe", response_class=HTMLResponse)  # SAFE: JSON-encoded, with < > & escaped
+def v3_greet_js_safe(name: str = "guest"):
+    import json as _json
+    v = _json.dumps(name).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    return f"<!doctype html><html><body><script>var who = {v}; document.write('hi');</script></body></html>"

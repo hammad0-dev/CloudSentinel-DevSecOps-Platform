@@ -393,3 +393,62 @@ Engines: ml-sast-hybrid 2.0.0 and ml-dast-lr **2.0.0** (`5dc397d0b6c4…`, thres
   JSON root.
 - The DAST stage still finds no injection points on the JSON fixtures without seeds, as in the earlier e2e.
 
+
+## ML DAST v3: targeted SQLi/XSS round, stored XSS, CSRF heuristic
+
+`ml-dast-lr` 3.0.0 (`services-ml/ml-dast/models/release_v3/`, gitignored) is **packaged separately and is not the
+model in use**. The rule, fixed before the held-out app was scored, required v3 to beat v2 on the new frozen held-out
+app SirAppSec. It did not: 0.652 against 0.718 on the same records, a difference that is not significant. In
+leave-one-app-out it is significantly better than v2. **v2 (`models/release_v2`) stays the ml-dast model in use, and
+ZAP stays the default DAST engine.** Details and every number: [`docs/ml-dast-model-card.md`](ml-dast-model-card.md).
+
+**What v3 adds:**
+- **Features:** XSS evidence counts only for rendered HTML, judged per context where the reflection starts. Script
+  breakouts must match the enclosing JS string. The app-prior features (page length, content type) are dropped.
+  The threshold grid goes up to 0.95.
+- **Data:** own-app `/v3` twins (SQL errors as text/plain or JSON, parity-only and ORDER BY SQLi, safe error
+  answers, XSS contexts), VAmPI, node-api-goat, and DSVW as training data.
+- **Rules:**
+  - **Stored XSS (HIGH):** a marker is written to POST/PUT form and JSON fields, and the crawled pages are
+    re-fetched. It runs only through the guarded client; `ML_DAST_STORED_XSS=0` turns it off.
+  - **CSRF heuristic (LOW, confidence 0.5):** a tokenless POST form while the session cookie has no SameSite.
+
+**How the backend handles the new classes:**
+- `stored_xss` normalizes as a DAST `VULNERABILITY` (HIGH, CWE-79, OWASP A03), like reflected XSS.
+- `csrf_heuristic` normalizes as a LOW `HOTSPOT_REVIEW`, so it is not an unresolved vulnerability in compliance.
+- Passive and heuristic findings are clamped to LOW/INFO whatever severity arrives.
+- The security gate never reads DAST findings; `backend/test/ml-engines.test.js` pins this, including HIGH stored XSS.
+- The DAST results table tags rule, stored, passive and heuristic findings.
+
+| Env | Default | Meaning |
+|---|---|---|
+| `ML_DAST_MODEL_DIR` | `models/release` (v1 directory) | Set `models/release_v2` (in use) or `models/release_v3` (opt-in). Use an absolute path: `run-ml-dast.sh` changes directory |
+| `ML_DAST_STORED_XSS` | `1` | `0` disables the stored-XSS write pass (v3 detectors only) |
+
+| Evaluation | v2 | v3 |
+|---|---|---|
+| Leave-one-app-out, same 111 endpoint-params | 0.827 [0.744, 0.894] | 0.933 [0.874, 0.976]: significantly better |
+| Leave-one-app-out, enlarged set (169) | 0.808 [0.745, 0.864] | 0.863 [0.805, 0.914]: significantly better |
+| Frozen held-out SirAppSec (once, same records) | **0.718** [0.525, 0.938] | 0.652 [0.502, 0.879]; v3 − v2 = −0.047 [−0.277, +0.169] |
+| vs ZAP, training apps | ZAP significantly better | not significant (−0.042 [−0.113, +0.027]) |
+
+### e2e with this branch (2026-11-21, v2 model in use)
+
+Engines: ml-sast-hybrid 2.0.0 and ml-dast-lr 2.0.0 (`5dc397d0b6c4…`), on this branch's service and backend code.
+Executions 86 to 88.
+
+| Stage | node-express (vulnerable) | python-clean | demo-forms (vulnerable) |
+|---|---|---|---|
+| SAST (ML) | C1 H2 | 0 | C3 H5 |
+| Dependency / IaC | not run | 3 s L1 / 10 s 0 | not run |
+| Image | not run | H48 M110 L67 (not gating) | not run |
+| Deploy | not run | success, `http://192.168.49.2:32707` | not run |
+| DAST (ML) | not run | 1 INFO passive finding (`nosniff`); crawl 1 page, 0 injection points | not run |
+| **Gate** | **Blocked at SAST** | **Passed**, COMPLETED in 151 s | **Blocked at SAST** |
+
+**Not run:** the vulnerable `python` fixture of `e2e-smoke.js`. No repository is configured for it (`E2E_PYTHON_REPO`
+is unset), and no earlier e2e ran it either; demo-forms is the vulnerable Python fixture.
+
+**One failed attempt, disclosed.** An earlier attempt (executions 83 to 85) failed for an infrastructure reason. My
+ml-dast restart had not come up, so python-clean's DAST stage got ECONNREFUSED and the gate blocked it. Re-run after
+restarting the service: the results above.
