@@ -50,7 +50,7 @@ def report(app):
         status = (v3 / f"{app}.status").read_text().strip() if (v3 / f"{app}.status").exists() else "missing status"
         if not status.startswith("ok"):
             return None, f"v3 scan NOT USED ({status})"
-        return json.loads((v3 / f"{app}.json").read_text()), "v3 scan"
+        return json.loads((v3 / f"{app}.json").read_text()), ("v4 scan" if app == "dvpwa" else "v3 scan")
     for d, label in ((ROOT / "logs/zap_v2", "v2 scan (app unchanged in v3)"), (ROOT / "logs/zap", "v1 scan (app unchanged since v1)")):
         if (d.name, app) in NEVER_USE:
             continue
@@ -120,7 +120,7 @@ def main():
                 stored_hits[app].add(param)
             if pid in CSRF_PLUGINS:
                 csrf_pages[app].add(path)
-    scanned = [x for x in apps if sources[x] == "v3 scan" or sources[x].startswith(("v2 scan", "v1 scan"))]  # unusable scans (NOT USED) are excluded, never scored as zero
+    scanned = [x for x in apps if sources[x] in ("v3 scan", "v4 scan") or sources[x].startswith(("v2 scan", "v1 scan"))]  # unusable scans (NOT USED) are excluded, never scored as zero
     common = {k: v for k, v in ml.items() if v[3] in scanned}
     zap = {k: (v[0], zap_ml.get(k, 0), v[2], v[3]) for k, v in common.items()}
     out = {"apps": apps, "zap_sources": sources, "n_common_clusters": len(common),
@@ -129,7 +129,7 @@ def main():
     # rule classes: units from the stored probe records, as in eval_rules.py
     import eval_rules
     import eval_rules_v3
-    eval_rules.P = P
+    eval_rules.P = eval_rules_v3.P = P  # v4: both modules read the v4 records
     from dastml.probe import load_payloads
     payloads = load_payloads(("CWE-89", "CWE-79", "CWE-78", "CWE-22", "CWE-601"), P["payloads"])
     active, passive = eval_rules.evaluate(scanned, gt, payloads)
