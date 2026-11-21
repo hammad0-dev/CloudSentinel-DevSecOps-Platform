@@ -52,6 +52,7 @@ reached, before → with login:
 | DVPWA | 8 | 14 of 17 |
 | NodeGoat | 7 | 15 of 15 |
 | vulnerable-node | 10 | 13 of 18 |
+| nodejs-goof (new v5x data, stage 6) | 5 | 10 of 11 (11 of 11 in the collection) |
 
 These counts are the union of the logged-out and logged-in crawls (`data/dast/coverage_v5.json`). The dvws-node
 held-out was scanned logged in, with 100% coverage.
