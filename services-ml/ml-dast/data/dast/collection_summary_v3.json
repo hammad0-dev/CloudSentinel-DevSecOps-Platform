@@ -224,5 +224,36 @@
   "forms": 0,
   "stored_points": 0,
   "stored_raw_hits": 0
+ },
+ "sirappsec": {
+  "pages_crawled": 3,
+  "points_found": 46,
+  "points_probed": 38,
+  "gt_params_listed": 39,
+  "gt_params_found": 38,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/beer",
+    "relationship"
+   ]
+  ],
+  "unlisted_points_not_probed": [
+   "GET /login [message]",
+   "GET /profile [message]",
+   "GET /register [address]",
+   "GET /register [email]",
+   "GET /register [name]",
+   "GET /register [password]",
+   "GET /v1/status/test [{seg3}]",
+   "GET /v1/test/ [url]"
+  ],
+  "requests": 3811,
+  "rows": 2438,
+  "seconds": 1332,
+  "point_errors": [],
+  "forms": 2,
+  "stored_points": 13,
+  "stored_raw_hits": 0
  }
 }
