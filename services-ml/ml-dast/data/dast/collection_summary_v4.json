@@ -1,0 +1,18 @@
+{
+ "benchmarkpython": {
+  "pages_crawled": 1,
+  "points_found": 155,
+  "points_probed": 155,
+  "gt_params_listed": 155,
+  "gt_params_found": 155,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 11625,
+  "rows": 6325,
+  "seconds": 498,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 77,
+  "stored_raw_hits": 0
+ }
+}

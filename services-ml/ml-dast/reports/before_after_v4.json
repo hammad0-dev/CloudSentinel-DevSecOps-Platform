@@ -1,0 +1,597 @@
+{
+ "before": "loao_clusters_v2.json[lr]",
+ "after": "loao_clusters_v4.json[lr]",
+ "n_common": 111,
+ "all": {
+  "metrics": {
+   "before": {
+    "n": 111,
+    "macro_f1": 0.8274913018642572,
+    "per_class": {
+     "safe": {
+      "precision": 0.890625,
+      "recall": 0.8507462686567164,
+      "f1": 0.8702290076335878,
+      "support": 67,
+      "tp": 57,
+      "fp": 7,
+      "fn": 10
+     },
+     "CWE-89": {
+      "precision": 0.8461538461538461,
+      "recall": 0.9565217391304348,
+      "f1": 0.8979591836734695,
+      "support": 23,
+      "tp": 22,
+      "fp": 4,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 0.7142857142857143,
+      "recall": 0.7142857142857143,
+      "f1": 0.7142857142857143,
+      "support": 21,
+      "tp": 15,
+      "fp": 6,
+      "fn": 6
+     }
+    },
+    "confusion": [
+     [
+      57,
+      4,
+      6
+     ],
+     [
+      1,
+      22,
+      0
+     ],
+     [
+      6,
+      0,
+      15
+     ]
+    ],
+    "binary": {
+     "precision": 0.7872340425531915,
+     "recall": 0.8409090909090909
+    }
+   },
+   "after": {
+    "n": 111,
+    "macro_f1": 0.9696891394565813,
+    "per_class": {
+     "safe": {
+      "precision": 0.9705882352941176,
+      "recall": 0.9850746268656716,
+      "f1": 0.9777777777777777,
+      "support": 67,
+      "tp": 66,
+      "fp": 2,
+      "fn": 1
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.9130434782608695,
+      "f1": 0.9545454545454545,
+      "support": 23,
+      "tp": 21,
+      "fp": 0,
+      "fn": 2
+     },
+     "CWE-79": {
+      "precision": 0.9545454545454546,
+      "recall": 1.0,
+      "f1": 0.9767441860465117,
+      "support": 21,
+      "tp": 21,
+      "fp": 1,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      66,
+      0,
+      1
+     ],
+     [
+      2,
+      21,
+      0
+     ],
+     [
+      0,
+      0,
+      21
+     ]
+    ],
+    "binary": {
+     "precision": 0.9767441860465116,
+     "recall": 0.9545454545454546
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 111,
+   "macro_f1": {
+    "before": {
+     "mean": 0.8229221600704781,
+     "ci95": [
+      0.744205725189228,
+      0.8943250918462388
+     ]
+    },
+    "after": {
+     "mean": 0.9689340498634671,
+     "ci95": [
+      0.9302472463478753,
+      1.0
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.7999999999999999,
+      0.9767441860465117
+     ],
+     "CWE-79": [
+      0.5384615384615384,
+      0.8485227272727273
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.8750000000000001,
+      1.0
+     ],
+     "CWE-79": [
+      0.9188626126126126,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.14601188979298887,
+     "ci95": [
+      -0.22471206700227891,
+      -0.07577947026632029
+     ]
+    }
+   }
+  }
+ },
+ "own": {
+  "metrics": {
+   "before": {
+    "n": 73,
+    "macro_f1": 0.8710144927536231,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.84,
+      "f1": 0.9130434782608696,
+      "support": 50,
+      "tp": 42,
+      "fp": 0,
+      "fn": 8
+     },
+     "CWE-89": {
+      "precision": 0.7647058823529411,
+      "recall": 1.0,
+      "f1": 0.8666666666666666,
+      "support": 13,
+      "tp": 13,
+      "fp": 4,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.7142857142857143,
+      "recall": 1.0,
+      "f1": 0.8333333333333333,
+      "support": 10,
+      "tp": 10,
+      "fp": 4,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      42,
+      4,
+      4
+     ],
+     [
+      0,
+      13,
+      0
+     ],
+     [
+      0,
+      0,
+      10
+     ]
+    ],
+    "binary": {
+     "precision": 0.7419354838709677,
+     "recall": 1.0
+    }
+   },
+   "after": {
+    "n": 73,
+    "macro_f1": 0.964126984126984,
+    "per_class": {
+     "safe": {
+      "precision": 0.98,
+      "recall": 0.98,
+      "f1": 0.98,
+      "support": 50,
+      "tp": 49,
+      "fp": 1,
+      "fn": 1
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.9230769230769231,
+      "f1": 0.9600000000000001,
+      "support": 13,
+      "tp": 12,
+      "fp": 0,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 0.9090909090909091,
+      "recall": 1.0,
+      "f1": 0.9523809523809523,
+      "support": 10,
+      "tp": 10,
+      "fp": 1,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      49,
+      0,
+      1
+     ],
+     [
+      1,
+      12,
+      0
+     ],
+     [
+      0,
+      0,
+      10
+     ]
+    ],
+    "binary": {
+     "precision": 0.9565217391304348,
+     "recall": 0.9565217391304348
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 73,
+   "macro_f1": {
+    "before": {
+     "mean": 0.866438514090014,
+     "ci95": [
+      0.7670691989906467,
+      0.9447865853658537
+     ]
+    },
+    "after": {
+     "mean": 0.9633001246820533,
+     "ci95": [
+      0.8994654354711281,
+      1.0
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.6956521739130436,
+      0.9743589743589743
+     ],
+     "CWE-79": [
+      0.6,
+      0.9655172413793104
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.8571428571428571,
+      1.0
+     ],
+     "CWE-79": [
+      0.8235294117647058,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.0968616105920391,
+     "ci95": [
+      -0.1906659559388087,
+      -0.009924535531632661
+     ]
+    }
+   }
+  }
+ },
+ "third-party": {
+  "metrics": {
+   "before": {
+    "n": 38,
+    "macro_f1": 0.7573849152796521,
+    "per_class": {
+     "safe": {
+      "precision": 0.6818181818181818,
+      "recall": 0.8823529411764706,
+      "f1": 0.7692307692307693,
+      "support": 17,
+      "tp": 15,
+      "fp": 7,
+      "fn": 2
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526316,
+      "support": 10,
+      "tp": 9,
+      "fp": 0,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 0.7142857142857143,
+      "recall": 0.45454545454545453,
+      "f1": 0.5555555555555556,
+      "support": 11,
+      "tp": 5,
+      "fp": 2,
+      "fn": 6
+     }
+    },
+    "confusion": [
+     [
+      15,
+      0,
+      2
+     ],
+     [
+      1,
+      9,
+      0
+     ],
+     [
+      6,
+      0,
+      5
+     ]
+    ],
+    "binary": {
+     "precision": 0.875,
+     "recall": 0.6666666666666666
+    }
+   },
+   "after": {
+    "n": 38,
+    "macro_f1": 0.9729323308270676,
+    "per_class": {
+     "safe": {
+      "precision": 0.9444444444444444,
+      "recall": 1.0,
+      "f1": 0.9714285714285714,
+      "support": 17,
+      "tp": 17,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-89": {
+      "precision": 1.0,
+      "recall": 0.9,
+      "f1": 0.9473684210526316,
+      "support": 10,
+      "tp": 9,
+      "fp": 0,
+      "fn": 1
+     },
+     "CWE-79": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 11,
+      "tp": 11,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      17,
+      0,
+      0
+     ],
+     [
+      1,
+      9,
+      0
+     ],
+     [
+      0,
+      0,
+      11
+     ]
+    ],
+    "binary": {
+     "precision": 1.0,
+     "recall": 0.9523809523809523
+    }
+   }
+  },
+  "bootstrap": {
+   "n_clusters": 38,
+   "macro_f1": {
+    "before": {
+     "mean": 0.7522101282024342,
+     "ci95": [
+      0.6094957673905043,
+      0.8841140730614414
+     ]
+    },
+    "after": {
+     "mean": 0.9706982355908185,
+     "ci95": [
+      0.9046697388632873,
+      1.0
+     ]
+    }
+   },
+   "per_class_f1_ci95": {
+    "before": {
+     "CWE-89": [
+      0.8,
+      1.0
+     ],
+     "CWE-79": [
+      0.2,
+      0.8000000000000002
+     ]
+    },
+    "after": {
+     "CWE-89": [
+      0.8,
+      1.0
+     ],
+     "CWE-79": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "differences": {
+    "before - after": {
+     "mean": -0.21848810738838437,
+     "ci95": [
+      -0.3500282294489611,
+      -0.08956228956228962
+     ]
+    }
+   }
+  }
+ },
+ "errors": {
+  "before": [
+   [
+    "labexpress|GET|/api/items-safe|q",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labfastapi|GET|/docs-link-safe|topic",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/calc|x",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/next|next",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/ping|host",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/profile-safe|color",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "labflask|GET|/slow|n",
+    "safe",
+    "CWE-89"
+   ],
+   [
+    "labflask|GET|/widget-safe|cb",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "nodegoat|POST|/profile|address",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|bankAcc",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|bankRouting",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|dob",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|lastName",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "nodegoat|POST|/profile|ssn",
+    "CWE-79",
+    "safe"
+   ],
+   [
+    "vulnerable-node|GET|/orders|sort",
+    "CWE-89",
+    "safe"
+   ],
+   [
+    "vulnerable-node|POST|/login/auth|returnurl",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "vulnerable-node|POST|/tools/ping|host",
+    "safe",
+    "CWE-79"
+   ]
+  ],
+  "after": [
+   [
+    "labflask|GET|/item|id",
+    "CWE-89",
+    "safe"
+   ],
+   [
+    "labflask|GET|/widget-safe|cb",
+    "safe",
+    "CWE-79"
+   ],
+   [
+    "vulnerable-node|GET|/orders|sort",
+    "CWE-89",
+    "safe"
+   ]
+  ]
+ }
+}
