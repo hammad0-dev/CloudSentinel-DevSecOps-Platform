@@ -1,0 +1,86 @@
+{
+ "policy": "Labelled from RealVuln ground truth and frozen BEFORE any v3 training. Scored exactly once (scripts/v3/eval_heldout_v3.py).",
+ "realvuln_commit": "015244597a86d107f86f9574f9eda6d20928f156",
+ "ground_truth_version": "3.0.0",
+ "sets": {
+  "python": {
+   "apps": {
+    "damn-vulnerable-flask-application": "55f63201c85190e760a8fa34a580a9bf918dbf36",
+    "damn-vulnerable-graphql-application": "a961308c02d1fb462b192681c336b0739e432da7",
+    "djangoat": "082c88bfefced508ae083b92b459c808f95e905e",
+    "dvblab": "25bdef1e32055bfb6366856acc5db829e61e3647",
+    "extremely-vulnerable-flask-app": "d5d8875559e21222bbbaadb7b9f0af592c6eb7fa",
+    "flask-xss": "4d6f500246696d9078e141d7eabcc34087c54faa",
+    "insecure-web": "5d1b791bb6c2d1397843f29ee6a0d5c9386dd667",
+    "intentionally-vulnerable-python-application": "3804a18ae666b296675f9a60bc617e527beae520",
+    "lets-be-bad-guys": "7cbf11014bfc6dc9e199dc0b8a64e4597bc2338f",
+    "owasp-web-playground": "5e682aca1b58e03362a5fbd9fc88c37626e429ce",
+    "python-app": "a33452268ef7489ebeb44f65a1bae06eda2072ab",
+    "python-insecure-app": "80b894a2f754590747a31c92b2088be086421953",
+    "pythonssti": "76339c27d5a870c0a81bad6aee5f9bd516592145",
+    "threatbyte": "c4db46f72586c4ecb65859051ea037018dbf0e5e",
+    "vfapi": "f36f177e1a32aa49272f4eb52f8be0af3e8f6bc3",
+    "vulnerable-api": "f7797964e1cd63a1cbcc8ced721fa41db674c8e0",
+    "vulnerable-flask-app": "b6a4f97afd466e83e1f60781494252dec1c37039",
+    "vulnerable-python-apps": "6336c77e6db523a5df34c4b628dff4159110797a",
+    "vulnerable-tornado-app": "7aca8b78ba948c841d6cb1cc2a244922a27e842b",
+    "vulnpy": "d1d0f64c06f038fe59a049e0e6001bfaf9839697"
+   },
+   "n_files": 304,
+   "units": 831,
+   "scored_units": 660,
+   "excluded_units": 171,
+   "vulnerable_units": 132,
+   "by_class": {
+    "CWE-22": 18,
+    "CWE-327": 14,
+    "CWE-502": 14,
+    "CWE-78": 11,
+    "CWE-79": 28,
+    "CWE-798": 29,
+    "CWE-89": 24,
+    "safe": 528
+   },
+   "finding_stats": {
+    "findings_vulnerable": 468,
+    "findings_fp_trap": 90,
+    "unmapped_other": 46,
+    "unmapped_vulnerable_target": 46
+   },
+   "rows_sha256": "ab8640ef519439f60851aba18af2ae0f87853aff96e0b6ee9889381d1c4b8a76",
+   "sources_sha256": "eeab3fa9e9b29967c72ed17d50b5ee8ef0fb262ebd9cc9c4aa17aa829adb4438",
+   "ground_truth_sha256": "f84d94ba511a39e5a441ef3b4b1d5bf1d0875970518322877e3b651532ebf2fb"
+  },
+  "node": {
+   "apps": {
+    "ninjasworkout": "8c2bfebc7431fb33a15ee9da10b19c105a563a56",
+    "vuln-node-express": "b912ebd7c88eead5b90b85ff28ac961ed0d1acd0",
+    "vulnerable-nodejs": "be41f02bb686ddacedd928e870441205ced56c44",
+    "vulnnodeapp": "3393db1ae7813128067c8d243985b9cef57abcb1"
+   },
+   "n_files": 34,
+   "units": 163,
+   "scored_units": 137,
+   "excluded_units": 26,
+   "vulnerable_units": 19,
+   "by_class": {
+    "CWE-22": 2,
+    "CWE-327": 4,
+    "CWE-502": 2,
+    "CWE-78": 2,
+    "CWE-79": 1,
+    "CWE-798": 6,
+    "CWE-89": 4,
+    "safe": 118
+   },
+   "finding_stats": {
+    "findings_vulnerable": 79,
+    "unmapped_vulnerable_target": 9,
+    "unmapped_other": 3
+   },
+   "rows_sha256": "0b15a27929f6710b55f74f5b09590117c80158468c42b782e1f910fe8af4dc2e",
+   "sources_sha256": "0c53378d31da9b988dd028a170449dad3641fa230d746aeea1543f7b8bbcf2e9",
+   "ground_truth_sha256": "815dff6eb850f8e7eadd15f58d268dddd47e5e977f0c2fc559e5aaf3cc86ae18"
+  }
+ }
+}
