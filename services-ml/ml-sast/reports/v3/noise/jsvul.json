@@ -1,0 +1,229 @@
+{
+ "source": "jsvul",
+ "n": 50,
+ "criterion": "does the pre-fix function visibly contain the labelled CWE pattern (v2 criterion)",
+ "reviewer": "one reviewer (the assistant), no second reviewer",
+ "seed": 2026,
+ "counts": {
+  "correct": 29,
+  "weak": 20,
+  "wrong": 1
+ },
+ "strict_error_rate": 0.02,
+ "strict_ci95_wilson": [
+  0.004,
+  0.105
+ ],
+ "error_rate_with_weak": 0.42,
+ "with_weak_ci95_wilson": [
+  0.294,
+  0.558
+ ],
+ "policy": "fixed before any source after PyVul was checked: strict error rate > 25% -> drop the source; strict + weak > 50% -> sample weight 0.5; otherwise weight 1.0",
+ "decision": "weight 1.0",
+ "verdicts": [
+  {
+   "pair_id": "jsvul:laurent22/joplin::85219a6004239b061ed5b75e97128a2d486b9e05::ReactNativeClient/lib/MdToHtml.js::390::2",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:starcitizentools/mediawiki-extensions-shortdescription::7aed6bb99feac2f6dcf217d531a4db18ddb2cf38::modules/ext.shortDescription.js::1::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:parse-community/parse-server::0bb63d8cc129f5dcc1b5402f47ef42ebcfebedf7::src/Routers/FilesRouter.js::102::2",
+   "verdict": "weak",
+   "note": "null-guard on the extension check"
+  },
+  {
+   "pair_id": "jsvul:tryghost/ghost::b2a429437e091606bcdcc30d7a1f4fc99bd7707a::ghost/core/core/frontend/helpers/excerpt.js::13::17",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:bigbluebutton/bbb-pads::9f942153e71c7516f4e1737c0471bf3c7c8efac7::lib/redis/handler.js::82::26",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:kellyselden/git-diff-apply::bfcc903a961d9f17bde1889cf49745a2dffefd73::src/index.js::32::17",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:scratchfoundation/scratch-svg-renderer::16974b462c02b2915db728f75eaf682559c50a0b::src/svg-renderer.js::355::2",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:yahoo/serialize-javascript::02499c0adfb40f48e1ebdcbe6fffc83b162b95e9::index.js::58::17",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:stackrox/stackrox::77b9f646d1d76e6821f80bf35b7e5f4bbbd64d66::ui/apps/platform/src/utils/pdfUtils.js::73::23",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pillarjs/send::b69cbb3dc4c09c37917d08a4c13fcd1bac97ade5::index.js::448::32",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:zoneminder/zoneminder::1546fabfc87a816de1818da7eb3d6fcc21324841::web/skins/classic/views/js/log.js::50::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:sveltejs/kit::5f8399d88fd9461a6111e03e6168067fba42e2c1::packages/kit/src/exports/vite/utils.js::74::7",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pagefind/pagefind::012ac7e27f2b102df45481fd7d63be70bd639972::pagefind_ui/modular/modular-core.js::143::2",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:gladysassistant/gladys::8d09d2be050b4f505fefe4b2528f9b9b1d07f830::server/services/rtsp-camera/api/rtspCamera.controller.js::8::17",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:katex/katex::28a0bf51139969e9dc52085b72024e0c5447cfbe::src/domTree.js::84::17",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:wp-plugins/contus-hd-flv-player::7d3b06a40050bb0d340094f3fe3cef93c64645e7::js/hdflvscript.js::134::0",
+   "verdict": "wrong",
+   "note": "UI display change labelled SQLi"
+  },
+  {
+   "pair_id": "jsvul:sebhildebrandt/systeminformation::7b4693505872b273a87353b339c4b1d6219c4d69::lib/internet.js::32::0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:phpmyadmin/phpmyadmin::50edafc0884aa15d0a1aa178089ac6a1ad2eb18a::js/functions.js::132::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:lissy93/web-check::99653868c7fa91eaca9684a69ecd86c3375b237e::api/screenshot.js::11::33",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:vercel/next.js::442c611d4956496afc8f32c3bb881f2d37e63960::server/index.js::286::2",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:i18next/i18next::710e89a7a1ddb7e7d793e2f7432bf2ccba0bfaa9::src/i18next.translate.js::1::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:limesurvey/limesurvey::a5def8abc5cc7aab3805c63dbf38023c8267e3d6::assets/scripts/uploader.js::29::0",
+   "verdict": "weak",
+   "note": "eval of JSON (code injection) labelled XSS"
+  },
+  {
+   "pair_id": "jsvul:zjonsson/node-unzipper::48bd69eaa3cbd30558bd218327ac103d1457e919::lib/extract.js::10::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:wwbn/avideo::8cfdafcb97e02223d4205b42b47c5dd9cfa0d675::view/js/script.js::3037::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:ruby/rdoc::67db3ed22843a3a4b31580957e78ceb744552d92::lib/rdoc/generator/template/darkfish/js/darkfish.js::113::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pimcore/pimcore::d8377fc752dc3a42ca72cb49650481191f14ec63::bundles/AdminBundle/Resources/public/js/pimcore/settings/thumbnail/item.js::246::17",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:requarks/wiki::4ffd1325bd22890378d2e2901c5f4b25003df25d::server/modules/rendering/html-core/renderer.js::10::2",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:discourse/discourse::cbcf8a064b4889a19c991641e09c399bfa1ef2ad::app/assets/javascripts/discourse/app/lib/render-tag.js::12::7",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:indutny/elliptic::e71b2d9359c5fe9437fbf46f1f05096de447de57::lib/elliptic/ec/key.js::90::27",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:neocotic/convert-svg::faef02a13d61cc511d23689902f33edba00cae5b::packages/convert-svg-core/src/Converter.js::259::2",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:openemr/openemr::f3f5ede74f4e50e0c05a8897fb3d2e8fc9798f1c::portal/patient/scripts/app/patientdata.js::28::8",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:inikulin/replicator::8eb089256005ba18bf9b406d7f9108607aa18a7b::index.js::403::22",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:starcitizentools/mediawiki-extensions-shortdescription::e84c25f8c8cb1af953a8dd92fa0efee6c90fabc4::modules/ext.shortDescription.js::1::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:tojocky/node-printer::7987544670c37fdef659f8ee9e5db20fae118705::lib/printer.js::34::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:gruntjs/grunt::fdc7056b9ad12c09b9a8d31d96ab18aa3b75edb1::lib/grunt/file.js::319::12",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:jarofghosts/glance::7e69a5539236386e747fb240ae87ea65ed64bb2c::index.js::60::32",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:pixelgrade/nova-blocks::1f58470c67824e811621dc130d19531885ae1ad5::packages/core/src/blocks/core/separator/index.js::10::31",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:mintplex-labs/anything-llm::2374939ffb551ab2929d7f9d5827fe6597fa8caa::server/utils/helpers/updateENV.js::510::0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:cacti/cacti::232aeb914e00099efee6a789932126f7a2682a3d::include/themes/midwinter/main.js::262::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pimcore/pimcore::7821f65a897349e64223cc02b9c3e04d740ad9f7::bundles/AdminBundle/Resources/public/js/pimcore/object/quantityvalue/unitsettings.js::64::16",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:jonschlinkert/remarkable::4ad13a078a8d9a7712b4992b4ba868db81b6f75a::lib/helpers/parse_link_destination.js::15::15",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:discourse/discourse::43536b60d012cc8084e7e701d6afab9ba01e28a5::plugins/chat/assets/javascripts/lib/rich-editor-extension.js::27::6",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:zulip/zulip::25ff0d441858aa5c8f0bf51b47ad2a872141c262::web/src/copy_and_paste.js::68::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pimcore/pimcore::d8377fc752dc3a42ca72cb49650481191f14ec63::bundles/EcommerceFrameworkBundle/Resources/public/js/pricing/config/panel.js::352::22",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:markdown-it/markdown-it::f7976b25f79df1599c98787e16873d52bd0b7d05::lib/index.js::23::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:discourse/discotoc::d6b02afbc272f9c89f9cb0b3d9d9690428428206::javascripts/discourse/initializers/disco-toc-main.js::262::2",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pimcore/pimcore::e109dfed69484a36d9c9d409ac021a22fe29a130::bundles/AdminBundle/Resources/public/js/pimcore/settings/translation.js::216::14",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:tryghost/ghost::c99016fd2fca58eaacbebb9dca6c974aabaa67f6::ghost/core/core/frontend/web/middleware/static-theme.js::17::0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "jsvul:pimcore/pimcore::ee77e957e0158aa8152ee82d9b2171bd35305662::bundles/AdminBundle/Resources/public/js/pimcore/settings/videothumbnail/item.js::200::17",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "jsvul:ether/etherpad-lite::626e58cc5af1db3691b41fca7b06c28ea43141b1::src/static/js/pad_utils.js::445::0",
+   "verdict": "correct"
+  }
+ ]
+}

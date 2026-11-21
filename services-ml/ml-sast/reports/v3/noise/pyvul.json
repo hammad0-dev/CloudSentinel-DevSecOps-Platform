@@ -1,0 +1,234 @@
+{
+ "source": "pyvul",
+ "n": 50,
+ "criterion": "does the pre-fix function visibly contain the labelled CWE pattern (v2 criterion)",
+ "reviewer": "one reviewer (the assistant), no second reviewer",
+ "seed": 2026,
+ "counts": {
+  "correct": 20,
+  "weak": 24,
+  "wrong": 6
+ },
+ "strict_error_rate": 0.12,
+ "strict_ci95_wilson": [
+  0.056,
+  0.238
+ ],
+ "error_rate_with_weak": 0.6,
+ "with_weak_ci95_wilson": [
+  0.462,
+  0.724
+ ],
+ "policy": "fixed before any source after PyVul was checked: strict error rate > 25% -> drop the source; strict + weak > 50% -> sample weight 0.5; otherwise weight 1.0",
+ "decision": "weight 0.5",
+ "verdicts": [
+  {
+   "pair_id": "pyvul:115743311665049:autolink",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:29096052112044:to_yaml",
+   "verdict": "wrong",
+   "note": "to_yaml dumps, does not load"
+  },
+  {
+   "pair_id": "pyvul:173232058518299:get_available_name",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:175708898702119:get_available_name",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:261454627618098:sanitize_kvstore_list",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:280417974460137:is_safe_url",
+   "verdict": "weak",
+   "note": "open redirect labelled XSS"
+  },
+  {
+   "pair_id": "pyvul:170995577794327:_get_index_absolute_path",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:76823246913235:decrypt",
+   "verdict": "wrong",
+   "note": "function rename only"
+  },
+  {
+   "pair_id": "pyvul:25544721164427:create",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:185411968421858:push",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:276413044709347:check",
+   "verdict": "wrong",
+   "note": "format-string bug, not injection"
+  },
+  {
+   "pair_id": "pyvul:154593543241680:process_response",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:265974564790693:__init__",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:12833616021580:prepare",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:197822260895094:validate_path_is_safe",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:230125912425290:add_extra",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:251420549011851:add_extra",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:128311963150936:load",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:253206858836448:savepoint",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:255287995686269:add_annotation",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:5177612014839:as_sql",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:89120604259516:__call__",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:84142827059564:processTags",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:147146198041855:sanitize_html",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:14100720783139:create",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:120624289890222:_clean_data",
+   "verdict": "wrong",
+   "note": "import change only"
+  },
+  {
+   "pair_id": "pyvul:217531193014715:render",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:139862557993038:__init__",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:153638534244920:contents",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:2425310764313:urlize_quoted_links",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:175622800866044:trigger",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:203982432498947:_delete_artifact_mlflow_artifacts",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:252901726682196:from_yaml",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:85403403016093:parse_configuration_file",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:193766778099424:get",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:27794015614264:htmldiff",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:29224895442801:make_after_request_function",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:184383669097306:exception_to_python",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:21324008709630:paged_dropdown",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:159804744676516:explain_query_prefix",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:114139613870600:_base_get_object",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:2090346856511:validate_path_is_safe",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:127298014902336:student_view_data.items_without_answers",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:44986760346234:json_errors",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "pyvul:260296865564154:run",
+   "verdict": "wrong",
+   "note": "shell=True kept; fix not in this function"
+  },
+  {
+   "pair_id": "pyvul:217888089502421:$.fn.reviewsAutoComplete",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:162499090708657:get_remote_branch",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:236749443777681:_build_write_cert_pair",
+   "verdict": "wrong",
+   "note": "certificate encoding, not deserialization"
+  },
+  {
+   "pair_id": "pyvul:12368427814344:get_lm_corpus",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "pyvul:60897517401817:delete",
+   "verdict": "weak",
+   "note": "open redirect labelled XSS"
+  }
+ ]
+}
