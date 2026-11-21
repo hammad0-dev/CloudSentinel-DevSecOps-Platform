@@ -67,6 +67,9 @@ class Finding(BaseModel):
     file_path: str = Field(min_length=1, max_length=2000)
     line_number: Optional[int] = Field(default=None, ge=1)
     confidence: float = Field(ge=0.0, le=1.0)
+    # v3 ensemble only: names of the base models that flagged this finding (rf, lgbm, codebert_xgb). Unset (and
+    # omitted from the response) for v1/v2 models and for the rule-based secrets detector.
+    models_agree: Optional[List[str]] = None
 
 
 class ScanResponse(BaseModel):
@@ -149,7 +152,7 @@ def units_of(files):
     return units
 
 
-def finding(path, u, cwe_index, conf, detector="ml"):
+def finding(path, u, cwe_index, conf, detector="ml", models=None):
     cwe = CLASSES[cwe_index]
     slug, severity, title = RULES[cwe]
     where = "top-level code" if u.name == "<module>" else f"function '{u.name}'"
@@ -158,10 +161,12 @@ def finding(path, u, cwe_index, conf, detector="ml"):
         rule = f"{u.lang}.{slug}.rule"
     else:
         signals = explain(u.code)
-        msg = f"{title} suspected in {where} (model confidence {conf:.2f}" + (f"; signals: {', '.join(signals)}" if signals else "") + ")."
+        agree = f"; flagged by {len(models)} of 3 models: {', '.join(models)}" if models is not None else ""
+        msg = f"{title} suspected in {where} (model confidence {conf:.2f}{agree}" + (f"; signals: {', '.join(signals)}" if signals else "") + ")."
         rule = f"{u.lang}.{slug}"
+    extra = {"models_agree": list(models)} if models is not None else {}
     return Finding(rule=rule, cwe_id=int(cwe.split("-")[1]), severity=severity, message=msg,
-                   file_path=path, line_number=max(u.start_line, 1), confidence=round(conf, 4))
+                   file_path=path, line_number=max(u.start_line, 1), confidence=round(conf, 4), **extra)
 
 
 def to_findings(units, proba, threshold):
@@ -174,7 +179,7 @@ def to_findings(units, proba, threshold):
     return findings
 
 
-@app.post("/scan", response_model=ScanResponse)
+@app.post("/scan", response_model=ScanResponse, response_model_exclude_unset=True)
 def scan(request: ScanRequest):
     if MODEL is None:
         return {"findings": []}
@@ -185,7 +190,9 @@ def scan(request: ScanRequest):
     try:
         if hasattr(MODEL, "candidates"):  # v2 hybrid: ML ensemble + rule-based secrets, several findings per unit
             cands = MODEL.candidates(codes, langs)
-            return {"findings": [finding(path, u, i, conf, det) for (path, u), cs in zip(units, cands) for i, conf, det in cs]}
+            # v2 candidates are (class, confidence, detector); v3 adds the agreeing model names (rule-based: [] -> unset)
+            return {"findings": [finding(path, u, c[0], c[1], c[2], (c[3] or None) if c[2] == "ml" and len(c) > 3 else None)
+                                 for (path, u), cs in zip(units, cands) for c in cs]}
         proba = MODEL.predict_proba(codes, langs)
     except Exception as exc:  # model failure must surface, never look like a clean scan
         raise HTTPException(status_code=500, detail=f"model scan failed: {type(exc).__name__}") from exc
