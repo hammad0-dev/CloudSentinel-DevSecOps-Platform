@@ -1,0 +1,80 @@
+{
+ "benchmarkpython": {
+  "pages_crawled": 1,
+  "points_found": 155,
+  "points_probed": 155,
+  "gt_params_listed": 155,
+  "gt_params_found": 155,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 11625,
+  "rows": 6325,
+  "seconds": 498,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 77,
+  "stored_raw_hits": 0
+ },
+ "dvpwa": {
+  "pages_crawled": 17,
+  "points_found": 12,
+  "points_probed": 12,
+  "gt_params_listed": 17,
+  "gt_params_found": 8,
+  "gt_params_missed": [
+   [
+    "POST",
+    "/courses/",
+    "_csrf_token"
+   ],
+   [
+    "POST",
+    "/courses/",
+    "description"
+   ],
+   [
+    "POST",
+    "/courses/",
+    "title"
+   ],
+   [
+    "POST",
+    "/courses/{course_id}/review",
+    "course_id"
+   ],
+   [
+    "POST",
+    "/students/",
+    "_csrf_token"
+   ],
+   [
+    "POST",
+    "/students/",
+    "name"
+   ],
+   [
+    "POST",
+    "/students/{student_id}/evaluate/{course_id}",
+    "course_id"
+   ],
+   [
+    "POST",
+    "/students/{student_id}/evaluate/{course_id}",
+    "points"
+   ],
+   [
+    "POST",
+    "/students/{student_id}/evaluate/{course_id}",
+    "student_id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 1517,
+  "rows": 780,
+  "seconds": 126,
+  "point_errors": [],
+  "forms": 4,
+  "stored_points": 9,
+  "stored_raw_hits": 3
+ }
+}

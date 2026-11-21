@@ -14,6 +14,9 @@ VERSIONS = {
     # v3 sends the same payloads as v2 (payloads_v2.json): the v3 changes are features, data and rules.
     "v3": {"ground_truth": DATA / "ground_truth_v3.json", "payloads": DATA / "payloads/payloads_v2.json",
            "raw": DATA / "raw_v3", "features": DATA / "features_v3", "suffix": "_v3"},
+    # v4: same payloads again; v3 raw records are re-featurized into features_v4, BenchmarkPython and DVPWA are new.
+    "v4": {"ground_truth": DATA / "ground_truth_v4.json", "payloads": DATA / "payloads/payloads_v2.json",
+           "raw": DATA / "raw_v4", "features": DATA / "features_v4", "suffix": "_v4"},
 }
 # Apps whose files must never be written by any script (frozen held-out sets).
 FROZEN_APPS = {"dvna"}
