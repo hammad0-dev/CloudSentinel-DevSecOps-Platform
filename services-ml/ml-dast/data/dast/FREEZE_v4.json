@@ -1,0 +1,26 @@
+{
+ "app": "dvpwa",
+ "role": "final_heldout_v4",
+ "frozen_before_any_scan": true,
+ "source": "anxolerd/dvpwa @ 4a8f4a43fafcc1b304f1b97d0f0a8dea755a7756 (MIT)",
+ "commit": "4a8f4a43fafcc1b304f1b97d0f0a8dea755a7756",
+ "source_sha256": "9963135fbc0adda3a3dfe754addf982eb02bd985320f9b8cf7ab92765f113277",
+ "source_files": 58,
+ "source_hash_covers": "sha256 of the sorted lines '<sha256(file)>  <path>' over `git ls-files` at the commit",
+ "ground_truth_dvpwa_sha256": "aca7c5b10af1864ce04afca2d410baf2eb97b7f62bc9b1d7191336620f017639",
+ "ground_truth_hash_covers": "json.dumps({app, endpoints, skip, passive, stored, csrf} for dvpwa, sort_keys=True)",
+ "scan_config": {
+  "start": "/",
+  "seed_data": "the shipped migrations only (migrations/000-init-schema.sql, 001-fixtures.sql)",
+  "openapi_url": null
+ },
+ "rule": "DVPWA is labelled from source only and never collected for training or tuning; it is collected and scored exactly once by scripts/eval_final_v4.py after the v4 model is fixed by SHA-256. v2 (deployed) and v3 are scored on the same collection.",
+ "counts": {
+  "CWE-89": 1,
+  "CWE-79": 4,
+  "safe_endpoint_params": 13,
+  "passive_positive": 5,
+  "passive_negative": 1,
+  "stored_xss": 6
+ }
+}

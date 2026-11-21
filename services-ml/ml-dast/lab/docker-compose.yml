@@ -178,6 +178,47 @@ services:
     ports: ["127.0.0.1:5113:5000"]
     mem_limit: 1g
 
+  # v4 TRAINING app (one LOAO group, reported separately): OWASP BenchmarkPython @ f129148 (GPL-3.0).
+  # Only the seeded reachable SQLi/XSS/cmdi/pathtraver cases of ground_truth_v4.json are requested.
+  benchmarkpython:
+    <<: *lab
+    build: { context: ./vendor/BenchmarkPython, dockerfile: ../../benchmarkpython.Dockerfile }
+    image: mldast-lab/benchmarkpython:f129148
+    profiles: ["v4"]
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5114:8080"]
+    mem_limit: 1g
+
+  # v4 FINAL HELD-OUT APP (frozen in data/dast/FREEZE_v4.json): DVPWA (anxolerd/dvpwa @ 4a8f4a4). Labelled from
+  # source and frozen before any request; only started with --profile final-v4, only by scripts/eval_final_v4.py.
+  # Its config expects the hosts "postgres" and "redis" (network aliases below).
+  dvpwa:
+    <<: *lab
+    build: { context: ./vendor/dvpwa, dockerfile: ../../dvpwa.Dockerfile }
+    image: mldast-lab/dvpwa:4a8f4a4
+    profiles: ["final-v4"]
+    depends_on:
+      dvpwa-db: { condition: service_healthy }
+      dvpwa-redis: { condition: service_started }
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5115:8080"]
+    mem_limit: 256m
+  dvpwa-db:
+    <<: *lab
+    image: postgres:18-alpine
+    profiles: ["final-v4"]
+    environment: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: sqli }
+    volumes: ["./vendor/dvpwa/migrations:/docker-entrypoint-initdb.d:ro"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U postgres -d sqli"], interval: 3s, timeout: 3s, retries: 30 }
+    networks: { lab: { aliases: [postgres] } }
+    mem_limit: 256m
+  dvpwa-redis:
+    <<: *lab
+    image: valkey/valkey:9-alpine
+    profiles: ["final-v4"]
+    networks: { lab: { aliases: [redis] } }
+    mem_limit: 128m
+
 networks:
   lab:
     internal: false   # published ports need a non-internal network; the apps get no outbound use

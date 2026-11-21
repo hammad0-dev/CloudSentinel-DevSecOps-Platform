@@ -21,3 +21,5 @@ fetch DSVW https://github.com/stamparm/DSVW.git 9ca3c9acf3defa0a6148d40e5f5cebeb
 fetch sirappsec https://github.com/SirAppSec/vuln-node.js-express.js-app.git b977c7407f328da929577745ad509639e26c428a  # v3 final held-out (FREEZE_v3.json)
 fetch VAmPI https://github.com/erev0s/VAmPI.git f16052dce83f05847133ec98f01c5193a41de7d8
 fetch node-api-goat https://github.com/layro01/node-api-goat.git 868ee6c11a112d267b152f6dc8c50b8b4a11cdb7
+fetch BenchmarkPython https://github.com/OWASP-Benchmark/BenchmarkPython.git f1291485808b66e20ddb6b01b10dc71b3df8c8ba  # v4 training (one LOAO group)
+fetch dvpwa https://github.com/anxolerd/dvpwa.git 4a8f4a43fafcc1b304f1b97d0f0a8dea755a7756  # v4 final held-out (FREEZE_v4.json)
