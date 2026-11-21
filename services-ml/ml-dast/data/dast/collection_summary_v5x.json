@@ -1,0 +1,22 @@
+{
+ "nodejs-goof": {
+  "pages_crawled": 5,
+  "points_found": 11,
+  "points_probed": 11,
+  "gt_params_listed": 11,
+  "gt_params_found": 11,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 1036,
+  "rows": 683,
+  "seconds": 60,
+  "point_errors": [],
+  "forms": 19,
+  "stored_points": 10,
+  "stored_raw_hits": 0,
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  }
+ }
+}

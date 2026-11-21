@@ -82,6 +82,8 @@ def send(client, point, value, headers=False, extra_headers=None):
     if extra_headers:
         kw["headers"] = extra_headers
     try:
+        if getattr(client, "auth", None) is not None:
+            kw["route"] = point.template or point.path  # v5: the destructive-action list checks the route, not the payload
         resp, elapsed = client.request(point.method, path, **kw)
     except GuardError:
         raise  # refusals and the request budget are never swallowed

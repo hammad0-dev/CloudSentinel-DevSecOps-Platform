@@ -1,0 +1,1138 @@
+{
+ "preregistration": {
+  "app": "dvws-node",
+  "written_before_any_container": true,
+  "model_v2_sha256": "5dc397d0b6c462d1ed30567920e51d2afbd7272560db6d1ebc78f887c84712eb",
+  "model_v3_sha256": "bbcd03d12b211271f21bfd540c634d1942c94724402d95c87ca516e2b2fcf36f",
+  "model_v4_sha256": "7a306aca5b07cf0360fe41e4bfbe517d56de24b669f89545d91a3461ee867322",
+  "model_thresholds": {
+   "v2": 0.9,
+   "v3": 0.95,
+   "v4": 0.995
+  },
+  "deployed_now": "v2 (ml-dast-lr 2.0.0) on port 8002",
+  "freeze": {
+   "commit": "4221c04f132960a0ccca4bf5aa5f3a9f53172778",
+   "source_sha256": "366348f9f514f1dc5b8a28cae12632a1b541e40913585111282199d8f5a36f15",
+   "source_files": 133,
+   "ground_truth_dvws_sha256": "f8ef7a1070b27838dcd73b4d508316a5266d1c85e30442cfb6f31f5a6d078bf0",
+   "counts": {
+    "endpoints": 20,
+    "endpoint_params": 27,
+    "skip_listed_routes": 19,
+    "CWE-89_vulnerable": 3,
+    "CWE-89_unknown": 2,
+    "CWE-89_safe": 22,
+    "CWE-79_vulnerable": 0,
+    "CWE-79_unknown": 1,
+    "CWE-79_safe": 26,
+    "sqli_or_xss_vulnerable_params": 3,
+    "safe_for_both_ml_classes": 24,
+    "rule_class_vulnerable": {
+     "CWE-78": 0,
+     "CWE-22": 1,
+     "CWE-601": 0
+    },
+    "passive_positive": 4,
+    "passive_negative": 2
+   }
+  },
+  "freeze_checks": {
+   "source_sha256": true,
+   "ground_truth_dvws_sha256": true
+  },
+  "scan_config": {
+   "start": "/",
+   "seed_endpoints": true,
+   "seeds": "one seed per labelled endpoint (the 'seed' of each ground-truth entry, with its baseline values); the app is a single-page app",
+   "auth": {
+    "loginPath": "/api/v2/login",
+    "body": "json",
+    "success": {
+     "tokenJson": "token"
+    },
+    "loggedOut": {
+     "status": [
+      401
+     ]
+    },
+    "credentialRef": "DVWS"
+   },
+   "excluded_not_probed": "the login endpoints /api/v2/login and /api/v1/login (rate-limited to 100 attempts per 30 s; probing them is a brute-force pattern) and every parameter-less route",
+   "timeout_sec": 15.0,
+   "rate_per_sec": 25.0,
+   "network": "own compose network; the app container has no resolver (dns 127.0.0.1), as for BenchmarkPython",
+   "images": "app built from the pinned source (lab/dvws.Dockerfile: node:22-bookworm-slim, npm ci, no frontend build, port 8080 as user node); mysql:5.7 and mongo:4.4, the images already in the lab (upstream compose: mysql:8, mongo:4.0.4)",
+   "seed_data": "scripts/seed-database.js at container start (upstream compose command)"
+  },
+  "collector": "scripts/collect_lab.py main(['dvws-node'], 'v5', final=True): the same guarded collector as the lab apps (login, seeds, probes, stored-XSS pass, forms, passive pass); scanned once",
+  "coverage": {
+   "requirement": "at least 80% of the labelled reachable endpoint-params are reached, i.e. have probe records in the single scan",
+   "denominator": "every dvws-node endpoint-param in ground_truth_v5.json (27; none of them is on the skip list)",
+   "numerator": "labelled endpoint-params with at least one probed point in raw_v5/dvws-node.jsonl.gz",
+   "threshold": 0.8,
+   "if_not_met": "INCONCLUSIVE: v2 stays deployed whatever the scores"
+  },
+  "metric": "ML: endpoint-param macro-F1 (dastml.evaluation.endpoint_metrics: mean F1 over the classes present in the truth), per-class P/R/F1 and counts; 95% cluster bootstrap (1000 resamples, seed 0) for each model and the paired differences. The CIs are reported but are NOT part of the rule. Rules (passive, stored XSS, CSRF, CWE-78/22/601): counts only.",
+  "units": "Endpoint-param clusters exactly as dastml.evaluation.clusters builds them from the feature rows (one cluster per (app, method, path, parameter); class-split only for a parameter vulnerable to both ML classes). A cluster is predicted C if any C-payload row has P(C) >= the model's own threshold (the detector's threshold, recorded in model_thresholds); 'vulnerable parameters found' = clusters with a true class C != safe predicted as C; 'false alarms' = clusters whose true class is safe predicted as any class. Rows of classes listed as unknown are dropped (ground truth).",
+  "deployment_rule": "v4 is deployed (replacing v2 on port 8002) ONLY IF (1) the coverage requirement is met AND, on the same collected records, (2) v4's endpoint-param macro-F1 is strictly higher than v2's AND (3) v4 finds at least as many vulnerable parameters as v2 AND (4) v4 has at most one more false alarm than v2. Anything else, a tie included, leaves v2 deployed and v4 packaged.",
+  "caveat": "One small app (27 endpoint-params, 3 vulnerable) is weak evidence: a single cluster changes the macro-F1 by a lot, and the bootstrap intervals will be wide. A win here is a necessary condition for deployment, not proof of generalization.",
+  "no_changes_after": "no tuning, rescanning or relabelling after the scan; eval_final_v5.py refuses to run twice"
+ },
+ "pre_scan_checks": {
+  "source_sha256": true,
+  "ground_truth_dvws_sha256": true,
+  "freeze_committed": true,
+  "preregistration_committed": true,
+  "model_v2_unchanged": true,
+  "model_v3_unchanged": true,
+  "model_v4_unchanged": true
+ },
+ "raw_sha256": "5aa3cf6dc72a98dbb882278db1964beff0b4713d059b1b46eda84cf2adaff411",
+ "collection": {
+  "pages_crawled": 1,
+  "points_found": 27,
+  "points_probed": 27,
+  "gt_params_listed": 27,
+  "gt_params_found": 27,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 2035,
+  "rows": 1671,
+  "seconds": 95,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 17,
+  "stored_raw_hits": 0,
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  }
+ },
+ "ml": {
+  "v2": {
+   "threshold": 0.9,
+   "n_features": 70,
+   "endpoint": {
+    "n": 27,
+    "macro_f1": 0.8532608695652173,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.9166666666666666,
+      "f1": 0.9565217391304348,
+      "support": 24,
+      "tp": 22,
+      "fp": 0,
+      "fn": 2
+     },
+     "CWE-89": {
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.7499999999999999,
+      "support": 3,
+      "tp": 3,
+      "fp": 2,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      22,
+      2,
+      0
+     ],
+     [
+      0,
+      3,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.6,
+     "recall": 1.0
+    }
+   },
+   "row": {
+    "n": 1266,
+    "macro_f1": 0.7913079791637667,
+    "per_class": {
+     "safe": {
+      "precision": 0.9752212389380531,
+      "recall": 0.9467353951890034,
+      "f1": 0.960767218831735,
+      "support": 1164,
+      "tp": 1102,
+      "fp": 28,
+      "fn": 62
+     },
+     "CWE-89": {
+      "precision": 0.5441176470588235,
+      "recall": 0.7254901960784313,
+      "f1": 0.6218487394957983,
+      "support": 102,
+      "tp": 74,
+      "fp": 62,
+      "fn": 28
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      1102,
+      62,
+      0
+     ],
+     [
+      28,
+      74,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.5441176470588235,
+     "recall": 0.7254901960784313
+    }
+   },
+   "found_vulnerable": 3,
+   "false_alarms": 2,
+   "clusters": {
+    "dvws-node|GET|/api/v2/notes/{noteId}|noteId": {
+     "true": 0,
+     "pred": 1
+    },
+    "dvws-node|GET|/api/v2/notifications/{id}/read|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/passphrase/{username}|username": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|GET|/api/v2/profile-sharing/jsonp|callback": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/release/{release}|release": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/reports/activity|limit": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/reports/monthly|period": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/support/tickets/{id}|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/users/{id}/profile-details|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/notes|body": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notes|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notes|type": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notesearch|search": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/passphrase|passphrase": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/passphrase|reminder": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/resource-store/orders|itemId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/orders|quantity": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/promotions/redeem|code": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/promotions/timing/validate|flag": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/support/tickets|message": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/support/tickets|subject": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/users|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/users|username": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/notes/{noteId}|noteId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/notification-preferences|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/notification-preferences|weeklyDigest": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/profile/bio|bio": {
+     "true": 0,
+     "pred": 0
+    }
+   }
+  },
+  "v3": {
+   "threshold": 0.95,
+   "n_features": 63,
+   "endpoint": {
+    "n": 27,
+    "macro_f1": 0.8704318936877076,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.7916666666666666,
+      "f1": 0.8837209302325582,
+      "support": 24,
+      "tp": 19,
+      "fp": 0,
+      "fn": 5
+     },
+     "CWE-89": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "support": 3,
+      "tp": 3,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 4,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      19,
+      1,
+      4
+     ],
+     [
+      0,
+      3,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.375,
+     "recall": 1.0
+    }
+   },
+   "row": {
+    "n": 1266,
+    "macro_f1": 0.7774093005260414,
+    "per_class": {
+     "safe": {
+      "precision": 0.95787700084246,
+      "recall": 0.9768041237113402,
+      "f1": 0.9672479795831561,
+      "support": 1164,
+      "tp": 1137,
+      "fp": 50,
+      "fn": 27
+     },
+     "CWE-89": {
+      "precision": 0.6933333333333334,
+      "recall": 0.5098039215686274,
+      "f1": 0.5875706214689266,
+      "support": 102,
+      "tp": 52,
+      "fp": 23,
+      "fn": 50
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 4,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      1137,
+      23,
+      4
+     ],
+     [
+      50,
+      52,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.6582278481012658,
+     "recall": 0.5098039215686274
+    }
+   },
+   "found_vulnerable": 3,
+   "false_alarms": 5,
+   "clusters": {
+    "dvws-node|GET|/api/v2/notes/{noteId}|noteId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/notifications/{id}/read|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/passphrase/{username}|username": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|GET|/api/v2/profile-sharing/jsonp|callback": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/release/{release}|release": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/reports/activity|limit": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/reports/monthly|period": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/support/tickets/{id}|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/users/{id}/profile-details|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/notes|body": {
+     "true": 0,
+     "pred": 2
+    },
+    "dvws-node|POST|/api/v2/notes|name": {
+     "true": 0,
+     "pred": 2
+    },
+    "dvws-node|POST|/api/v2/notes|type": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notesearch|search": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/passphrase|passphrase": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/passphrase|reminder": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/resource-store/orders|itemId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/orders|quantity": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/promotions/redeem|code": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/promotions/timing/validate|flag": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/support/tickets|message": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/support/tickets|subject": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/users|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/users|username": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/notes/{noteId}|noteId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/notification-preferences|email": {
+     "true": 0,
+     "pred": 2
+    },
+    "dvws-node|PUT|/api/v2/users/notification-preferences|weeklyDigest": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/profile/bio|bio": {
+     "true": 0,
+     "pred": 2
+    }
+   }
+  },
+  "v4": {
+   "threshold": 0.995,
+   "n_features": 63,
+   "endpoint": {
+    "n": 27,
+    "macro_f1": 0.9179331306990881,
+    "per_class": {
+     "safe": {
+      "precision": 1.0,
+      "recall": 0.9583333333333334,
+      "f1": 0.9787234042553191,
+      "support": 24,
+      "tp": 23,
+      "fp": 0,
+      "fn": 1
+     },
+     "CWE-89": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "support": 3,
+      "tp": 3,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      23,
+      1,
+      0
+     ],
+     [
+      0,
+      3,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.75,
+     "recall": 1.0
+    }
+   },
+   "row": {
+    "n": 1266,
+    "macro_f1": 0.8223905723905723,
+    "per_class": {
+     "safe": {
+      "precision": 0.9587458745874587,
+      "recall": 0.9982817869415808,
+      "f1": 0.978114478114478,
+      "support": 1164,
+      "tp": 1162,
+      "fp": 50,
+      "fn": 2
+     },
+     "CWE-89": {
+      "precision": 0.9629629629629629,
+      "recall": 0.5098039215686274,
+      "f1": 0.6666666666666666,
+      "support": 102,
+      "tp": 52,
+      "fp": 2,
+      "fn": 50
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "confusion": [
+     [
+      1162,
+      2,
+      0
+     ],
+     [
+      50,
+      52,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "binary": {
+     "precision": 0.9629629629629629,
+     "recall": 0.5098039215686274
+    }
+   },
+   "found_vulnerable": 3,
+   "false_alarms": 1,
+   "clusters": {
+    "dvws-node|GET|/api/v2/notes/{noteId}|noteId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/notifications/{id}/read|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/passphrase/{username}|username": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|GET|/api/v2/profile-sharing/jsonp|callback": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/release/{release}|release": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/reports/activity|limit": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/reports/monthly|period": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/support/tickets/{id}|id": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|GET|/api/v2/users/{id}/profile-details|id": {
+     "true": 0,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/notes|body": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notes|name": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notes|type": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/notesearch|search": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/passphrase|passphrase": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/passphrase|reminder": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvws-node|POST|/api/v2/resource-store/orders|itemId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/orders|quantity": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/promotions/redeem|code": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/resource-store/promotions/timing/validate|flag": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/support/tickets|message": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/support/tickets|subject": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/users|password": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|POST|/api/v2/users|username": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/notes/{noteId}|noteId": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/notification-preferences|email": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/notification-preferences|weeklyDigest": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvws-node|PUT|/api/v2/users/profile/bio|bio": {
+     "true": 0,
+     "pred": 0
+    }
+   }
+  }
+ },
+ "bootstrap": {
+  "n_clusters": 27,
+  "macro_f1": {
+   "v2": {
+    "mean": 0.8528441009031341,
+    "ci95": [
+     0.6318181818181818,
+     1.0
+    ]
+   },
+   "v3": {
+    "mean": 0.8673292494530469,
+    "ci95": [
+     0.6722222222222222,
+     0.9791666666666667
+    ]
+   },
+   "v4": {
+    "mean": 0.9181210531283884,
+    "ci95": [
+     0.73,
+     1.0
+    ]
+   }
+  },
+  "per_class_f1_ci95": {
+   "v2": {
+    "CWE-89": [
+     0.0,
+     1.0
+    ],
+    "CWE-79": [
+     0.0,
+     0.0
+    ]
+   },
+   "v3": {
+    "CWE-89": [
+     0.0,
+     1.0
+    ],
+    "CWE-79": [
+     0.0,
+     0.0
+    ]
+   },
+   "v4": {
+    "CWE-89": [
+     0.0,
+     1.0
+    ],
+    "CWE-79": [
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "differences": {
+   "v2 - v3": {
+    "mean": -0.01448514854991285,
+    "ci95": [
+     -0.18990520728008087,
+     0.09890907027534922
+    ]
+   },
+   "v2 - v4": {
+    "mean": -0.06527695222525431,
+    "ci95": [
+     -0.2393617021276595,
+     0.0
+    ]
+   },
+   "v3 - v4": {
+    "mean": -0.05079180367534147,
+    "ci95": [
+     -0.11480325825982576,
+     -0.010629251700680298
+    ]
+   }
+  }
+ },
+ "rules": {
+  "CWE-78": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 27
+  },
+  "CWE-22": {
+   "found": 0,
+   "known": 1,
+   "missed": [
+    "dvws-node|GET|/api/v2/reports/monthly|period"
+   ],
+   "false_alarms": [],
+   "negatives": 26
+  },
+  "CWE-601": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 27
+  }
+ },
+ "passive": {
+  "missing-csp": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "missing-nosniff": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "missing-frame-protection": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  },
+  "cookie-no-httponly": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  },
+  "cookie-no-samesite": {
+   "found": 0,
+   "known": 0,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 1
+  },
+  "cors-any-origin": {
+   "found": 1,
+   "known": 1,
+   "missed": [],
+   "false_alarms": [],
+   "negatives": 0
+  }
+ },
+ "stored_xss": {
+  "known": [],
+  "found": [],
+  "missed": [],
+  "outside_rule": [],
+  "false_alarms": [],
+  "safe_units": 0,
+  "unlabelled_findings": []
+ },
+ "csrf_heuristic": {
+  "known": [],
+  "found": [],
+  "missed": [],
+  "false_alarms": [],
+  "safe_units": 0,
+  "unlabelled_findings": [],
+  "not_evaluable": []
+ },
+ "summary": {
+  "collection_seconds": 108,
+  "n_rows": 1266,
+  "n_clusters": 27,
+  "coverage": {
+   "labelled": 27,
+   "reached": 27,
+   "share": 1.0,
+   "missed": [],
+   "met": true
+  },
+  "ml": {
+   "v2": {
+    "macro_f1": 0.8532608695652173,
+    "ci95": [
+     0.6318181818181818,
+     1.0
+    ],
+    "found_vulnerable": 3,
+    "false_alarms": 2,
+    "per_class": {
+     "CWE-89": {
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.7499999999999999,
+      "support": 3,
+      "tp": 3,
+      "fp": 2,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "per_class_f1_ci95": {
+     "CWE-89": [
+      0.0,
+      1.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "v3": {
+    "macro_f1": 0.8704318936877076,
+    "ci95": [
+     0.6722222222222222,
+     0.9791666666666667
+    ],
+    "found_vulnerable": 3,
+    "false_alarms": 5,
+    "per_class": {
+     "CWE-89": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "support": 3,
+      "tp": 3,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 4,
+      "fn": 0
+     }
+    },
+    "per_class_f1_ci95": {
+     "CWE-89": [
+      0.0,
+      1.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "v4": {
+    "macro_f1": 0.9179331306990881,
+    "ci95": [
+     0.73,
+     1.0
+    ],
+    "found_vulnerable": 3,
+    "false_alarms": 1,
+    "per_class": {
+     "CWE-89": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.8571428571428571,
+      "support": 3,
+      "tp": 3,
+      "fp": 1,
+      "fn": 0
+     },
+     "CWE-79": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "per_class_f1_ci95": {
+     "CWE-89": [
+      0.0,
+      1.0
+     ],
+     "CWE-79": [
+      0.0,
+      0.0
+     ]
+    }
+   }
+  },
+  "differences": {
+   "v2 - v3": {
+    "mean": -0.01448514854991285,
+    "ci95": [
+     -0.18990520728008087,
+     0.09890907027534922
+    ]
+   },
+   "v2 - v4": {
+    "mean": -0.06527695222525431,
+    "ci95": [
+     -0.2393617021276595,
+     0.0
+    ]
+   },
+   "v3 - v4": {
+    "mean": -0.05079180367534147,
+    "ci95": [
+     -0.11480325825982576,
+     -0.010629251700680298
+    ]
+   }
+  },
+  "rules": {
+   "CWE-78": "found 0 of 0, 0 false alarms on 27 safe",
+   "CWE-22": "found 0 of 1, 0 false alarms on 26 safe",
+   "CWE-601": "found 0 of 0, 0 false alarms on 27 safe"
+  },
+  "passive": {
+   "missing-csp": "found 1 of 1, 0 false alarms on 0 safe",
+   "missing-nosniff": "found 1 of 1, 0 false alarms on 0 safe",
+   "missing-frame-protection": "found 1 of 1, 0 false alarms on 0 safe",
+   "cookie-no-httponly": "found 0 of 0, 0 false alarms on 1 safe",
+   "cookie-no-samesite": "found 0 of 0, 0 false alarms on 1 safe",
+   "cors-any-origin": "found 1 of 1, 0 false alarms on 0 safe"
+  },
+  "stored_xss": "found 0 of 0, 0 false alarms on 0 safe",
+  "csrf_heuristic": "found 0 of 0, 0 false alarms on 0 safe",
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  },
+  "decision": {
+   "conditions": {
+    "1_coverage_met": true,
+    "2_v4_macro_f1_strictly_higher": true,
+    "3_v4_finds_at_least_as_many": true,
+    "4_v4_at_most_one_extra_false_alarm": true
+   },
+   "v4_deployed": true,
+   "verdict": "v4 is deployed (all four conditions hold)",
+   "rule": "v4 is deployed (replacing v2 on port 8002) ONLY IF (1) the coverage requirement is met AND, on the same collected records, (2) v4's endpoint-param macro-F1 is strictly higher than v2's AND (3) v4 finds at least as many vulnerable parameters as v2 AND (4) v4 has at most one more false alarm than v2. Anything else, a tie included, leaves v2 deployed and v4 packaged."
+  }
+ }
+}

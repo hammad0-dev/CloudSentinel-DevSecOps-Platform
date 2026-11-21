@@ -68,6 +68,8 @@ services-ml/ml-dast/.venv/
 services-ml/ml-dast/logs/
 services-ml/ml-dast/models/
 services-ml/ml-dast/lab/vendor/
+# v5: local lab credential file (documented demo credentials only; never committed)
+services-ml/ml-dast/lab/auth.local.json
 services-ml/ml-dast/data/**
 !services-ml/ml-dast/data/
 !services-ml/ml-dast/data/dast/
@@ -87,3 +89,10 @@ services-ml/ml-dast/data/**
 !services-ml/ml-dast/data/dast/ground_truth_v4.json
 !services-ml/ml-dast/data/dast/collection_summary_v4.json
 !services-ml/ml-dast/data/dast/FREEZE_v4.json
+!services-ml/ml-dast/data/dast/ground_truth_v5.json
+!services-ml/ml-dast/data/dast/collection_summary_v5.json
+!services-ml/ml-dast/data/dast/FREEZE_v5.json
+!services-ml/ml-dast/data/dast/coverage_v5.json
+!services-ml/ml-dast/data/dast/ground_truth_v5x.json
+!services-ml/ml-dast/data/dast/collection_summary_v5x.json
+!services-ml/ml-dast/data/dast/coverage_v5x.json

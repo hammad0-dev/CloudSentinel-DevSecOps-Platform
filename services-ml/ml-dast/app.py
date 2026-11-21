@@ -18,6 +18,12 @@ Optional ``seedPaths`` (extra pages to crawl, e.g. ``/search?q=x``) and ``openap
 OpenAPI/Swagger JSON document) widen the crawl; each must resolve to the target's origin or the scan
 is refused with HTTP 400 before any traffic.
 
+Optional ``auth`` (v5) logs in before the crawl and keeps the session (dastml.auth). It carries no
+credentials: ``credentialRef`` names a service-side credential profile (ML_DAST_AUTH_FILE or
+ML_DAST_AUTH_<REF>_USERNAME/_PASSWORD/_ORIGINS) bound to the target's origin, checked before any traffic.
+Authenticated scans never request logout, delete, password-change or reset actions. Without ``auth``
+a scan is exactly the unauthenticated scan.
+
 A trained model is a joblib artifact exposing ``scan(base_url, max_pages, max_requests[, threshold=])``
 (dastml.detector.DastDetector). Metadata (name, version, trained_on, metrics, threshold,
 limitations, components) is read from MODEL_META_PATH. ML_DAST_CONFIDENCE_THRESHOLD overrides the
@@ -44,6 +50,42 @@ MODEL_META_PATH = Path(os.environ.get("MODEL_META_PATH", str(MODEL_PATH.with_suf
 Severity = Literal["HIGH", "MEDIUM", "LOW", "INFORMATIONAL"]
 
 
+PATH_RE = r"^/([^/\s][^\s]{0,498})?$"  # same-origin path: starts with one "/", never "//" (no look-around: Rust regex)
+
+
+class AuthSuccess(BaseModel):
+    model_config = {"extra": "forbid"}
+    cookie: str = Field(default="", max_length=100)
+    text: str = Field(default="", max_length=200)
+    tokenJson: str = Field(default="", max_length=100)
+
+
+class AuthLoggedOut(BaseModel):
+    model_config = {"extra": "forbid"}
+    status: List[int] = Field(default_factory=list, max_length=5)
+    redirectTo: str = Field(default="", pattern=r"^$|" + PATH_RE)
+    text: str = Field(default="", max_length=200)
+    loginRedirect: bool = True
+
+
+class AuthSpec(BaseModel):
+    """v5 login profile. Credentials are NOT accepted here: credentialRef names a credential profile
+    on the service side (ML_DAST_AUTH_FILE or ML_DAST_AUTH_<REF>_* env vars), bound to target origins."""
+    model_config = {"extra": "forbid"}
+    loginPath: str = Field(pattern=PATH_RE)
+    method: Literal["POST", "GET"] = "POST"
+    body: Literal["form", "json"] = "form"
+    usernameField: str = Field(default="username", min_length=1, max_length=100)
+    passwordField: str = Field(default="password", min_length=1, max_length=100)
+    extraFields: Dict[str, str] = Field(default_factory=dict, max_length=10)
+    loginPagePath: str = Field(default="", pattern=r"^$|" + PATH_RE)
+    csrfField: str = Field(default="", max_length=100)
+    success: AuthSuccess
+    loggedOut: AuthLoggedOut = Field(default_factory=AuthLoggedOut)
+    credentialRef: str = Field(pattern=r"^[A-Za-z0-9_]{1,40}$")
+    maxRelogins: int = Field(default=20, ge=0, le=200)
+
+
 class ScanRequest(BaseModel):
     baseUrl: str = Field(min_length=1, max_length=2000)
     maxPages: int = Field(default=50, ge=1, le=500)
@@ -52,6 +94,8 @@ class ScanRequest(BaseModel):
     # resolved against baseUrl; anything that resolves to another origin refuses the scan.
     seedPaths: List[str] = Field(default_factory=list, max_length=50)
     openapiUrl: Optional[str] = Field(default=None, min_length=1, max_length=2000)
+    # v5: optional login profile (authenticated scan). Absent = the unauthenticated scan, unchanged.
+    auth: Optional[AuthSpec] = None
 
     @field_validator("seedPaths")
     @classmethod
@@ -167,7 +211,18 @@ def run_detector(request):
         if name not in params:  # never drop requested coverage silently
             raise HTTPException(status_code=501, detail=f"the loaded model does not support {field}")
         kwargs[name] = value
+    if request.auth is not None:
+        if "auth" not in params:
+            raise HTTPException(status_code=501, detail="the loaded model does not support auth")
+        kwargs["auth"] = auth_config(request)
     return DETECTOR.scan(request.baseUrl, request.maxPages, request.maxRequests, **kwargs)
+
+
+def auth_config(request):
+    """Validated AuthConfig with credentials resolved on the service side, bound to the target origin."""
+    from dastml.auth import AuthConfig
+    spec = request.auth.model_dump()
+    return AuthConfig.from_spec(spec, request.baseUrl)
 
 
 def check_seeds(request, policy):
@@ -182,14 +237,21 @@ def check_seeds(request, policy):
 def scan(request: ScanRequest):
     if DETECTOR is None:
         return {"findings": []}
+    from dastml.auth import AuthError
     try:
         check_seeds(request, TargetPolicy.from_env())  # refuse before any traffic
+        if request.auth is not None:
+            auth_config(request)  # credentials resolvable and bound to this origin, before any traffic
     except GuardError as exc:
         raise HTTPException(status_code=400, detail=f"target refused: {exc}") from exc
+    except AuthError as exc:
+        raise HTTPException(status_code=400, detail=f"auth refused: {exc}") from exc
     try:
         raw = run_detector(request)
     except HTTPException:
         raise
+    except AuthError as exc:  # messages never carry credentials
+        raise HTTPException(status_code=400, detail=f"authentication failed: {exc}") from exc
     except GuardError as exc:
         raise HTTPException(status_code=400, detail=f"target refused: {exc}") from exc
     except OpenAPIError as exc:

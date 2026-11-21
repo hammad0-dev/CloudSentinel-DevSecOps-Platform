@@ -1,0 +1,638 @@
+{
+ "nodegoat": {
+  "gt": "v5",
+  "logged_out": {
+   "pages": 19,
+   "visited": [
+    "/",
+    "/benefits",
+    "/dashboard",
+    "/login",
+    "/profile",
+    "/signup",
+    "/tutorial",
+    "/tutorial/a1",
+    "/tutorial/a10",
+    "/tutorial/a2",
+    "/tutorial/a3",
+    "/tutorial/a4",
+    "/tutorial/a5",
+    "/tutorial/a6",
+    "/tutorial/a7",
+    "/tutorial/a8",
+    "/tutorial/a9",
+    "/tutorial/redos",
+    "/tutorial/ssrf"
+   ],
+   "points": 17,
+   "labelled_total": 15,
+   "labelled_reached": 7,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/learn",
+     "url"
+    ],
+    [
+     "POST",
+     "/login",
+     "password"
+    ],
+    [
+     "POST",
+     "/login",
+     "userName"
+    ],
+    [
+     "POST",
+     "/signup",
+     "email"
+    ],
+    [
+     "POST",
+     "/signup",
+     "firstName"
+    ],
+    [
+     "POST",
+     "/signup",
+     "lastName"
+    ],
+    [
+     "POST",
+     "/signup",
+     "userName"
+    ]
+   ],
+   "unlisted_points": [
+    "POST / [password] (form)",
+    "POST / [userName] (form)",
+    "POST /benefits [password] (form)",
+    "POST /benefits [userName] (form)",
+    "POST /dashboard [password] (form)",
+    "POST /dashboard [userName] (form)",
+    "POST /profile [password] (form)",
+    "POST /profile [userName] (form)",
+    "POST /signup [password] (form)",
+    "POST /signup [verify] (form)"
+   ],
+   "requests": 25
+  },
+  "logged_in": {
+   "pages": 5,
+   "visited": [
+    "/",
+    "/dashboard",
+    "/login",
+    "/profile",
+    "/signup"
+   ],
+   "points": 17,
+   "labelled_total": 15,
+   "labelled_reached": 15,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/learn",
+     "url"
+    ],
+    [
+     "POST",
+     "/login",
+     "password"
+    ],
+    [
+     "POST",
+     "/login",
+     "userName"
+    ],
+    [
+     "POST",
+     "/profile",
+     "address"
+    ],
+    [
+     "POST",
+     "/profile",
+     "bankAcc"
+    ],
+    [
+     "POST",
+     "/profile",
+     "bankRouting"
+    ],
+    [
+     "POST",
+     "/profile",
+     "dob"
+    ],
+    [
+     "POST",
+     "/profile",
+     "firstName"
+    ],
+    [
+     "POST",
+     "/profile",
+     "lastName"
+    ],
+    [
+     "POST",
+     "/profile",
+     "ssn"
+    ],
+    [
+     "POST",
+     "/profile",
+     "website"
+    ],
+    [
+     "POST",
+     "/signup",
+     "email"
+    ],
+    [
+     "POST",
+     "/signup",
+     "firstName"
+    ],
+    [
+     "POST",
+     "/signup",
+     "lastName"
+    ],
+    [
+     "POST",
+     "/signup",
+     "userName"
+    ]
+   ],
+   "unlisted_points": [
+    "POST /signup [password] (form)",
+    "POST /signup [verify] (form)"
+   ],
+   "requests": 8,
+   "auth": {
+    "logins": 1,
+    "relogins": 0
+   }
+  },
+  "union_labelled_reached": 15
+ },
+ "vulnerable-node": {
+  "gt": "v5",
+  "logged_out": {
+   "pages": 28,
+   "visited": [
+    "/",
+    "/about",
+    "/categories/classic",
+    "/categories/desk",
+    "/categories/hardware",
+    "/categories/keyboards",
+    "/categories/stickers",
+    "/categories/wearables",
+    "/contact",
+    "/docs/labs/08-crypto-pan-storage.md",
+    "/faq",
+    "/home",
+    "/login",
+    "/orders",
+    "/products/1",
+    "/products/10",
+    "/products/11",
+    "/products/12",
+    "/products/2",
+    "/products/3",
+    "/products/4",
+    "/products/5",
+    "/products/6",
+    "/products/7",
+    "/products/8",
+    "/products/9",
+    "/tools",
+    "/tools/ping"
+   ],
+   "points": 10,
+   "labelled_total": 18,
+   "labelled_reached": 10,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/download",
+     "file"
+    ],
+    [
+     "GET",
+     "/login",
+     "returnurl"
+    ],
+    [
+     "GET",
+     "/orders",
+     "sort"
+    ],
+    [
+     "GET",
+     "/products/{id}",
+     "id"
+    ],
+    [
+     "GET",
+     "/search",
+     "q"
+    ],
+    [
+     "POST",
+     "/contact",
+     "email"
+    ],
+    [
+     "POST",
+     "/contact",
+     "message"
+    ],
+    [
+     "POST",
+     "/login/auth",
+     "password"
+    ],
+    [
+     "POST",
+     "/login/auth",
+     "returnurl"
+    ],
+    [
+     "POST",
+     "/login/auth",
+     "username"
+    ]
+   ],
+   "unlisted_points": [],
+   "requests": 47
+  },
+  "logged_in": {
+   "pages": 41,
+   "visited": [
+    "/",
+    "/about",
+    "/categories/classic",
+    "/categories/desk",
+    "/categories/hardware",
+    "/categories/keyboards",
+    "/categories/stickers",
+    "/categories/wearables",
+    "/contact",
+    "/docs/labs/08-crypto-pan-storage.md",
+    "/faq",
+    "/home",
+    "/labs",
+    "/labs/docs/01-bola-idor.md",
+    "/labs/docs/03-sqli.md",
+    "/labs/docs/03b-nosql.md",
+    "/labs/docs/04-mass-assignment.md",
+    "/labs/docs/05-xss-token-theft.md",
+    "/labs/docs/06-price-tamper-checkout.md",
+    "/labs/docs/07-jwt-weak-secret.md",
+    "/labs/docs/09-misconfig-debug.md",
+    "/labs/docs/10-logging-failures.md",
+    "/labs/docs/13-prototype-pollution.md",
+    "/labs/docs/15-path-traversal.md",
+    "/labs/docs/16-command-injection.md",
+    "/login",
+    "/orders",
+    "/products/1",
+    "/products/10",
+    "/products/11",
+    "/products/12",
+    "/products/2",
+    "/products/3",
+    "/products/4",
+    "/products/5",
+    "/products/6",
+    "/products/7",
+    "/products/8",
+    "/products/9",
+    "/tools",
+    "/tools/ping"
+   ],
+   "points": 34,
+   "labelled_total": 18,
+   "labelled_reached": 12,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/download",
+     "file"
+    ],
+    [
+     "GET",
+     "/orders",
+     "sort"
+    ],
+    [
+     "GET",
+     "/products/{id}",
+     "id"
+    ],
+    [
+     "GET",
+     "/search",
+     "q"
+    ],
+    [
+     "POST",
+     "/contact",
+     "email"
+    ],
+    [
+     "POST",
+     "/contact",
+     "message"
+    ],
+    [
+     "POST",
+     "/login/auth",
+     "password"
+    ],
+    [
+     "POST",
+     "/login/auth",
+     "returnurl"
+    ],
+    [
+     "POST",
+     "/login/auth",
+     "username"
+    ],
+    [
+     "POST",
+     "/products/{id}/reviews",
+     "body"
+    ],
+    [
+     "POST",
+     "/products/{id}/reviews",
+     "rating"
+    ],
+    [
+     "POST",
+     "/tools/ping",
+     "host"
+    ]
+   ],
+   "unlisted_points": [],
+   "requests": 47,
+   "auth": {
+    "logins": 1,
+    "relogins": 0
+   }
+  },
+  "union_labelled_reached": 13
+ },
+ "dvpwa": {
+  "gt": "v5",
+  "logged_out": {
+   "pages": 17,
+   "visited": [
+    "/",
+    "/courses/",
+    "/courses/1",
+    "/courses/1/review",
+    "/courses/2",
+    "/courses/2/review",
+    "/courses/3",
+    "/courses/3/review",
+    "/students/",
+    "/students/1",
+    "/students/2",
+    "/students/3",
+    "/students/4",
+    "/students/5",
+    "/students/6",
+    "/students/7",
+    "/students/8"
+   ],
+   "points": 12,
+   "labelled_total": 17,
+   "labelled_reached": 8,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/courses/{course_id}/review",
+     "course_id"
+    ],
+    [
+     "GET",
+     "/courses/{id}",
+     "id"
+    ],
+    [
+     "GET",
+     "/students/{id}",
+     "id"
+    ],
+    [
+     "POST",
+     "/",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/",
+     "password"
+    ],
+    [
+     "POST",
+     "/",
+     "username"
+    ],
+    [
+     "POST",
+     "/courses/{course_id}/review",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/courses/{course_id}/review",
+     "review_text"
+    ]
+   ],
+   "unlisted_points": [],
+   "requests": 17
+  },
+  "logged_in": {
+   "pages": 17,
+   "visited": [
+    "/",
+    "/courses/",
+    "/courses/1",
+    "/courses/1/review",
+    "/courses/2",
+    "/courses/2/review",
+    "/courses/3",
+    "/courses/3/review",
+    "/students/",
+    "/students/1",
+    "/students/2",
+    "/students/3",
+    "/students/4",
+    "/students/5",
+    "/students/6",
+    "/students/7",
+    "/students/8"
+   ],
+   "points": 38,
+   "labelled_total": 17,
+   "labelled_reached": 11,
+   "labelled_reached_list": [
+    [
+     "GET",
+     "/courses/{course_id}/review",
+     "course_id"
+    ],
+    [
+     "GET",
+     "/courses/{id}",
+     "id"
+    ],
+    [
+     "GET",
+     "/students/{id}",
+     "id"
+    ],
+    [
+     "POST",
+     "/courses/",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/courses/",
+     "description"
+    ],
+    [
+     "POST",
+     "/courses/",
+     "title"
+    ],
+    [
+     "POST",
+     "/courses/{course_id}/review",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/courses/{course_id}/review",
+     "review_text"
+    ],
+    [
+     "POST",
+     "/students/",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/students/",
+     "name"
+    ],
+    [
+     "POST",
+     "/students/{student_id}/evaluate/{course_id}",
+     "points"
+    ]
+   ],
+   "unlisted_points": [],
+   "requests": 18,
+   "auth": {
+    "logins": 1,
+    "relogins": 0
+   }
+  },
+  "union_labelled_reached": 14
+ },
+ "vulpy-bad": {
+  "gt": "v5",
+  "logged_out": {
+   "pages": 2,
+   "visited": [
+    "/user/create",
+    "/user/login"
+   ],
+   "points": 6,
+   "labelled_total": 4,
+   "labelled_reached": 4,
+   "labelled_reached_list": [
+    [
+     "POST",
+     "/user/create",
+     "password"
+    ],
+    [
+     "POST",
+     "/user/create",
+     "username"
+    ],
+    [
+     "POST",
+     "/user/login",
+     "password"
+    ],
+    [
+     "POST",
+     "/user/login",
+     "username"
+    ]
+   ],
+   "unlisted_points": [
+    "POST /user/create [email] (form)",
+    "POST /user/login [otp] (form)"
+   ],
+   "requests": 3
+  },
+  "logged_in": null,
+  "login_error": "login failed: the success indicator was not found"
+ },
+ "vulpy-good": {
+  "gt": "v5",
+  "logged_out": {
+   "pages": 2,
+   "visited": [
+    "/user/create",
+    "/user/login"
+   ],
+   "points": 6,
+   "labelled_total": 4,
+   "labelled_reached": 4,
+   "labelled_reached_list": [
+    [
+     "POST",
+     "/user/create",
+     "password"
+    ],
+    [
+     "POST",
+     "/user/create",
+     "username"
+    ],
+    [
+     "POST",
+     "/user/login",
+     "password"
+    ],
+    [
+     "POST",
+     "/user/login",
+     "username"
+    ]
+   ],
+   "unlisted_points": [
+    "POST /user/create [email] (form)",
+    "POST /user/login [otp] (form)"
+   ],
+   "requests": 3
+  },
+  "logged_in": null,
+  "login_error": "login failed: the success indicator was not found"
+ }
+}

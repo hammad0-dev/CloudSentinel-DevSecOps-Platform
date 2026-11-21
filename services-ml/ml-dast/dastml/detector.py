@@ -59,13 +59,22 @@ class DastDetector:
         self.last_scan = {}
 
     def scan(self, base_url, max_pages=50, max_requests=500, policy=None, seeds=(), threshold=None,
-             seed_paths=(), openapi_url=None):
+             seed_paths=(), openapi_url=None, auth=None):
         """seed_paths: extra pages to crawl; openapi_url: same-origin OpenAPI/Swagger JSON whose
-        GET/POST operations become injection points (dastml.openapi). Both go through the guards."""
+        GET/POST operations become injection points (dastml.openapi). Both go through the guards.
+
+        auth (v5, optional): a dastml.auth.AuthConfig. The scan logs in first (dastml.auth.AuthError if
+        it cannot), keeps the session for every pass, logs in again when it expires and refuses
+        destructive actions. Without it the scan is exactly the pre-v5 scan; features, model and
+        threshold are the same either way."""
         t = float(self.threshold if threshold is None else threshold)
         policy = policy or TargetPolicy.from_env()
         policy.max_pages, policy.max_requests = max_pages, max_requests
-        client = GuardedClient(base_url, policy)  # raises GuardError for a refused target
+        session = None
+        if auth is not None:
+            from .auth import AuthSession
+            session = AuthSession(auth)
+        client = GuardedClient(base_url, policy, auth=session)  # raises GuardError for a refused target
         for path in seed_paths:
             client.check_url(path)  # an off-origin seed refuses the whole scan before any traffic
         if openapi_url:
@@ -76,12 +85,15 @@ class DastDetector:
         payload_path = PAYLOADS_DIR / getattr(self, "payloads_file", "payloads.json")
         payloads = load_payloads(tuple(self.classes) + (RULE_CLASSES if v2 else ()), payload_path)
         self.last_scan = {}  # errors from a previous scan must not leak into this one
+        if session is not None:
+            client.login()  # AuthError (no credentials in its message) refuses the scan
         seeds = list(seeds)
         if openapi_url:
             from .openapi import load_points
             seeds += load_points(client, openapi_url)
         forms, pages = ([], []) if v3 else (None, None)
-        points, visited = crawl(client, "/", seeds=seeds, start_paths=seed_paths, forms_out=forms, pages_out=pages)
+        start_paths = list(seed_paths) + ([session.landing] if session is not None and session.landing else [])
+        points, visited = crawl(client, "/", seeds=seeds, start_paths=start_paths, forms_out=forms, pages_out=pages)
         headers = []  # header snapshots of the baselines (v2+), for the CSRF heuristic
         findings, probed, stopped = [], 0, None
         for point in points:
@@ -137,7 +149,8 @@ class DastDetector:
                 findings += csrf_findings(forms, headers + snaps, base_url)
         self.last_scan = {"pages": len(visited), "points_found": len(points), "points_probed": probed,
                           **({"forms": len(forms), "stored_xss_fields_written": len(stored_records)} if v3 else {}),
-                          "requests": client.requests_sent, "stopped": stopped, **({"errors": self.last_scan["errors"]} if "errors" in self.last_scan else {})}
+                          "requests": client.requests_sent, "stopped": stopped, **({"errors": self.last_scan["errors"]} if "errors" in self.last_scan else {}),
+                          **({"auth": {"logins": session.logins, "relogins": session.relogins}} if session is not None else {})}
         return findings
 
     @staticmethod
@@ -146,6 +159,8 @@ class DastDetector:
         session's cookies so a cookie set on first visit is seen, plus one foreign-Origin request.
         Uses the same guarded client, so it counts against the scan's request budget."""
         client.session.cookies.clear()
+        if getattr(client, "auth", None) is not None:
+            client.auth.suspended = True  # v5: the passive pass stays cookie-less (pre-v5 semantics), no re-login
         snaps = []
         try:
             for path in list(dict.fromkeys(visited))[:max_pages]:

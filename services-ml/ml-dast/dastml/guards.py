@@ -142,7 +142,7 @@ def carries_url(query):
 class GuardedClient:
     """The only way ml-dast sends HTTP requests. Enforces origin, budgets, rate and skip list."""
 
-    def __init__(self, base_url, policy: TargetPolicy):
+    def __init__(self, base_url, policy: TargetPolicy, auth=None):
         self.policy = policy
         self.origin = policy.origin_of(base_url)
         self.base_url = base_url
@@ -153,8 +153,11 @@ class GuardedClient:
         self.session = requests.Session()
         self.session.trust_env = False  # ignore HTTP(S)_PROXY / .netrc
         self.session.headers["User-Agent"] = "cloudsentinel-ml-dast/0.2 (lab scanner)"
+        # v5: optional dastml.auth.AuthSession. None (the default) keeps the exact pre-v5 behaviour:
+        # no login, no re-login and no destructive-action skip list.
+        self.auth = auth
 
-    def check_url(self, url):
+    def check_url(self, url, route=None):
         absolute = urljoin(self.base_url, url)
         if self.policy.origin_of(absolute) != self.origin:
             raise GuardError(f"{absolute} is not same-origin with {self.base_url}")
@@ -164,7 +167,19 @@ class GuardedClient:
             raise GuardError(f"{path} is on the skip list")
         if carries_url(parts.query):
             raise GuardError(f"{path}: a parameter carries a URL (possible SSRF); refused")
+        if self.auth is not None:
+            from .auth import destructive_path
+            # route: the probed point's own path; an injected path SEGMENT (a payload such as ../etc/passwd) is a
+            # value, not the action being requested, so the destructive-action list is checked on the route
+            checked = urlsplit(urljoin(self.base_url, route)).path if route else path
+            if destructive_path(checked, [k for k, _ in parse_qsl(parts.query, keep_blank_values=True)]):
+                raise GuardError(f"{path} is on the destructive-action skip list (authenticated scan)")
         return absolute
+
+    def login(self):
+        """Log in with the attached AuthSession (no-op without one)."""
+        if self.auth is not None:
+            self.auth.login(self)
 
     def check_body(self, data):
         """Query/form/JSON parameter dicts are checked like query strings: no URL-carrying values."""
@@ -187,9 +202,35 @@ class GuardedClient:
             self._last = time.monotonic()
             self.requests_sent += 1
 
-    def request(self, method, url, **kw):
-        """Send one request (plus same-origin redirects). Returns (final response, elapsed seconds)."""
-        url = self.check_url(url)
+    def request(self, method, url, route=None, **kw):
+        """Send one request (plus same-origin redirects). Returns (final response, elapsed seconds).
+
+        v5, with an AuthSession: DELETE and destructive parameter names are refused, and a response
+        that shows the session expired triggers one re-login and one resend (never during a login)."""
+        if self.auth is None:
+            return self._request(method, url, **kw)
+        from .auth import AuthError, destructive_path
+        if method.upper() == "DELETE":
+            raise GuardError("DELETE is never sent by an authenticated scan")
+        names = [k for key in ("params", "data", "json") if isinstance(kw.get(key), dict) for k in kw[key]]
+        if names and destructive_path("/", names):
+            raise GuardError("a parameter name is on the destructive-action skip list (authenticated scan)")
+        resp, elapsed = self._request(method, url, route=route, **kw)
+        path = urlsplit(urljoin(self.base_url, url)).path or "/"
+        if self.auth.in_login or self.auth.suspended or self.auth.is_login_request(path) or not self.auth.expired(resp):
+            return resp, elapsed
+        if not self.auth.can_relogin():
+            return resp, elapsed  # recorded as it is; the cap stops login loops
+        self.auth.relogins += 1
+        self.auth.events.append(("relogin", path))
+        try:
+            self.auth.login(self)
+        except AuthError:
+            return resp, elapsed
+        return self._request(method, url, route=route, **kw)
+
+    def _request(self, method, url, route=None, **kw):
+        url = self.check_url(url, route=route)
         for key in ("params", "data", "json"):
             if key in kw:
                 self.check_body(kw[key])

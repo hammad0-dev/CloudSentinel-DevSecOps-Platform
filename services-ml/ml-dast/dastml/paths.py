@@ -17,6 +17,14 @@ VERSIONS = {
     # v4: same payloads again; v3 raw records are re-featurized into features_v4, BenchmarkPython and DVPWA are new.
     "v4": {"ground_truth": DATA / "ground_truth_v4.json", "payloads": DATA / "payloads/payloads_v2.json",
            "raw": DATA / "raw_v4", "features": DATA / "features_v4", "suffix": "_v4"},
+    # v5: same payloads; authenticated collection (dastml.auth) of the lab apps with a login, new labels
+    # for the newly reachable parameters and the dvws-node held-out. Collection only: no model uses v5.
+    "v5": {"ground_truth": DATA / "ground_truth_v5.json", "payloads": DATA / "payloads/payloads_v2.json",
+           "raw": DATA / "raw_v5", "features": DATA / "features_v5", "suffix": "_v5"},
+    # v5x (stage 6): ground_truth_v5.json plus extra apps (nodejs-goof) in a NEW file; same raw/feature directories
+    # (new app files only). Collection only: no model uses v5/v5x data.
+    "v5x": {"ground_truth": DATA / "ground_truth_v5x.json", "payloads": DATA / "payloads/payloads_v2.json",
+            "raw": DATA / "raw_v5", "features": DATA / "features_v5", "suffix": "_v5x"},
 }
 # Apps whose files must never be written by any script (frozen held-out sets).
 FROZEN_APPS = {"dvna"}

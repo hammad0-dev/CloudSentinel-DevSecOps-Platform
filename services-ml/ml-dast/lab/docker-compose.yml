@@ -219,6 +219,54 @@ services:
     networks: { lab: { aliases: [redis] } }
     mem_limit: 128m
 
+  # v5 FINAL HELD-OUT APP (frozen in data/dast/FREEZE_v5.json): dvws-node (snoopysecurity/dvws-node @ 4221c04f).
+  # Labelled from source and frozen before any container existed; only started with --profile final-v5, only by
+  # scripts/eval_final_v5.py. The app resolves only the compose service names (dns 127.0.0.1 for anything else).
+  # mysql:5.7 and mongo:4.4 are the images already in the lab (upstream compose: mysql:8, mongo:4.0.4).
+  dvws:
+    <<: *lab
+    build: { context: ./vendor/dvws-node, dockerfile: ../../dvws.Dockerfile }
+    image: mldast-lab/dvws-node:4221c04
+    profiles: ["final-v5"]
+    depends_on:
+      dvws-mongo: { condition: service_healthy }
+      dvws-mysql: { condition: service_healthy }
+    environment: { SQL_LOCAL_CONN_URL: dvws-mysql, MONGO_LOCAL_CONN_URL: "mongodb://dvws-mongo:27017/node-dvws", DVWS_HOST: 127.0.0.1 }
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5116:8080"]
+    mem_limit: 768m
+  dvws-mongo:
+    <<: *lab
+    image: mongo:4.4
+    profiles: ["final-v5"]
+    healthcheck: { test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping')"], interval: 3s, timeout: 5s, retries: 40 }
+    mem_limit: 512m
+  dvws-mysql:
+    <<: *lab
+    image: mysql:5.7
+    profiles: ["final-v5"]
+    environment: { MYSQL_ROOT_PASSWORD: mysecretpassword, MYSQL_DATABASE: dvws_sqldb }
+    healthcheck: { test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -pmysecretpassword --silent"], interval: 3s, timeout: 5s, retries: 60 }
+    mem_limit: 512m
+
+  # v5x (stage 6) TRAINING-DATA app, not a held-out: snyk-labs/nodejs-goof @ add14ba (Apache-2.0). No model uses it yet.
+  # mongo:4.4 (upstream mongo:3); upstream's MySQL is not started (only the unlinked /users routes use it).
+  nodejs-goof:
+    <<: *lab
+    build: { context: ./vendor/nodejs-goof, dockerfile: ../../goof.Dockerfile }
+    image: mldast-lab/nodejs-goof:add14ba
+    profiles: ["v5x"]
+    depends_on: [goof-mongo]
+    environment: { DOCKER: "1" }
+    dns: ["127.0.0.1"]
+    ports: ["127.0.0.1:5117:3001"]
+    mem_limit: 512m
+  goof-mongo:
+    <<: *lab
+    image: mongo:4.4
+    profiles: ["v5x"]
+    mem_limit: 512m
+
 networks:
   lab:
     internal: false   # published ports need a non-internal network; the apps get no outbound use
