@@ -1,0 +1,234 @@
+{
+ "source": "osv_v3",
+ "n": 50,
+ "criterion": "does the pre-fix function visibly contain the labelled CWE pattern (v2 criterion)",
+ "reviewer": "one reviewer (the assistant), no second reviewer",
+ "seed": 2026,
+ "counts": {
+  "correct": 24,
+  "weak": 18,
+  "wrong": 8
+ },
+ "strict_error_rate": 0.16,
+ "strict_ci95_wilson": [
+  0.083,
+  0.285
+ ],
+ "error_rate_with_weak": 0.52,
+ "with_weak_ci95_wilson": [
+  0.385,
+  0.652
+ ],
+ "policy": "fixed before any source after PyVul was checked: strict error rate > 25% -> drop the source; strict + weak > 50% -> sample weight 0.5; otherwise weight 1.0",
+ "decision": "weight 0.5",
+ "verdicts": [
+  {
+   "pair_id": "osv:GHSA-m4m7-4cw8-62j6:55ecbd729242:src/DIRAC/DataManagementSystem/DB/FileCatalogComponents/DatasetManager/DatasetManager.py:__getDynamicDatasetFiles:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-hqq2-xqr2-fmx2:1be06f4e95a5:ghost/core/core/server/web/api/middleware/upload.js:validation:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-ch57-39q2-4crm:4086e2b5f616:src/malla/static/js/chat.js:linkify:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-ch57-39q2-4crm:4086e2b5f616:src/malla/static/js/chat.js:refreshPop:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-mj3x-wprp-mvj9:78f7942b5056:buildbot/status/web/baseweb.py:body:2",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-f833-7jw8-xwrv:736d3212a47d:nltk/corpus/reader/framenet.py:frame_by_name:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-m4m7-4cw8-62j6:fabf08a4a403:src/DIRAC/DataManagementSystem/DB/FileCatalogComponents/DatasetManager/DatasetManager.py:__releaseDataset:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-g8c6-8fjj-2r4m:53f6be094257:src/socketio/zmq_manager.py:_publish:0",
+   "verdict": "wrong",
+   "note": "pickle.dumps (serialization side) labelled deserialization"
+  },
+  {
+   "pair_id": "osv:GHSA-hjx6-f647-mvf9:4424dd511281:invenio_communities/assets/semantic-ui/js/invenio_communities/community/frontpage.js:render:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-g5ff-637f-6q2m:065faf6e695b:litellm/llms/oobabooga/chat/oobabooga.py:embedding:0",
+   "verdict": "wrong",
+   "note": "URL prefix check labelled path traversal"
+  },
+  {
+   "pair_id": "osv:GHSA-6vm5-6jv9-rjpj:948fbb703adc:monai/handlers/checkpoint_loader.py:__call__:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-g8c6-8fjj-2r4m:53f6be094257:src/socketio/async_pubsub_manager.py:_thread:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-g5ff-637f-6q2m:065faf6e695b:litellm/llms/huggingface/embedding/handler.py:embedding:0",
+   "verdict": "wrong",
+   "note": "URL prefix check labelled path traversal"
+  },
+  {
+   "pair_id": "osv:GHSA-9pf3-7rrr-x5jh:eb04b4281c57:lmdeploy/vl/model/utils.py:load_weight_ckpt:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-g8c6-8fjj-2r4m:53f6be094257:src/socketio/kombu_manager.py:_publish:0",
+   "verdict": "wrong",
+   "note": "pickle.dumps labelled deserialization"
+  },
+  {
+   "pair_id": "osv:GHSA-77xq-6g77-h274:08b51590163b:gradio/utils.py:abspath:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-vcf6-3wv2-5vcr:46c85ec11d22:airflow/www/static/js/task.js:document.addEventListener \"DOMContentLoaded\":0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-538v-3wq9-4h3r:379b948ecae5:python/pyfory/serializer.py:read:4",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-hjx6-f647-mvf9:4424dd511281:invenio_communities/assets/semantic-ui/js/invenio_communities/community/communitiesItems/CommunityItemComputer.js:CommunityItemComputer:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-c8c8-9472-w52h:6fa150b2f8b6:django/contrib/admin/static/admin/js/admin/RelatedObjectLookups.js:dismissChangeRelatedObjectPopup:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-fg9w-wfp5-j933:fdde6d9ebf5f:nltk/parse/bllip.py:__init__:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-533q-w4g6-5586:8b547bf3e097:lib/store.js:constructor:1",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-f833-7jw8-xwrv:736d3212a47d:nltk/corpus/reader/framenet.py:doc:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-7xcv-9j6c-2fmc:ee9c4ab02345:max/serve/kvcache_agent/kvcache_agent.py:__init__:1",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-538v-3wq9-4h3r:379b948ecae5:python/pyfory/serializer.py:write:7",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-mj3x-wprp-mvj9:78f7942b5056:buildbot/status/web/builder.py:force:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-hqq2-xqr2-fmx2:1be06f4e95a5:ghost/core/core/server/services/oembed/oembed-service.js:shouldRasterize:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-m4m7-4cw8-62j6:fabf08a4a403:src/DIRAC/DataManagementSystem/DB/FileCatalogComponents/DatasetManager/DatasetManager.py:setDatasetStatus:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-6vm5-6jv9-rjpj:948fbb703adc:monai/data/dataset.py:__init__:4",
+   "verdict": "wrong",
+   "note": "pickle protocol docstring change"
+  },
+  {
+   "pair_id": "osv:GHSA-wr3g-j6qj-xpgh:0e9898b7615b:nltk/downloader.py:_update_index:0",
+   "verdict": "wrong",
+   "note": "bounded download (DoS) labelled CWE-73"
+  },
+  {
+   "pair_id": "osv:GHSA-v8fc-qxvj-f3mg:4e95e12559c9:src/utils/template/templateHelpers.js:convertTemplateToHTML:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-26c4-7vv6-867j:8f987f11bf75:keras/src/utils/file_utils.py:is_link_in_dir:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-6vm5-6jv9-rjpj:948fbb703adc:monai/apps/nnunet/nnunet_bundle.py:get_network_from_nnunet_plans:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-v4xv-795h-rv4h:17effcbe84a7:nautobot/core/templatetags/helpers.py:render_markdown:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-99cv-8cvv-666c:3ff94c7da60f:airflow/www_rbac/views.py:pool_link:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-v8fc-qxvj-f3mg:4e95e12559c9:src/plugins/summaryWidget/src/Rule.js:Rule.prototype.generateDescription:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-f794-5jv7-7672:9e6d5f05902b:nltk/pathsec.py:_hardened_open:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-mwfg-948f-2cc5:6987a946485a:mobsf/StaticAnalyzer/views/common/shared_func.py:unzip:0",
+   "verdict": "wrong",
+   "note": "zip size limit labelled XSS"
+  },
+  {
+   "pair_id": "osv:GHSA-ch57-39q2-4crm:4086e2b5f616:src/malla/static/js/direct_receptions.js:showNoDataMessage:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-533q-w4g6-5586:8b547bf3e097:lib/store.js:getFilename:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-hqjr-43r5-9q58:6f8a43c1b78d:mobsf/MobSF/utils.py:read_sqlite:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-7xcv-9j6c-2fmc:ee9c4ab02345:max/serve/queue/zmq_queue.py:__init__:1",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-m4m7-4cw8-62j6:5a5def88d65a:src/DIRAC/DataManagementSystem/DB/FileCatalogComponents/DatasetManager/DatasetManager.py:__removeDataset:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-hqq2-xqr2-fmx2:1be06f4e95a5:ghost/core/core/server/services/media-inliner/external-media-inliner.js:storeMediaLocally:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-538v-3wq9-4h3r:379b948ecae5:python/pyfory/serializer.py:read:10",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-6vm5-6jv9-rjpj:948fbb703adc:monai/apps/nnunet/nnunet_bundle.py:__init__:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-6vm5-6jv9-rjpj:948fbb703adc:monai/apps/nnunet/nnunet_bundle.py:get_nnunet_trainer:0",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "osv:GHSA-7xcv-9j6c-2fmc:ee9c4ab02345:max/serve/scheduler/queues.py:__init__:0",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "osv:GHSA-6vm5-6jv9-rjpj:948fbb703adc:monai/utils/state_cacher.py:__init__:0",
+   "verdict": "wrong",
+   "note": "docstring change"
+  },
+  {
+   "pair_id": "osv:GHSA-f794-5jv7-7672:9e6d5f05902b:nltk/pathsec.py:extract:0",
+   "verdict": "weak"
+  }
+ ]
+}

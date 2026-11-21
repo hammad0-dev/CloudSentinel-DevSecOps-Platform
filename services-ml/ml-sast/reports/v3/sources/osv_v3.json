@@ -1,0 +1,37 @@
+{
+ "source": "osv_v3",
+ "relaxations": {
+  "per_repo_cap": "20 -> 50",
+  "max_source_files": "5 -> 8"
+ },
+ "capped_repos_in_v2": 5,
+ "commits_reprocessed": 288,
+ "status": {
+  "cap_20_to_50:ok": 168,
+  "files_5_to_8:too_many_files": 68,
+  "files_5_to_8:ok": 52
+ },
+ "new_pairs_by_relaxation": {
+  "cap_20_to_50": 73,
+  "files_5_to_8": 110
+ },
+ "kept_pairs_by_lang_class_relaxation": {
+  "javascript|CWE-22|files_5_to_8": 2,
+  "javascript|CWE-79|cap_20_to_50": 2,
+  "javascript|CWE-79|files_5_to_8": 33,
+  "javascript|CWE-89|files_5_to_8": 1,
+  "python|CWE-22|cap_20_to_50": 22,
+  "python|CWE-22|files_5_to_8": 13,
+  "python|CWE-327|files_5_to_8": 1,
+  "python|CWE-502|cap_20_to_50": 12,
+  "python|CWE-502|files_5_to_8": 45,
+  "python|CWE-78|files_5_to_8": 2,
+  "python|CWE-79|cap_20_to_50": 9,
+  "python|CWE-79|files_5_to_8": 12,
+  "python|CWE-89|cap_20_to_50": 28,
+  "python|CWE-89|files_5_to_8": 1
+ },
+ "kept_pairs": 183,
+ "kept_rows": 366,
+ "licence": "as v2 (OSV CC BY 4.0 metadata; code under each repository's licence)"
+}

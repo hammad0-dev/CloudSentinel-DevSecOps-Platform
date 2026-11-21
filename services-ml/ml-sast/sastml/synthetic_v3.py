@@ -91,6 +91,7 @@ def py_pair(r, cwe):
     v = _var(r, "snake")
     t, col, d = _pick(r, TABLES), _pick(r, FIELDS), _pick(r, DIRS)
     q = _pick(r, ["cur", "cursor", "c", "db_cursor"])
+    model = _pick(r, ["User", "Order", "Item"])  # one model name per pair (hand-check finding)
     if cwe == "CWE-89":
         sinks = {
             "fstring": f'{q}.execute(f"SELECT * FROM {t} WHERE {col} = \'{{{v}}}\'")',
@@ -98,7 +99,7 @@ def py_pair(r, cwe):
             "concat": f'{q}.execute("DELETE FROM {t} WHERE {col} = \'" + {v} + "\'")',
             "format": f'sql = "UPDATE {t} SET seen = 1 WHERE {col} = \'{{}}\'".format({v})\n{q}.execute(sql)',
             "sqlalchemy-text": f'rows = db.session.execute(text(f"SELECT id FROM {t} WHERE {col} LIKE \'%{{{v}}}%\'"))',
-            "django-raw": f'rows = {_pick(r, ["User", "Order", "Item"])}.objects.raw("SELECT * FROM {t} WHERE {col} = \'%s\'" % {v})',
+            "django-raw": f'rows = {model}.objects.raw("SELECT * FROM {t} WHERE {col} = \'%s\'" % {v})',
             "order-by": f'{q}.execute("SELECT * FROM {t} ORDER BY " + {v})',
         }
         fixes = {
@@ -107,8 +108,8 @@ def py_pair(r, cwe):
             "concat": [f'{q}.execute("DELETE FROM {t} WHERE {col} = ?", [{v}])'],
             "format": [f'sql = "UPDATE {t} SET seen = 1 WHERE {col} = %s"\n{q}.execute(sql, ({v},))'],
             "sqlalchemy-text": [f'rows = db.session.execute(text("SELECT id FROM {t} WHERE {col} LIKE :pat"), {{"pat": f"%{{{v}}}%"}})'],
-            "django-raw": [f'rows = {_pick(r, ["User", "Order", "Item"])}.objects.raw("SELECT * FROM {t} WHERE {col} = %s", [{v}])',
-                           f'rows = {_pick(r, ["User", "Order", "Item"])}.objects.filter({col}={v})'],
+            "django-raw": [f'rows = {model}.objects.raw("SELECT * FROM {t} WHERE {col} = %s", [{v}])',
+                           f'rows = {model}.objects.filter({col}={v})'],
             "order-by": [f'column = {v} if {v} in ({", ".join(repr(x) for x in r.sample(FIELDS, 3))}) else "id"\n{q}.execute("SELECT * FROM {t} ORDER BY " + column)'],
         }
         tail = [f"return {q}.fetchall()" if "rows" not in "" else "return rows"]
@@ -193,7 +194,11 @@ def _py_tail(r, cwe, v, code):
     if cwe == "CWE-89":
         return ["return rows" if "rows =" in code else f"return {_pick(r, ['cur', 'cursor', 'c', 'db_cursor']) if False else code.split('.execute')[0].split()[-1]}.fetchall()"]
     if cwe == "CWE-78":
-        return [_pick(r, ["return out", "return res.stdout" if "res =" in code else "return 0", "return True"])] if ("out =" in code or "res =" in code) else ["return True"]
+        if "res =" in code:
+            return [_pick(r, ["return res.stdout", "return res.returncode == 0"])]
+        if "out =" in code:
+            return [_pick(r, ["return out", "return bool(out)"])]
+        return [_pick(r, ["return True", "return None"])]
     if cwe in ("CWE-22", "CWE-502"):
         return ["return data" if "data" in code else "return obj"]
     return []
@@ -205,9 +210,11 @@ def render_python(r, cwe, i):
     name = _ident(r, "snake")
     out = {}
     struct_seed = r.random()
+    # v3 fix (hand check): one tail per pair, derived from the vulnerable form, so the twins differ only by the fix
+    tail = _py_tail(random.Random(struct_seed * 3), cwe, v, vcode)
     for vuln, code in ((True, vcode), (False, scode)):
         rr = random.Random(struct_seed)
-        core = code.split("\n") + _py_tail(r, cwe, v, code)
+        core = code.split("\n") + tail
         lines, struct = _py_structure(rr, core, v)
         out[vuln] = _py_wrap(random.Random(struct_seed * 7), ctx, v, lines, name)
     return {"sink": sink, "fix": fix_idx, "ctx": ctx, "struct": struct}, out
@@ -313,7 +320,7 @@ def js_pair(r, cwe):
                               f"const root = path.resolve(__dirname, '{d}');\nconst full = path.resolve(root, {v});\nif (!full.startsWith(root + path.sep)) {{ return res.status(403).end(); }}\nfs.readFile(full, 'utf8', (err, data) => res.send(data));"],
             "sendfile-concat": [f"res.sendFile(path.basename({v}), {{ root: path.join(__dirname, '{d}') }});"],
             "stream-template": [f"const safeName = path.basename({v});\nfs.createReadStream(path.join('{d}', safeName)).pipe(res);"],
-            "readfilesync-concat": [f"const target = path.resolve('{d}', {v});\nif (!target.startsWith(path.resolve('{d}'))) {{ throw new Error('invalid path'); }}\nconst data = fs.readFileSync(target);\nres.send(data);"],
+            "readfilesync-concat": [f"const target = path.resolve('{d}', {v});\nif (!target.startsWith(path.resolve('{d}') + path.sep)) {{ throw new Error('invalid path'); }}\nconst data = fs.readFileSync(target);\nres.send(data);"],
         }
     else:  # CWE-502
         sinks = {
