@@ -192,7 +192,7 @@ In v2, ZAP was significantly better overall (−0.112). In v3 the gap is no long
 better on our own apps, where all of ml-dast's XSS false alarms are; ml-dast is ahead on the third-party apps.
 Full tables: `reports/zap_comparison_v3.md`.
 
-**ZAP on SirAppSec:** ZAP_FINAL
+**ZAP on SirAppSec:** **not available.** The scan did not finish within its 45-minute limit (: wrapper timeout). Several SirAppSec handlers never answer, so ZAP waits out its timeout on each such request. Under the rule fixed before the run, a scan that did not complete is not used, so there is no ZAP comparison on the held-out app. It was not re-run with a longer limit.
 
 ## Intended use
 
