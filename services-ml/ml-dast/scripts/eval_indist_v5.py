@@ -25,7 +25,13 @@ OUT = ROOT / "reports/indist_v5.json"
 def main(apps):
     if OUT.exists():
         sys.exit("reports/indist_v5.json exists; never rewritten")
-    s4 = json.loads((DATA / "collection_summary_v4.json").read_text())
+    # "before" = the app's most recent earlier collection (v4 for DVPWA; the v4 training data of the other apps are
+    # v3 scans re-featurized, so their latest summary is v3's), always scored against the v5 labels below
+    earlier = {v: json.loads((DATA / f"collection_summary_{v}.json").read_text()) for v in ("v4", "v3", "v2")}
+    s4 = {}
+    for app in apps:
+        v = next(v for v in ("v4", "v3", "v2") if app in earlier[v])
+        s4[app] = {**earlier[v][app], "version": v}
     s5 = json.loads((DATA / "collection_summary_v5.json").read_text())
     rows_all = [r for r in load(directory=paths("v5")["features"]) if r["app"] in apps]
     per_app, new_clusters = {}, set()
@@ -34,13 +40,13 @@ def main(apps):
     for app in apps:
         missed4 = {tuple(x) for x in s4[app]["gt_params_missed"]}
         missed5 = {tuple(x) for x in s5[app]["gt_params_missed"]}
-        reached4 = keys_of("v4", app) - missed4
+        reached4 = keys_of(s4[app]["version"], app) - missed4
         reached5 = keys_of("v5", app) - missed5
         newly = sorted(reached5 - reached4)  # includes v5-only labels (e.g. NodeGoat /profile website)
         keys = {f"{app}|{m}|{p}|{prm}" for m, p, prm in newly}
         rows = [r for r in rows_all if r["app"] == app and r["cluster"].split("#")[0] in keys]
         new_clusters |= {r["cluster"] for r in rows}
-        per_app[app] = {"labelled": s5[app]["gt_params_listed"], "reached_v4": len(reached4), "reached_v5": len(reached5),
+        per_app[app] = {"labelled": s5[app]["gt_params_listed"], "before": s4[app]["version"], "reached_before": len(reached4), "reached_v5": len(reached5),
                         "lost_in_v5": sorted(map(list, reached4 - reached5)), "newly_reached": [list(x) for x in newly],
                         "newly_reached_ml_clusters": len({r["cluster"] for r in rows})}
     rows = [r for r in rows_all if r["cluster"] in new_clusters]

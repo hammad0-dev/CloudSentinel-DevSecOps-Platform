@@ -1,0 +1,135 @@
+{
+ "nodegoat": {
+  "pages_crawled": 6,
+  "points_found": 25,
+  "points_probed": 15,
+  "gt_params_listed": 15,
+  "gt_params_found": 15,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [
+   "POST / [password]",
+   "POST / [userName]",
+   "POST /benefits [password]",
+   "POST /benefits [userName]",
+   "POST /dashboard [password]",
+   "POST /dashboard [userName]",
+   "POST /profile [password]",
+   "POST /profile [userName]",
+   "POST /signup [password]",
+   "POST /signup [verify]"
+  ],
+  "requests": 1295,
+  "rows": 975,
+  "seconds": 170,
+  "point_errors": [],
+  "forms": 12,
+  "stored_points": 14,
+  "stored_raw_hits": 0,
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  }
+ },
+ "vulnerable-node": {
+  "pages_crawled": 45,
+  "points_found": 35,
+  "points_probed": 35,
+  "gt_params_listed": 18,
+  "gt_params_found": 13,
+  "gt_params_missed": [
+   [
+    "GET",
+    "/categories/{slug}",
+    "slug"
+   ],
+   [
+    "GET",
+    "/labs/docs/{file}",
+    "file"
+   ],
+   [
+    "GET",
+    "/login",
+    "error"
+   ],
+   [
+    "GET",
+    "/orders/{id}",
+    "id"
+   ],
+   [
+    "POST",
+    "/products/{id}/reviews",
+    "id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 5609,
+  "rows": 2243,
+  "seconds": 703,
+  "point_errors": [],
+  "forms": 140,
+  "stored_points": 30,
+  "stored_raw_hits": 12,
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  }
+ },
+ "dvpwa": {
+  "pages_crawled": 17,
+  "points_found": 41,
+  "points_probed": 41,
+  "gt_params_listed": 17,
+  "gt_params_found": 14,
+  "gt_params_missed": [
+   [
+    "POST",
+    "/courses/{course_id}/review",
+    "course_id"
+   ],
+   [
+    "POST",
+    "/students/{student_id}/evaluate/{course_id}",
+    "course_id"
+   ],
+   [
+    "POST",
+    "/students/{student_id}/evaluate/{course_id}",
+    "student_id"
+   ]
+  ],
+  "unlisted_points_not_probed": [],
+  "requests": 4203,
+  "rows": 2281,
+  "seconds": 356,
+  "point_errors": [],
+  "forms": 67,
+  "stored_points": 38,
+  "stored_raw_hits": 4,
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  }
+ },
+ "dvws-node": {
+  "pages_crawled": 1,
+  "points_found": 27,
+  "points_probed": 27,
+  "gt_params_listed": 27,
+  "gt_params_found": 27,
+  "gt_params_missed": [],
+  "unlisted_points_not_probed": [],
+  "requests": 2035,
+  "rows": 1671,
+  "seconds": 95,
+  "point_errors": [],
+  "forms": 0,
+  "stored_points": 17,
+  "stored_raw_hits": 0,
+  "auth": {
+   "logins": 1,
+   "relogins": 0
+  }
+ }
+}

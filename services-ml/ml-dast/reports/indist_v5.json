@@ -1,0 +1,279 @@
+{
+ "what": "IN-DISTRIBUTION (training apps), not held-out",
+ "apps": {
+  "nodegoat": {
+   "labelled": 15,
+   "before": "v3",
+   "reached_before": 14,
+   "reached_v5": 15,
+   "lost_in_v5": [],
+   "newly_reached": [
+    [
+     "POST",
+     "/profile",
+     "website"
+    ]
+   ],
+   "newly_reached_ml_clusters": 1
+  },
+  "vulnerable-node": {
+   "labelled": 18,
+   "before": "v3",
+   "reached_before": 12,
+   "reached_v5": 13,
+   "lost_in_v5": [],
+   "newly_reached": [
+    [
+     "GET",
+     "/login",
+     "returnurl"
+    ]
+   ],
+   "newly_reached_ml_clusters": 1
+  },
+  "dvpwa": {
+   "labelled": 17,
+   "before": "v4",
+   "reached_before": 8,
+   "reached_v5": 14,
+   "lost_in_v5": [],
+   "newly_reached": [
+    [
+     "POST",
+     "/courses/",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/courses/",
+     "description"
+    ],
+    [
+     "POST",
+     "/courses/",
+     "title"
+    ],
+    [
+     "POST",
+     "/students/",
+     "_csrf_token"
+    ],
+    [
+     "POST",
+     "/students/",
+     "name"
+    ],
+    [
+     "POST",
+     "/students/{student_id}/evaluate/{course_id}",
+     "points"
+    ]
+   ],
+   "newly_reached_ml_clusters": 7
+  }
+ },
+ "n_rows": 1166,
+ "n_clusters": 9,
+ "ml": {
+  "v2": {
+   "macro_f1": 0.6666666666666665,
+   "ci95": [
+    0.30769230769230765,
+    0.9615384615384615
+   ],
+   "per_class": {
+    "CWE-89": {
+     "tp": 1,
+     "fp": 1,
+     "fn": 0,
+     "support": 1
+    },
+    "CWE-79": {
+     "tp": 2,
+     "fp": 1,
+     "fn": 1,
+     "support": 3
+    }
+   },
+   "clusters": {
+    "dvpwa|POST|/courses/|_csrf_token": {
+     "true": 0,
+     "pred": 1
+    },
+    "dvpwa|POST|/courses/|description": {
+     "true": 2,
+     "pred": 0
+    },
+    "dvpwa|POST|/courses/|title": {
+     "true": 2,
+     "pred": 2
+    },
+    "dvpwa|POST|/students/|_csrf_token": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvpwa|POST|/students/|name#CWE-89": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvpwa|POST|/students/|name#CWE-79": {
+     "true": 2,
+     "pred": 2
+    },
+    "dvpwa|POST|/students/{student_id}/evaluate/{course_id}|points": {
+     "true": 0,
+     "pred": 0
+    },
+    "nodegoat|POST|/profile|website": {
+     "true": 0,
+     "pred": 0
+    },
+    "vulnerable-node|GET|/login|returnurl": {
+     "true": 0,
+     "pred": 2
+    }
+   }
+  },
+  "v3": {
+   "macro_f1": 0.6388888888888888,
+   "ci95": [
+    0.3333333333333333,
+    0.9674999999999992
+   ],
+   "per_class": {
+    "CWE-89": {
+     "tp": 1,
+     "fp": 2,
+     "fn": 0,
+     "support": 1
+    },
+    "CWE-79": {
+     "tp": 2,
+     "fp": 1,
+     "fn": 1,
+     "support": 3
+    }
+   },
+   "clusters": {
+    "dvpwa|POST|/courses/|_csrf_token": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvpwa|POST|/courses/|description": {
+     "true": 2,
+     "pred": 1
+    },
+    "dvpwa|POST|/courses/|title": {
+     "true": 2,
+     "pred": 2
+    },
+    "dvpwa|POST|/students/|_csrf_token": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvpwa|POST|/students/|name#CWE-89": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvpwa|POST|/students/|name#CWE-79": {
+     "true": 2,
+     "pred": 2
+    },
+    "dvpwa|POST|/students/{student_id}/evaluate/{course_id}|points": {
+     "true": 0,
+     "pred": 1
+    },
+    "nodegoat|POST|/profile|website": {
+     "true": 0,
+     "pred": 0
+    },
+    "vulnerable-node|GET|/login|returnurl": {
+     "true": 0,
+     "pred": 2
+    }
+   }
+  },
+  "v4": {
+   "macro_f1": 0.903030303030303,
+   "ci95": [
+    0.47058823529411764,
+    1.0
+   ],
+   "per_class": {
+    "CWE-89": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0,
+     "support": 1
+    },
+    "CWE-79": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1,
+     "support": 3
+    }
+   },
+   "clusters": {
+    "dvpwa|POST|/courses/|_csrf_token": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvpwa|POST|/courses/|description": {
+     "true": 2,
+     "pred": 0
+    },
+    "dvpwa|POST|/courses/|title": {
+     "true": 2,
+     "pred": 2
+    },
+    "dvpwa|POST|/students/|_csrf_token": {
+     "true": 0,
+     "pred": 0
+    },
+    "dvpwa|POST|/students/|name#CWE-89": {
+     "true": 1,
+     "pred": 1
+    },
+    "dvpwa|POST|/students/|name#CWE-79": {
+     "true": 2,
+     "pred": 2
+    },
+    "dvpwa|POST|/students/{student_id}/evaluate/{course_id}|points": {
+     "true": 0,
+     "pred": 0
+    },
+    "nodegoat|POST|/profile|website": {
+     "true": 0,
+     "pred": 0
+    },
+    "vulnerable-node|GET|/login|returnurl": {
+     "true": 0,
+     "pred": 0
+    }
+   }
+  }
+ },
+ "differences": {
+  "v2 - v3": {
+   "mean": -0.001607448569948576,
+   "ci95": [
+    -0.28912698412698407,
+    0.3112499999999998
+   ]
+  },
+  "v2 - v4": {
+   "mean": -0.2007954148520325,
+   "ci95": [
+    -0.469760101010101,
+    0.0
+   ]
+  },
+  "v3 - v4": {
+   "mean": -0.19918796628208393,
+   "ci95": [
+    -0.46988636363636366,
+    0.038461538461538436
+   ]
+  }
+ }
+}
