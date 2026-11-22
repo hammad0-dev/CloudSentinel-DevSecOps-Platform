@@ -124,6 +124,19 @@ def main():
         p = W / f"emb_{name}.npy"
         if p.exists():
             return np.load(p)
+        main = Path("/mnt/d/cs-data/sast-v3/work/train_v3")
+        if args.tag and (main / f"emb_{name}.npy").exists():
+            # ablation: every row is also in the main run (a subset); reuse its embeddings by row id (same frozen model)
+            main_rows = {"trainval": lambda: load(ROOT / "data/processed_v3/train.jsonl") + load(ROOT / "data/processed_v3/val.jsonl"),
+                         "test": lambda: load(ROOT / "data/processed_v3/test.jsonl"),
+                         "dev": lambda: [r for r in load(ROOT / "data/processed/heldout.jsonl") if not r["excluded"]]}[name]()
+            idx = {(r["lang"], r["code"]): i for i, r in enumerate(main_rows)}
+            M = np.load(main / f"emb_{name}.npy")
+            if all((r["lang"], r["code"]) in idx for r in rows):
+                X = M[[idx[(r["lang"], r["code"])] for r in rows]]
+                np.save(p, X)
+                log(f"reused main-run embeddings for {name} {X.shape}")
+                return X
         t0 = time.time()
         X = embed([r["code"] for r in rows], [r["lang"] for r in rows], max_len=256, batch=32)
         np.save(p, X)
