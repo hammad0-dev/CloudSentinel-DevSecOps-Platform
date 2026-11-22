@@ -1,0 +1,23 @@
+{
+ "written": "after the v3 system was selected on the development set and BEFORE any held-out prediction",
+ "freeze": "services-ml/ml-sast/data/heldout_v3/FREEZE.json (re-verified by the scorer)",
+ "v2_model": "models/release_v2/model.joblib",
+ "v2_sha256": "00fe69cfc62abd9d59954fcf92ef6d2c201f2dde55b690a2cdf3fd64708aa765",
+ "v2_name": "ml-sast-hybrid 2.0.0 (deployed)",
+ "v3_model": "models/release_v3/model.joblib",
+ "v3_sha256": "f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+ "v3_name": "ml-sast-v3-ensemble 3.0.0 (rule R2)",
+ "systems_scored": [
+  "v2",
+  "v3"
+ ],
+ "not_scored": "the unselected base models and rules (development set only)",
+ "sets": {
+  "python": "20 RealVuln community apps",
+  "node": "4 RealVuln community apps",
+  "all": "both together (used by the decision)"
+ },
+ "metrics": "sastml.evaluation as v2: per-class P/R/F1, macro-F1 over the classes present, binary vulnerable-vs-safe precision/recall; 95% bootstrap over units (1000 resamples, paired v3 - v2)",
+ "decision_rule": "v3 replaces v2 only if, on both held-out sets together, (1) v3's macro-F1 is higher than v2's AND (2) v3's binary precision is not lower than v2's AND (3) the paired bootstrap 95% CI of v3 - v2 macro-F1 lies above 0. Anything else (tie or unclear) keeps v2 deployed and v3 packaged only. Even if all three hold, deployment waits for the user's approval.",
+ "scored_once": "scripts/v3/eval_heldout_v3.py refuses to run twice; no tuning afterwards"
+}

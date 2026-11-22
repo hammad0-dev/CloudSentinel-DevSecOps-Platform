@@ -1,0 +1,15 @@
+{
+ "source": "synthetic_v3",
+ "n_per_cwe": 50,
+ "sample": "seed 77, 50 random pairs per CWE (Python and JavaScript mixed), the lines that differ between the vulnerable and the safe twin",
+ "reviewer": "one reviewer (the assistant), no second reviewer",
+ "per_cwe": {
+  "CWE-89": {"label_correct": 50, "weak": 0, "wrong": 0, "note": "1 cosmetic defect: the django-raw twins used different model names (fixed)"},
+  "CWE-79": {"label_correct": 50, "weak": 0, "wrong": 0},
+  "CWE-78": {"label_correct": 50, "weak": 0, "wrong": 0, "note": "generator defect: Python twins ended with different, unrelated return statements (sometimes returning an undefined name), a spurious signal (fixed: one tail per pair)"},
+  "CWE-22": {"label_correct": 44, "weak": 6, "wrong": 0, "note": "6 JS readFileSync safe twins used startsWith(root) without a separator, a bypassable prefix check (fixed: root + path.sep)"},
+  "CWE-502": {"label_correct": 50, "weak": 0, "wrong": 0}
+ },
+ "after_fixes": "the generator was corrected and re-checked: no CWE-78 pair differs in a return line, django-raw twins share the model, the JS prefix checks include path.sep. The recorded verdicts are for the sample drawn BEFORE the fixes.",
+ "decision": "weight 1.0 (secondary data; never used in any evaluation set)"
+}

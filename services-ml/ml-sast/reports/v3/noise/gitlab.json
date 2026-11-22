@@ -1,0 +1,228 @@
+{
+ "source": "gitlab",
+ "n": 50,
+ "criterion": "does the pre-fix function visibly contain the labelled CWE pattern (v2 criterion)",
+ "reviewer": "one reviewer (the assistant), no second reviewer",
+ "seed": 2026,
+ "counts": {
+  "correct": 42,
+  "weak": 7,
+  "wrong": 1
+ },
+ "strict_error_rate": 0.02,
+ "strict_ci95_wilson": [
+  0.004,
+  0.105
+ ],
+ "error_rate_with_weak": 0.16,
+ "with_weak_ci95_wilson": [
+  0.083,
+  0.285
+ ],
+ "policy": "fixed before any source after PyVul was checked: strict error rate > 25% -> drop the source; strict + weak > 50% -> sample weight 0.5; otherwise weight 1.0",
+ "decision": "weight 1.0",
+ "verdicts": [
+  {
+   "pair_id": "gitlab:python/crypto/rule-hashlib-new-insecure-functions.py:20",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-subprocess-popen-shell-true.py:37",
+   "verdict": "weak",
+   "note": "shell=True with a variable labelled ok: the variable is defined outside the snippet"
+  },
+  {
+   "pair_id": "gitlab:python/ssl/rule-ssl-with-bad-version.py:34",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/flask/security/injection/sql/rule-flask-tainted-sql-string.py:252",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/ssl/rule-ssl-with-bad-version.py:51",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/eval/rule-serializetojs_deserialize.js:18",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-raw-used.py:487",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/crypto/rule-hash-md5.py:16",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-rawsql-used.py:175",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/eval/rule-eval.py:146",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-rawsql-used.py:241",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/crypto/rule-node_sha1.js:28",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/crypto/rule-node_sha1.js:190",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/xml/rule-element.py:24",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/sql/rule-hardcoded-sql-expression.py:17",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/xss/rule-xss_serialize_javascript.js:76",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/gitlab/javascript/crypto/rule-NodeLibcurlSSLVerificationDisable.js:117",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/urlopen/rule-urllib-urlopen.py:120",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-raw-used.py:343",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/traversal/rule-zip_path_overwrite.js:19",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/xss/rule-squirrelly_autoescape.js:44",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/xss/rule-handlebars_safestring.js:50",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/ssl/rule-ssl-with-bad-version.py:19",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/xss/rule-handlebars_noescape.js:66",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/xss/rule-squirrelly_autoescape.js:10",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/crypto/rule-node_md5.js:44",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/sql/rule-hardcoded-sql-expression.py:57",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-os-popen2.py:19",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "gitlab:javascript/dos/rule-non-literal-regexp.js:32",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/crypto/rule-node_sha1.js:129",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/crypto/rule-crypto-hazmat-cipher-blowfish.py:9",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/crypto/rule-hashlib-new-insecure-functions.py:12",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-subprocess-call.py:24",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-raw-used.py:109",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/crypto/rule-hash-md5.py:10",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/sql/rule-hardcoded-sql-expression.py:78",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "gitlab:javascript/dos/rule-non-literal-regexp.js:129",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-raw-used.py:92",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/django/security/injection/sql/rule-django-rawsql-used.py:215",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/jwt/rule-jwt_express_hardcoded.js:86",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl/javascript/jwt/rule-jwt_exposed_credentials.js:243",
+   "verdict": "wrong",
+   "note": "labelled safe (ok for the exposed-credentials rule) but holds a hard-coded hex JWT key (CWE-798)"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-subprocess-popen-shell-true.py:27",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/eval/rule-eval.py:77",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/files/rule-tarfile-unsafe-members.py:9",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-start-process-with-no-shell.py:7",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-subprocess-popen-shell-true.py:91",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/flask/security/redirection/rule-flask-open-redirect.py:122",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/flask/security/injection/path-traversal/rule-path-traversal-open.py:116",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:python/exec/rule-subprocess-popen-shell-true.py:102",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "gitlab:rules/lgpl-cc/python/crypto/rule-HTTPConnectionPool.py:23",
+   "verdict": "correct"
+  }
+ ]
+}

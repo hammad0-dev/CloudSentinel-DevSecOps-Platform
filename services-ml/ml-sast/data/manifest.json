@@ -573,5 +573,509 @@
         "vulnerable-node": "d68f2a3c9277ece2c2feb9976052033bdecd7fbe"
       }
     }
+  },
+  "v3": {
+    "sources": {
+      "pyvul": {
+        "licence": "none stated (research use with attribution)",
+        "downloads": {
+          "PyVul.git": {
+            "url": "https://github.com/billquan/PyVul.git",
+            "commit": "1172bfd1579b4ad2a524549412170d08ca618fb3",
+            "cloned_utc": "2026-11-21T20:08:23Z",
+            "size": "54M"
+          }
+        },
+        "raw_by_lang": {
+          "TypeScript": 26,
+          "JavaScript": 50,
+          "Python": 1569,
+          "C++": 451,
+          "C": 52,
+          "Java": 12,
+          "Groovy": 2,
+          "unknown": 9,
+          "Prolog": 1,
+          "Rust": 1
+        },
+        "dropped": {
+          "language_not_python_or_js": 554,
+          "empty_code": 30,
+          "cwe_not_exactly_one_target": 1183,
+          "before_equals_after": 1
+        },
+        "kept_pairs_or_units": 405,
+        "noise": {
+          "strict_error_rate": 0.12,
+          "error_rate_with_weak": 0.6,
+          "decision": "weight 0.5"
+        }
+      },
+      "jsvul": {
+        "licence": "CC BY 4.0 (Zenodo 18195839)",
+        "downloads": {
+          "js_vul.zip": {
+            "url": "https://zenodo.org/records/18195839/files/js_vul.zip?download=1",
+            "downloaded_utc": "2026-11-21T20:07:14Z",
+            "bytes": "9659666",
+            "sha256": "9dcaacad1b4b9ed0ba76ac6b704353708f54c000cdcfc4b821625c49e2158463",
+            "md5": "087fb7cfa213bde26135bae7874efe7f (publisher MD5 087fb7cfa213bde26135bae7874efe7f: verified)"
+          },
+          "js_vul_pairs_only.zip": {
+            "url": "https://zenodo.org/records/18195839/files/js_vul_pairs_only.zip?download=1",
+            "downloaded_utc": "2026-11-21T20:07:21Z",
+            "bytes": "1925004",
+            "sha256": "f83b2416978c64e648077b721003503ed10e63514a1d28c4f62bbeb77ff37d08",
+            "md5": "f9c17b92e28eec210b4986cb29c588a9 (publisher MD5 f9c17b92e28eec210b4986cb29c588a9: verified)"
+          },
+          "merged_data.zip": {
+            "url": "https://zenodo.org/records/18195839/files/merged_data.zip?download=1",
+            "downloaded_utc": "2026-11-21T20:16:43Z",
+            "bytes": "761217219",
+            "sha256": "b548a226b44274eed7d10850250d41c4e24bee56746a047a3f006d9f49b59e9f",
+            "md5": "0c49e7077891fdbe7c1d6d2c1104900a (publisher MD5 0c49e7077891fdbe7c1d6d2c1104900a: verified)"
+          },
+          "code": {
+            "jsvul.git": {
+              "url": "https://github.com/jsvul/jsvul.git",
+              "commit": "036c7f77749c524c51984419a37f666685796ef6",
+              "cloned_utc": "2026-11-21T20:08:56Z",
+              "size": "928K"
+            }
+          }
+        },
+        "raw_by_lang": {
+          "javascript": 17029,
+          "none": 13,
+          ".ts": 4393,
+          ".tsx": 440,
+          ".jsx": 26
+        },
+        "dropped": {
+          "vulnerable_without_fixed_pair": 697,
+          "too_long": 34,
+          "before_equals_after": 5,
+          "cwe_not_exactly_one_target": 510,
+          "not_js_extension (ts/tsx/jsx/...)": 457
+        },
+        "kept_pairs_or_units": 336,
+        "noise": {
+          "strict_error_rate": 0.02,
+          "error_rate_with_weak": 0.42,
+          "decision": "weight 1.0"
+        }
+      },
+      "gitlab": {
+        "licence": "MIT (repo), rules/lgpl* LGPL",
+        "downloads": {
+          "sast-rules.git": {
+            "url": "https://gitlab.com/gitlab-org/security-products/sast-rules.git",
+            "commit": "83144bd2ec7d3200cda96347fa923f81c8ad8413",
+            "cloned_utc": "2026-11-21T20:08:50Z",
+            "size": "6.5M"
+          }
+        },
+        "raw_by_lang": {
+          "javascript": 872,
+          "python": 571
+        },
+        "dropped": {
+          "ruleid_of_non_target_rule (unit dropped)": 323,
+          "unit_with_ruleid_and_ok (kept as vulnerable)": 18
+        },
+        "kept_pairs_or_units": 507,
+        "noise": {
+          "strict_error_rate": 0.02,
+          "error_rate_with_weak": 0.16,
+          "decision": "weight 1.0"
+        }
+      },
+      "cvefixes": {
+        "licence": "CC BY 4.0 (Zenodo 13118970, v1.0.8)",
+        "downloads": {
+          "CVEfixes_v1.0.8.zip": {
+            "url": "https://zenodo.org/records/13118970/files/CVEfixes_v1.0.8.zip?download=1",
+            "downloaded_utc": "2026-11-21T22:16:58Z",
+            "bytes": "12708711268",
+            "sha256": "6acd55aaeb7ffcfc20fdcebf7df88d206f9892ef64b0f2a2e06864d5b44b3a83",
+            "md5": "4586a358977acfa4c60b1a2cdd096221 (publisher MD5 4586a358977acfa4c60b1a2cdd096221: verified)"
+          }
+        },
+        "raw_by_lang": {
+          "JavaScript": 71607,
+          "Python": 5383
+        },
+        "dropped": {
+          "method_longer_than_60000_chars": 70414,
+          "no_before_after_pair": 40269,
+          "cwe_not_exactly_one_target": 8530,
+          "before_equals_after": 636,
+          "test_file": 2166,
+          "extension_not_py_js_mjs_cjs": 156,
+          "too_long": 46
+        },
+        "kept_pairs_or_units": 25187,
+        "quality_filters": {
+          "dropped": {
+            "no_sink_of_the_class_in_the_changed_lines": 1205,
+            "minified_or_vendored_file": 19531,
+            "minified_code": 581,
+            "broken_pair": 1081,
+            "test_file_by_name": 5,
+            "per_repository_cap_50": 24
+          },
+          "kept_pairs_by_lang_class": {
+            "javascript|CWE-22": 18,
+            "javascript|CWE-327": 14,
+            "javascript|CWE-78": 36,
+            "javascript|CWE-79": 315,
+            "javascript|CWE-89": 15,
+            "python|CWE-22": 41,
+            "python|CWE-502": 17,
+            "python|CWE-78": 9,
+            "python|CWE-79": 71,
+            "python|CWE-89": 18
+          },
+          "kept_pairs": 554,
+          "kept_rows": 1108,
+          "repositories": 196
+        },
+        "noise": {
+          "strict_error_rate": 0.16,
+          "error_rate_with_weak": 0.36,
+          "decision": "weight 1.0"
+        }
+      },
+      "osv_v3": {
+        "licence": "as v2 (OSV CC BY 4.0 metadata; code under each repository's licence)",
+        "downloads": {},
+        "raw_by_lang": null,
+        "dropped": null,
+        "kept_pairs_or_units": 183,
+        "noise": {
+          "strict_error_rate": 0.16,
+          "error_rate_with_weak": 0.52,
+          "decision": "weight 0.5"
+        }
+      },
+      "skipped": {
+        "salve": "gated on Hugging Face (account + accepted terms needed): manual download",
+        "semgrep-rules": "Semgrep Rules License v1.0 (internal business use only)",
+        "morefixes": "Zenodo record 20702039 deleted (HTTP 410, 2026-06-25)"
+      }
+    },
+    "dataset": {
+      "raw_rows_new_sources": {
+        "cvefixes": 1108,
+        "jsvul": 672,
+        "pyvul": 810,
+        "osv_v3": 366,
+        "gitlab_rules": 507,
+        "synthetic_v3": 2400
+      },
+      "filter_stats": {
+        "v2_rows": 6911,
+        "dropped_conflicting_label:crossvul": 2,
+        "dropped_conflicting_label:osv": 9,
+        "dropped_exact_duplicate:cvefixes": 336,
+        "dropped_conflicting_label:cvefixes": 5,
+        "dropped_exact_duplicate:jsvul": 1,
+        "dropped_conflicting_label:osv_v3": 15,
+        "dropped_exact_duplicate:osv_v3": 69,
+        "dropped_exact_duplicate:pyvul": 331,
+        "dropped_conflicting_label:pyvul": 17,
+        "dropped_conflicting_label:gitlab_rules": 6,
+        "dropped_exact_duplicate:gitlab_rules": 14,
+        "dropped_near_duplicate_of_kept_row:cvefixes": 46,
+        "dropped_near_duplicate_of_kept_row:jsvul": 37,
+        "dropped_near_duplicate_of_kept_row:osv_v3": 13,
+        "dropped_near_duplicate_of_kept_row:pyvul": 72,
+        "dropped_near_duplicate_of_kept_row:gitlab_rules": 15,
+        "dropped_near_duplicate_of_kept_row:synthetic_v3": 34
+      },
+      "splits": {
+        "train": {
+          "total": 7015,
+          "by_origin": {
+            "crossvul": 664,
+            "osv": 1237,
+            "cvefixes": 550,
+            "jsvul": 326,
+            "osv_v3": 144,
+            "pyvul": 272,
+            "gitlab_rules": 432,
+            "synthetic": 1956,
+            "synthetic_v3": 1434
+          },
+          "by_class_category": {
+            "CWE-22": {
+              "real": 305,
+              "rule_tests": 27,
+              "synthetic": 247
+            },
+            "CWE-327": {
+              "real": 27,
+              "rule_tests": 78,
+              "synthetic": 80
+            },
+            "CWE-502": {
+              "real": 121,
+              "rule_tests": 26,
+              "synthetic": 250
+            },
+            "CWE-78": {
+              "real": 179,
+              "rule_tests": 57,
+              "synthetic": 224
+            },
+            "CWE-79": {
+              "real": 845,
+              "rule_tests": 19,
+              "synthetic": 310
+            },
+            "CWE-798": {
+              "real": 1,
+              "rule_tests": 11,
+              "synthetic": 120
+            },
+            "CWE-89": {
+              "real": 119,
+              "rule_tests": 53,
+              "synthetic": 328
+            },
+            "safe": {
+              "real": 1596,
+              "rule_tests": 161,
+              "synthetic": 1831
+            }
+          },
+          "by_lang": {
+            "javascript": 3224,
+            "python": 3791
+          },
+          "groups": 435
+        },
+        "val": {
+          "total": 2298,
+          "by_origin": {
+            "crossvul": 138,
+            "osv": 262,
+            "cvefixes": 82,
+            "jsvul": 154,
+            "osv_v3": 60,
+            "pyvul": 44,
+            "gitlab_rules": 16,
+            "synthetic": 1079,
+            "synthetic_v3": 463
+          },
+          "by_class_category": {
+            "CWE-22": {
+              "real": 70,
+              "rule_tests": 1,
+              "synthetic": 135
+            },
+            "CWE-327": {
+              "real": 18,
+              "rule_tests": 2,
+              "synthetic": 80
+            },
+            "CWE-502": {
+              "real": 27,
+              "synthetic": 125
+            },
+            "CWE-78": {
+              "real": 50,
+              "synthetic": 89
+            },
+            "CWE-79": {
+              "real": 184,
+              "rule_tests": 1,
+              "synthetic": 126
+            },
+            "CWE-798": {
+              "real": 1,
+              "synthetic": 80
+            },
+            "CWE-89": {
+              "real": 20,
+              "rule_tests": 5,
+              "synthetic": 116
+            },
+            "safe": {
+              "real": 370,
+              "rule_tests": 7,
+              "synthetic": 791
+            }
+          },
+          "by_lang": {
+            "python": 1100,
+            "javascript": 1198
+          },
+          "groups": 225
+        },
+        "test": {
+          "total": 2401,
+          "by_origin": {
+            "crossvul": 138,
+            "osv": 266,
+            "cvefixes": 82,
+            "jsvul": 152,
+            "osv_v3": 52,
+            "pyvul": 58,
+            "gitlab_rules": 24,
+            "synthetic": 1160,
+            "synthetic_v3": 469
+          },
+          "by_class_category": {
+            "CWE-22": {
+              "real": 70,
+              "synthetic": 136
+            },
+            "CWE-327": {
+              "real": 6,
+              "rule_tests": 19,
+              "synthetic": 80
+            },
+            "CWE-502": {
+              "real": 42,
+              "synthetic": 136
+            },
+            "CWE-78": {
+              "real": 49,
+              "rule_tests": 2,
+              "synthetic": 124
+            },
+            "CWE-79": {
+              "real": 184,
+              "rule_tests": 1,
+              "synthetic": 122
+            },
+            "CWE-798": {
+              "synthetic": 80
+            },
+            "CWE-89": {
+              "real": 23,
+              "synthetic": 116
+            },
+            "safe": {
+              "real": 374,
+              "rule_tests": 2,
+              "synthetic": 835
+            }
+          },
+          "by_lang": {
+            "javascript": 1249,
+            "python": 1152
+          },
+          "groups": 221
+        }
+      },
+      "train_real_rows_per_class": {
+        "safe": 1596,
+        "CWE-89": 119,
+        "CWE-79": 845,
+        "CWE-78": 179,
+        "CWE-22": 305,
+        "CWE-798": 1,
+        "CWE-502": 121,
+        "CWE-327": 27
+      },
+      "train_synthetic_share": 0.4833,
+      "source_weights": {
+        "osv_v3": 0.5,
+        "synthetic_v3": 1.0,
+        "pyvul": 0.5,
+        "cvefixes": 1.0,
+        "jsvul": 1.0,
+        "gitlab_rules": 1.0
+      },
+      "group_overlap_between_splits": []
+    },
+    "heldout_v3": {
+      "policy": "Labelled from RealVuln ground truth and frozen BEFORE any v3 training. Scored exactly once (scripts/v3/eval_heldout_v3.py).",
+      "realvuln_commit": "015244597a86d107f86f9574f9eda6d20928f156",
+      "ground_truth_version": "3.0.0",
+      "sets": {
+        "python": {
+          "apps": {
+            "damn-vulnerable-flask-application": "55f63201c85190e760a8fa34a580a9bf918dbf36",
+            "damn-vulnerable-graphql-application": "a961308c02d1fb462b192681c336b0739e432da7",
+            "djangoat": "082c88bfefced508ae083b92b459c808f95e905e",
+            "dvblab": "25bdef1e32055bfb6366856acc5db829e61e3647",
+            "extremely-vulnerable-flask-app": "d5d8875559e21222bbbaadb7b9f0af592c6eb7fa",
+            "flask-xss": "4d6f500246696d9078e141d7eabcc34087c54faa",
+            "insecure-web": "5d1b791bb6c2d1397843f29ee6a0d5c9386dd667",
+            "intentionally-vulnerable-python-application": "3804a18ae666b296675f9a60bc617e527beae520",
+            "lets-be-bad-guys": "7cbf11014bfc6dc9e199dc0b8a64e4597bc2338f",
+            "owasp-web-playground": "5e682aca1b58e03362a5fbd9fc88c37626e429ce",
+            "python-app": "a33452268ef7489ebeb44f65a1bae06eda2072ab",
+            "python-insecure-app": "80b894a2f754590747a31c92b2088be086421953",
+            "pythonssti": "76339c27d5a870c0a81bad6aee5f9bd516592145",
+            "threatbyte": "c4db46f72586c4ecb65859051ea037018dbf0e5e",
+            "vfapi": "f36f177e1a32aa49272f4eb52f8be0af3e8f6bc3",
+            "vulnerable-api": "f7797964e1cd63a1cbcc8ced721fa41db674c8e0",
+            "vulnerable-flask-app": "b6a4f97afd466e83e1f60781494252dec1c37039",
+            "vulnerable-python-apps": "6336c77e6db523a5df34c4b628dff4159110797a",
+            "vulnerable-tornado-app": "7aca8b78ba948c841d6cb1cc2a244922a27e842b",
+            "vulnpy": "d1d0f64c06f038fe59a049e0e6001bfaf9839697"
+          },
+          "n_files": 304,
+          "units": 831,
+          "scored_units": 660,
+          "excluded_units": 171,
+          "vulnerable_units": 132,
+          "by_class": {
+            "CWE-22": 18,
+            "CWE-327": 14,
+            "CWE-502": 14,
+            "CWE-78": 11,
+            "CWE-79": 28,
+            "CWE-798": 29,
+            "CWE-89": 24,
+            "safe": 528
+          },
+          "finding_stats": {
+            "findings_vulnerable": 468,
+            "findings_fp_trap": 90,
+            "unmapped_other": 46,
+            "unmapped_vulnerable_target": 46
+          },
+          "rows_sha256": "ab8640ef519439f60851aba18af2ae0f87853aff96e0b6ee9889381d1c4b8a76",
+          "sources_sha256": "eeab3fa9e9b29967c72ed17d50b5ee8ef0fb262ebd9cc9c4aa17aa829adb4438",
+          "ground_truth_sha256": "f84d94ba511a39e5a441ef3b4b1d5bf1d0875970518322877e3b651532ebf2fb"
+        },
+        "node": {
+          "apps": {
+            "ninjasworkout": "8c2bfebc7431fb33a15ee9da10b19c105a563a56",
+            "vuln-node-express": "b912ebd7c88eead5b90b85ff28ac961ed0d1acd0",
+            "vulnerable-nodejs": "be41f02bb686ddacedd928e870441205ced56c44",
+            "vulnnodeapp": "3393db1ae7813128067c8d243985b9cef57abcb1"
+          },
+          "n_files": 34,
+          "units": 163,
+          "scored_units": 137,
+          "excluded_units": 26,
+          "vulnerable_units": 19,
+          "by_class": {
+            "CWE-22": 2,
+            "CWE-327": 4,
+            "CWE-502": 2,
+            "CWE-78": 2,
+            "CWE-79": 1,
+            "CWE-798": 6,
+            "CWE-89": 4,
+            "safe": 118
+          },
+          "finding_stats": {
+            "findings_vulnerable": 79,
+            "unmapped_vulnerable_target": 9,
+            "unmapped_other": 3
+          },
+          "rows_sha256": "0b15a27929f6710b55f74f5b09590117c80158468c42b782e1f910fe8af4dc2e",
+          "sources_sha256": "0c53378d31da9b988dd028a170449dad3641fa230d746aeea1543f7b8bbcf2e9",
+          "ground_truth_sha256": "815dff6eb850f8e7eadd15f58d268dddd47e5e977f0c2fc559e5aaf3cc86ae18"
+        }
+      }
+    }
   }
 }

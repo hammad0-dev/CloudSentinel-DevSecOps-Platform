@@ -66,11 +66,15 @@ class SastModel:
                                       class_weight=weights, n_jobs=-1, random_state=0, verbose=-1)
         raise ValueError(self.kind)
 
-    def fit(self, codes, langs, labels):
+    def fit(self, codes, langs, labels, sample_weight=None):
+        """sample_weight (v3, optional): per-row weights (source noise policy); None = the v1/v2 behaviour."""
         y = np.array([self.classes.index(l) for l in labels])
         X = self.featurizer.fit_transform(codes, langs)
         self.estimator = self._make(y)
-        self.estimator.fit(X.astype(np.float32), y)
+        if sample_weight is None:
+            self.estimator.fit(X.astype(np.float32), y)
+        else:
+            self.estimator.fit(X.astype(np.float32), y, sample_weight=np.asarray(sample_weight, dtype=np.float64))
         return self
 
     def predict_proba(self, codes, langs):

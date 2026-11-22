@@ -51,6 +51,9 @@ services-ml/ml-sast/checkpoints/
 services-ml/ml-sast/data/**
 !services-ml/ml-sast/data/
 !services-ml/ml-sast/data/manifest.json
+!services-ml/ml-sast/data/heldout_v3/
+!services-ml/ml-sast/data/heldout_v3/FREEZE.json
+!services-ml/ml-sast/data/heldout_v3/LABELS.md
 !services-ml/ml-sast/data/samples/
 !services-ml/ml-sast/data/samples/**
 !services-ml/ml-sast/data/heldout/

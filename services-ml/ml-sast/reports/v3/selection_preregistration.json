@@ -1,0 +1,26 @@
+{
+ "written": "before any v3 model is trained (stage 5 starts after this file is committed)",
+ "data": "data/processed_v3/{train,val,test}.jsonl built by scripts/v3/build_dataset_v3.py; per-row sample weights from the source noise policy (PyVul 0.5, OSV v3 0.5, others 1.0) multiplied by v2's balanced class weights",
+ "base_models": {
+  "A_rf": {"kind": "SastModel rf (v2 features: TF-IDF code tokens + 31 hand-made features + language flag)", "params": {"n_estimators": 400, "max_depth": 40, "min_samples_leaf": 2}, "featurizer": {"max_features": 8000, "ngram_range": [1, 2]}, "note": "v2's selected RF configuration, no grid"},
+  "B_lgbm": {"kind": "SastModel lgbm (same features)", "grid": [{"n_estimators": 300, "learning_rate": 0.05, "num_leaves": 15}, {"n_estimators": 500, "learning_rate": 0.05, "num_leaves": 31}, {"n_estimators": 300, "learning_rate": 0.1, "num_leaves": 15}], "featurizer": {"max_features": 8000, "ngram_range": [1, 2]}, "pick": "highest out-of-fold macro-F1"},
+  "C_codebert_xgb": {"kind": "frozen microsoft/codebert-base mean-pooled embeddings (max 256 tokens, no fine-tuning) + XGBoost", "grid": [{"max_depth": 4, "n_estimators": 300}, {"max_depth": 4, "n_estimators": 600}, {"max_depth": 6, "n_estimators": 300}, {"max_depth": 6, "n_estimators": 600}], "fixed": {"learning_rate": 0.05, "subsample": 0.8, "colsample_bytree": 0.5}, "pick": "highest out-of-fold macro-F1"}
+ },
+ "no_other_base_models": true,
+ "cross_validation": "5-fold GroupKFold over train+val, groups = repository (real rows) or template family (synthetic rows); out-of-fold probabilities for every base model",
+ "thresholds_per_base_model": "one global threshold from (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7) maximizing out-of-fold macro-F1; per-class thresholds (coordinate ascent, 2 passes, same grid) kept only if they raise out-of-fold macro-F1 by >= 0.02 (v2's rule, on out-of-fold data instead of the development set)",
+ "final_base_models": "refit on train+val with the chosen configuration; the test split stays an in-distribution check",
+ "secrets": "the rule-based secrets detector (sastml/secrets.py, v2 'rules' mode) reports CWE-798 in every candidate system; the ML models' own CWE-798 output is ignored",
+ "combination_rules": {
+  "R1_per_class_routing": "for each class c, use the base model with the best DEVELOPMENT-set F1 for c (ties: A, then B, then C); a unit is flagged c iff that model flags c (probability >= its threshold for c)",
+  "R2_majority_2_of_3": "a unit is flagged c iff at least 2 of the 3 base models flag c",
+  "R3_union": "a unit is flagged c iff any base model flags c; confidence = number of agreeing models / 3"
+ },
+ "single_label_decision": "as v2: the candidate with the highest confidence (R1/R2: mean probability of the agreeing models; R3: agreement count, then mean probability); no candidate = safe",
+ "selection_criterion": "highest development-set (NodeGoat, DVNA, vulpy, PyGoat) macro-F1 among R1, R2, R3 whose development binary (vulnerable-vs-safe) precision is not below v2's (ml-sast-hybrid 2.0.0) on the same development rows in the same run. If no rule meets the precision condition, the rule with the highest development precision is selected and this is reported.",
+ "references_reported_on_development_only": ["A_rf", "B_lgbm", "C_codebert_xgb", "R1", "R2", "R3", "v2"],
+ "development_report": "macro-F1 with 95% bootstrap CI (1000 resamples, units), per-class P/R/F1, training time, model size, scan time per file and per 1,000 functions",
+ "ablation": "the selected system's configuration retrained without synthetic_v3 rows, scored on the development set only",
+ "heldout": "only v2 and the selected v3 system are scored on the frozen RealVuln held-out sets (data/heldout_v3/FREEZE.json), once, after a separate held-out pre-registration with both model hashes",
+ "findings_format": "each v3 finding carries models_agree (names of the base models that flagged it) and names them in the message"
+}
