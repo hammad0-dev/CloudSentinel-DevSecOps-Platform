@@ -1,3 +1,47 @@
+# Model card: ml-sast 3.0.0 (`ml-sast-v3-ensemble`): packaged, deployment awaiting approval
+
+**Status:** v3 passed the pre-registered held-out rule, but it is **not deployed**. Port 8001 still serves
+`ml-sast-hybrid` 2.0.0; the brief requires your approval before any switch. v3 is packaged as
+`services-ml/ml-sast/models/release_v3` (`"default": false`).
+
+**What it is.** Every scan runs three models on each function: (A) a Random Forest over v2's features (TF-IDF code
+tokens, 31 security features, a language flag), (B) LightGBM on the same features, and (C) frozen CodeBERT embeddings
+with XGBoost. A function is reported for a class only if **2 of the 3** agree (rule R2). Hard-coded secrets (CWE-798)
+come from the rule-based detector, as in v2. Every finding names the agreeing models (`models_agree`).
+
+**Held-out result** (RealVuln, scored once; 797 units, 151 vulnerable):
+
+| | v2 (deployed) | v3 |
+|---|---|---|
+| Macro-F1 [95% CI] | 0.544 [0.471, 0.605] | **0.653 [0.587, 0.705]** |
+| Precision / recall (vulnerable vs safe) | 0.511 / 0.589 | **0.605 / 0.629** |
+| v3 − v2 | | **+0.109 [+0.053, +0.167]** |
+
+- **Per language:** Python (660 units) +0.110 [+0.043, +0.175]; Node.js (137 units, 19 vulnerable)
+  +0.173 [−0.005, +0.290].
+- **Per class:** v3 is better on CWE-22, 78, 89, 798 and 79, about level on CWE-502 (worse on Python alone), and
+  slightly worse on CWE-327.
+
+**The development set disagrees.** On development (NodeGoat, DVNA, vulpy, PyGoat; 439 units) v2 scores 0.642 and v3
+0.571 (−0.082 [−0.180, +0.022]). v2's thresholds were tuned on that same set, which favours v2 there; v3 never saw it.
+The held-out sets were never used by either model.
+
+**Data:** 9,313 training+validation rows (v2: 5,347), from CrossVul, OSV, CVEfixes, JsVul, PyVul, GitLab rule tests
+and synthetic data (48.3% of training). See `docs/ml-sast-data-inventory.md`.
+
+**Limitations:**
+- **Speed:** frozen CodeBERT on CPU makes scans about 230 s per 1,000 functions (v2: about 1 s), and the service needs
+  the CodeBERT weights (about 500 MB) in its Hugging Face cache.
+- **Thin real data:** CWE-89, 78 and 502 still have about 120–180 real training rows (the 300 target was missed).
+- **Small Node.js held-out:** 4 apps, 19 vulnerable units.
+- **Label noise:** the new sources' samples show 2–16% wrong labels (one reviewer).
+- **Unmapped findings:** 46 Python and 9 Node.js held-out findings in templates or config files are not unit-mappable
+  and are not scored.
+
+Full report: `docs/ml-sast-v3-final-report.md`.
+
+---
+
 # Model card: ml-sast 2.0.0 (`ml-sast-hybrid`)
 
 Function-level vulnerability detector for the CloudSentinel `ml-sast` service (`SAST_ENGINE=ml`).
