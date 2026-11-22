@@ -1,6 +1,8 @@
 # CloudSentinel
 
-Full-stack **DevSecOps / security dashboard**: register GitHub projects, run **SAST** via **SonarQube** (`sonar-scanner`), store findings and scores in **PostgreSQL**, and browse results in a **React (Vite)** UI.
+Full-stack **DevSecOps / security dashboard**: register GitHub projects, run **SAST** and **DAST** with CloudSentinel's own trained ML services (**ml-sast**, **ml-dast**), store findings and scores in **PostgreSQL**, and browse results in a **React (Vite)** UI.
+
+> **Scan engines.** The default engines are the ML services: `SAST_ENGINE=ml` (ml-sast, `ML_SAST_URL`, deployed model `ml-sast-v3-ensemble` 3.0.0) and `DAST_ENGINE=ml` (ml-dast, `ML_DAST_URL`, deployed model `ml-dast-lr` 4.0.0). SonarQube and ZAP are **not needed** to run the pipeline. They remain only as a **legacy, benchmark-only** opt-in (`SAST_ENGINE=sonar`, `DAST_ENGINE=zap`). If an ML service is down or returns an error, the stage fails; there is no fallback. See [docs/ml-architecture.md](docs/ml-architecture.md); accuracy is in [docs/ml-sast-model-card.md](docs/ml-sast-model-card.md) and [docs/ml-dast-model-card.md](docs/ml-dast-model-card.md). The SonarQube sections further down describe the legacy engine.
 
 This README documents **everything implemented to date**, **split Windows ↔ Ubuntu deployment**, **errors we hit and how they were fixed**, and **how to resume work tomorrow**.
 
@@ -34,9 +36,11 @@ This README documents **everything implemented to date**, **split Windows ↔ Ub
 | Piece | Where it usually runs | Role |
 |--------|------------------------|------|
 | **Frontend (Vite)** | Windows (or Ubuntu if you run Vite there) | Browser UI, typically `http://localhost:5173` |
-| **Backend (Express)** | Ubuntu VM and/or Windows | REST API on **`PORT`** (e.g. **3000**), JWT auth, DB, orchestrates **`git clone`** + **`sonar-scanner`** |
+| **Backend (Express)** | Ubuntu VM and/or Windows | REST API on **`PORT`** (e.g. **3000**), JWT auth, DB, orchestrates **`git clone`** and the pipeline stages |
 | **PostgreSQL** | Same machine as the backend you are using | App data: users, projects, scans, issues |
-| **SonarQube** | Often the same Ubuntu host as the backend | Web UI **`http://localhost:9000`** on that host; scan analysis + issue API |
+| **ml-sast** | Same host as the backend, `127.0.0.1:8001` | Default SAST engine (trained model; Python and Node.js) |
+| **ml-dast** | Same host as the backend, `127.0.0.1:8002` | Default baseline DAST engine (trained model) against the staging deployment |
+| **SonarQube** (legacy, optional) | Only if `SAST_ENGINE=sonar` | Benchmark only; not needed to run the pipeline |
 
 **Important:** There are **two separate Postgres databases** if you run the backend on **both** Windows and Ubuntu — users/projects on Windows are **not** the same rows as on Ubuntu unless you replicate data.
 
@@ -51,7 +55,7 @@ The frontend targets one API via **`VITE_API_BASE_URL`** in **`frontend/.env`** 
 - **Frontend:** React (Vite), React Router v6, Tailwind CSS, Axios, React Hot Toast, Lucide, Recharts (where used).
 - **Backend:** Node.js, Express, `pg`, JWT, bcrypt, Axios, Nodemailer; optional Google/GitHub OAuth routes in **`auth.js`** (primary flow is email/password).
 - **Database:** PostgreSQL — **`schema.sql`** at repo root.
-- **Analysis:** Git CLI + Sonar Scanner CLI → SonarQube Web API (`/api/issues/search`) → stored in **`scan_results`**.
+- **Analysis:** Git CLI → ml-sast (`POST /scan`) → stored in **`scan_results`**; ml-dast → **`dast_findings`**. Legacy SonarQube path (`SAST_ENGINE=sonar`): Sonar Scanner CLI → SonarQube Web API.
 
 ---
 
@@ -322,6 +326,8 @@ Never copy **`node_modules`** from Windows to Linux (or vice versa). Native modu
 
 ## SAST pipeline (step-by-step)
 
+> **Legacy engine.** This section describes the SonarQube engine, which runs only with `SAST_ENGINE=sonar` (benchmark only). The default ML SAST flow is in [docs/ml-architecture.md](docs/ml-architecture.md#flow).
+
 1. Client calls **`POST /api/sast/scan/:projectId`** with **`Authorization: Bearer <jwt>`**.
 2. Pre-check: if a SAST or dependency scan for the same project is already **`RUNNING`**, return **`409 Conflict`**.
 3. Insert **`scan_history`** row: **`RUNNING`**, capture **`id`** (`scanHistoryId`).
@@ -343,6 +349,8 @@ Never copy **`node_modules`** from Windows to Linux (or vice versa). Native modu
 ---
 
 ## SonarQube: “no lines of code” / branch mismatch
+
+> Applies only to the legacy `SAST_ENGINE=sonar` engine.
 
 Sonar’s message **“The main branch has no lines of code”** means: **for the Sonar project + branch you are looking at**, the last analysis recorded **zero** lines of code.
 

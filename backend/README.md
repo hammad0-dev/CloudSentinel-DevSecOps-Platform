@@ -1,12 +1,12 @@
 # CloudSentinel backend (Ubuntu)
 
-Backend targets Ubuntu Node.js (`HOST=http://localhost:<PORT>`). SonarQube runs on the same machine at `http://localhost:9000`; clones land under `CLONE_DIR` (Linux-friendly paths via Node.js `path`).
+Backend targets Ubuntu Node.js (`HOST=http://localhost:<PORT>`). SAST and DAST use the ML services by default (`ML_SAST_URL`, `ML_DAST_URL`; see `docs/ml-architecture.md`). Clones land under `CLONE_DIR` (Linux-friendly paths via Node.js `path`). SonarQube is needed only for the legacy `SAST_ENGINE=sonar` engine (benchmark only).
 
 ## Ubuntu setup
 
 **Step 1:** sudo apt install nodejs npm postgresql git
 
-**Step 2:** Install sonar-scanner to `/opt/sonar-scanner` and add it to `PATH`.
+**Step 2:** Start ml-sast and ml-dast (`scripts/run-ml-sast.sh`, `scripts/run-ml-dast.sh`) and apply migration 023 (`npm run migrate:engines`). Legacy SonarQube engine only: install sonar-scanner to `/opt/sonar-scanner` and add it to `PATH`.
 
 **Step 3:** Setup PostgreSQL database:
 

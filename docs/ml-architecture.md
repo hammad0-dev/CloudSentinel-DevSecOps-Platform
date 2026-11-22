@@ -1,31 +1,42 @@
 # ML scan engines: architecture
 
-CloudSentinel can run SAST and the baseline DAST stage on trained ML services instead of SonarQube
-and ZAP. Targets are Python and Node.js apps only. SonarQube and ZAP remain the default until the ML
-engines pass evaluation.
+SAST and the baseline DAST stage run on CloudSentinel's own trained ML services. **They are the default
+engines.** Targets are Python and Node.js apps only. SonarQube and ZAP are **not needed** to run the
+pipeline; their adapters remain only as an explicit, **legacy, benchmark-only** opt-in
+(`SAST_ENGINE=sonar`, `DAST_ENGINE=zap`).
 
-- **ml-sast** has a trained model: `ml-sast-hybrid` 2.0.0 (`models/release_v2/`). It combines a
-  function-level Random Forest with a **rule-based** secrets detector for CWE-798. On a fresh set of
-  three apps, scored once, it reaches 0.59 macro-F1 against 0.50 for v1 (`ml-sast-rf` 1.0.0), but
-  that difference is not statistically significant. Vulnerable precision is about 0.32, so it is not
-  yet good enough to replace SonarQube as the gate. Rule-based findings are marked: rule suffix
-  `.rule`, and `/model-info` → `components.secrets.type: "rule-based"`. See
-  [ml-sast-model-card.md](ml-sast-model-card.md).
-- **ml-dast** has a trained model, `ml-dast-lr` 1.0.0 (SQL injection and reflected XSS). It scores 0.87
-  endpoint-param macro-F1 in leave-one-app-out over 6 lab app groups, against 0.92 for an offline ZAP
-  full scan of the same endpoints. On the frozen DVNA held-out app it found 1 of 2 vulnerable parameters.
-  ZAP stays the default. Every request passes a host/port allowlist, same-origin, budget and rate guard;
-  set `ML_DAST_ALLOWED_HOSTS` and `ML_DAST_ALLOWED_PORTS` to the staging target. See
-  [ml-dast-model-card.md](ml-dast-model-card.md).
+| Stage | Service | Deployed model | Accuracy and limits |
+|---|---|---|---|
+| SAST | `ml-sast` on 127.0.0.1:8001 | `ml-sast-v3-ensemble` 3.0.0 | [ml-sast-model-card.md](ml-sast-model-card.md) |
+| DAST (baseline) | `ml-dast` on 127.0.0.1:8002 | `ml-dast-lr` 4.0.0 | [ml-dast-model-card.md](ml-dast-model-card.md) |
+
+The model cards are the only source for accuracy numbers. This page describes how the engines are wired.
+Sections further down that carry a date (e2e results, v2-v5 rounds) record earlier runs. They keep the
+defaults of their time, when SonarQube and ZAP were still the default.
+
+**Comparison with the legacy tools.** These are the only measurements in the repository:
+
+- **SAST vs SonarQube:** none. `services-ml/ml-sast/reports/comparison.json` records that no SonarQube
+  results exist for the development apps. No SonarQube comparison was measured on the ml-sast held-out sets.
+- **DAST vs ZAP:** offline ZAP comparisons are in `services-ml/ml-dast/reports/zap_comparison*.md`.
+  - The v4 final held-out (`zap_comparison_v4_final.md`) is one app (DVPWA) and 8 endpoint-parameters.
+    ml-dast − ZAP macro-F1 is +0.125, 95% CI [+0.000, +0.436]. That is too small to show a difference.
 
 ## Selection
 
 | Flag | Values | Default | Effect |
 |---|---|---|---|
-| `SAST_ENGINE` | `sonar`, `ml` | `sonar` | `POST /api/sast/scan/:projectId` uses SonarQube or `ml-sast` |
-| `DAST_ENGINE` | `zap`, `ml` | `zap` | `POST /api/dast/scan/:projectId` (baseline path) uses ZAP or `ml-dast` |
+| `SAST_ENGINE` | `ml`, `sonar` (legacy, benchmark only) | `ml` | `POST /api/sast/scan/:projectId` uses `ml-sast` (`ML_SAST_URL`) or SonarQube |
+| `DAST_ENGINE` | `ml`, `zap` (legacy, benchmark only) | `ml` | `POST /api/dast/scan/:projectId` (baseline path) uses `ml-dast` (`ML_DAST_URL`) or the ZAP baseline image |
 
-Any other value fails the stage with a clear error. Active DAST is unaffected.
+- An unset or blank flag means `ml`. Any other value fails the stage with a clear error.
+- **No fallback.** If the ML service is unreachable, times out, returns an HTTP error or an invalid
+  response, or its URL is not set, the stage fails. The message names the service and its URL. The
+  backend never switches to SonarQube or ZAP on its own.
+- SonarQube and ZAP are contacted only when their flag is set explicitly. That includes the SonarQube
+  metrics on the SAST results page and report. `SONAR_*` and `ZAP_*` variables are not required otherwise.
+- Active DAST (the frozen ZAP active scanner) is separate. It runs only with `DAST_ACTIVE_ENABLED=true`,
+  which is off by default.
 
 ## Flow
 
@@ -33,10 +44,10 @@ Any other value fails the stage with a clear error. Active DAST is unaffected.
 flowchart LR
   O[Orchestrator] -->|POST /api/sast/scan| S[SAST route]
   O -->|POST /api/dast/scan| D[DAST route]
-  S -->|SAST_ENGINE=sonar| SQ[SonarQube]
-  S -->|SAST_ENGINE=ml| MS[ml-sast /scan]
-  D -->|DAST_ENGINE=zap| Z[ZAP baseline]
-  D -->|DAST_ENGINE=ml| MD[ml-dast /scan]
+  S -->|default: ml| MS[ml-sast /scan]
+  S -.->|SAST_ENGINE=sonar, legacy| SQ[SonarQube]
+  D -->|default: ml| MD[ml-dast /scan]
+  D -.->|DAST_ENGINE=zap, legacy| Z[ZAP baseline]
   SQ & MS --> P1[persistSastEvidence: scan_history + scan_results]
   Z & MD --> P2[persistCompletedScan: dast_scans + dast_findings]
   P1 & P2 --> G[Gate + governance + UI, unchanged]
@@ -79,12 +90,21 @@ Each ML scan row stores:
     request bounds.
 - For DAST, `policy_name` and `policy_version` hold the model name and version.
 
-Migration: `backend/migrations/023_scan_engine_provenance.sql`. Without it, ML scans fail with a
-message that names the migration. The default engines do not need it.
+- Every new SAST row is created with `scan_engine` set to `ml` or `sonar`. Legacy ZAP baseline rows keep
+  `scan_engine` NULL; their `policy_name` names the ZAP policy.
+- Stored scans are never rewritten. A NULL `scan_engine` means the row predates this column and came
+  from SonarQube or ZAP.
+- The SAST results API (`GET /api/sast/:projectId`) returns `engine: {name, legacy, model}` for the
+  latest scan. The DAST API returns `scan_engine`, `policy_name` and `policy_version` on each scan.
+
+Migration: `backend/migrations/023_scan_engine_provenance.sql` (`cd backend && npm run migrate:engines`,
+idempotent). **The default engines require it.** Without it, ML scans fail with a message that names
+the migration.
 
 Provenance-bound STATIC_HTML executions (`PIPELINE_PROVENANCE_ENABLED`) attest Sonar- and ZAP-specific
 evidence: a quality gate and a pinned ZAP image. ML engines refuse those executions with
-`ML_ENGINE_PROVENANCE_UNSUPPORTED` rather than attesting something weaker.
+`ML_ENGINE_PROVENANCE_UNSUPPORTED` rather than attesting something weaker. With ML as the default, such
+executions fail unless the legacy adapters are selected explicitly.
 
 ## Safety rules
 
@@ -95,12 +115,26 @@ evidence: a quality gate and a pinned ZAP image. ML engines refuse those executi
     an empty result would pass every gate.
   - `ML_ALLOW_UNTRAINED=true` allows it, for plumbing tests only.
 - **Unreachable or slow service.**
-  - Every call has a timeout: `ML_SAST_TIMEOUT_MS` (default 300 s) and `ML_DAST_TIMEOUT_MS`
-    (default 1800 s).
+  - Every call has a timeout: `ML_SAST_TIMEOUT_MS` and `ML_DAST_TIMEOUT_MS`, both 1,800 s by default.
+    ml-sast v3 runs CodeBERT on CPU; see the model card for scan time per function.
   - On failure the stage fails with the service URL and the cause, for example
-    `ML SAST service at http://localhost:8001 is unreachable (ECONNREFUSED)`. The orchestrator
-    retries once, as it does for every stage.
+    `ML SAST service at http://127.0.0.1:8001 is unreachable (ECONNREFUSED). Start the service; the
+    stage does not fall back to another engine.` The orchestrator retries a failed stage once after
+    60 s, as it does for every stage. It then marks the pipeline `STAGE_FAILED`.
 - **The ML DAST service scans whatever it is given.** Keep it reachable only from the backend.
+
+## Legacy engines (benchmark only)
+
+Kept, so the old engines can be benchmarked against the ML engines. Each runs only when selected explicitly:
+
+| Selected by | Code kept | Needs |
+|---|---|---|
+| `SAST_ENGINE=sonar` | `backend/routes/sast/{config,pipeline,metrics}.js` (Sonar parts), `backend/services/sonar*.js` | SonarQube server, `sonar-scanner`, `SONAR_HOST`, `SONAR_TOKEN` |
+| `DAST_ENGINE=zap` | `backend/services/dastBaselineScanner.js` | Docker and the ZAP baseline image (`ZAP_IMAGE`) |
+| `DAST_ACTIVE_ENABLED=true` | the frozen active-DAST subsystem (`backend/services/{active*,zap*,module2ActiveDast}.js`, tag `legacy-zap-dast`) | ZAP image, commissioning setup |
+
+None of these runs by default, and nothing in the default path starts or checks a SonarQube server or a
+ZAP container.
 
 ## Services
 
@@ -117,8 +151,8 @@ evidence: a quality gate and a pinned ZAP image. ML engines refuse those executi
 ```bash
 cd services-ml/ml-sast && pip install -r requirements.txt && uvicorn app:app --port 8001
 cd services-ml/ml-dast && pip install -r requirements.txt && uvicorn app:app --port 8002
-psql -d cloudsentinel -f backend/migrations/023_scan_engine_provenance.sql
-# backend/.env: SAST_ENGINE=ml DAST_ENGINE=ml ML_SAST_URL=http://localhost:8001 ML_DAST_URL=http://localhost:8002
+cd backend && npm run migrate:engines
+# backend/.env: ML_SAST_URL=http://127.0.0.1:8001 ML_DAST_URL=http://127.0.0.1:8002 (SAST_ENGINE/DAST_ENGINE default to ml)
 ```
 
 Tests: `cd backend && npm run test:ml`, and `pytest` in each service directory.
