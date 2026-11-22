@@ -187,6 +187,13 @@ This was a single check. The model was not tuned for these fixtures.
 
 ## Running the full ML pipeline
 
+**One command (current deployment).** `scripts/start-stack.sh` starts, in order, Minikube (profile `minikube`),
+ml-sast v3 on 8001 (CodeBERT from `/mnt/d/cs-data/hf-cache`, offline), ml-dast v4 on 8002 (allowlist from
+`minikube ip`) and the backend on 3000 (`nohup npm start > ~/backend.log`). It first checks Docker, PostgreSQL, the
+model files and the `backend/.env` settings (`SAST_ENGINE`, `DAST_ENGINE`, `ML_SAST_URL`, `ML_DAST_URL`,
+`ML_SAST_TIMEOUT_MS=1800000`) without printing the file. It skips anything already running with the right model.
+`--restart` restarts the three services; `--status` only reports. Service logs go to `~/cs-logs/`.
+
 This runs both ML engines (`SAST_ENGINE=ml`, `DAST_ENGINE=ml`) through deploy to Minikube and DAST
 against the staging app. Start Minikube first (`minikube start`). If the ml-dast lab is running, stop
 it to free RAM (`cd services-ml/ml-dast/lab && docker compose down`).
