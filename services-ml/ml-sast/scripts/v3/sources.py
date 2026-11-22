@@ -235,15 +235,22 @@ def cvefixes():
     for cve, h, repo in cur.execute("SELECT cve_id, hash, repo_url FROM fixes"):
         fix_cve[h].add(cve)
     rows, st = [], Stats()
-    q = ("SELECT f.file_change_id, f.hash, f.filename, f.programming_language, c.repo_url, m.name, m.before_change, m.code, m.signature "
-         "FROM method_change m JOIN file_change f ON m.file_change_id = f.file_change_id JOIN commits c ON c.hash = f.hash "
-         "WHERE f.programming_language IN ('Python', 'JavaScript')")
+    # the small tables in memory, then ONE sequential scan of method_change (an unindexed JOIN on the 43 GB file was
+    # far too slow); methods longer than 60,000 characters (minified bundles) are counted and skipped inside SQLite
+    repo_of_hash = dict(cur.execute("SELECT hash, repo_url FROM commits"))
+    files = {fcid: (h, fname, plang) for fcid, h, fname, plang in cur.execute(
+        "SELECT file_change_id, hash, filename, programming_language FROM file_change WHERE programming_language IN ('Python', 'JavaScript')")}
+    st.drop["method_longer_than_60000_chars"] = cur.execute("SELECT count(*) FROM method_change WHERE length(code) > 60000").fetchone()[0]
     by_key = collections.defaultdict(dict)
     meta = {}
-    for fcid, h, fname, plang, repo_url, name, before, code, sig in cur.execute(q):
+    for fcid, name, before, code, sig in cur.execute(
+            "SELECT file_change_id, name, before_change, code, signature FROM method_change WHERE length(code) <= 60000"):
+        if fcid not in files:
+            continue
+        h, fname, plang = files[fcid]
         side = "before" if str(before).lower() == "true" else "after"
         by_key[(fcid, sig or name)][side] = code
-        meta[(fcid, sig or name)] = (h, fname, plang, repo_url, name)
+        meta[(fcid, sig or name)] = (h, fname, plang, repo_of_hash.get(h), name)
     for k, sides in by_key.items():
         h, fname, plang, repo_url, name = meta[k]
         cwes = sorted({c for cve in fix_cve.get(h, ()) for c in cwe_of.get(cve, ())})
@@ -271,6 +278,62 @@ def cvefixes():
     return st.dump("cvefixes", {"licence": "CC BY 4.0 (Zenodo 13118970, v1.0.8)"})
 
 
+VENDOR = re.compile(r"(\.min\.js$|(^|/)(vendor|vendors|node_modules|dist|build|bower_components|third[_-]?party|external|libs?/[^/]*(jquery|bootstrap|summernote|elfinder|moment))(/|$))", re.I)
+
+
+def cvefixes_filter():
+    """Quality filters for CVEfixes (it keeps EVERY method changed in a fix commit; 81% of its pairs came from minified
+    drawio bundles): drop minified/vendored files and minified-looking code, require a sink of the labelled class in
+    the changed lines (the OSV collector's sink filter, scripts/collect_osv.py), and cap 50 pairs per repository."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from collect_osv import changed_lines, sink_ok
+    from sastml.extract import looks_minified
+    src = WORK / "cvefixes/rows.jsonl"
+    raw = WORK / "cvefixes/rows_unfiltered.jsonl"
+    if not raw.exists():
+        src.rename(raw)
+    pairs = collections.defaultdict(list)
+    for l in raw.open():
+        r = json.loads(l)
+        pairs[r["pair_id"]].append(r)
+    drop, per_repo, kept, after = collections.Counter(), collections.Counter(), [], collections.Counter()
+    for pid in sorted(pairs, key=lambda p: (pairs[p][0]["source"], p)):
+        ps = pairs[pid]
+        if len(ps) != 2:
+            drop["broken_pair"] += 1
+            continue
+        v = next(r for r in ps if r["label"] != "safe")
+        s = next(r for r in ps if r["label"] == "safe")
+        if VENDOR.search(v.get("file") or ""):
+            drop["minified_or_vendored_file"] += 1
+            continue
+        # CVEfixes keeps only the base name, so the directory-based test filter cannot see tests/ (noise-check finding)
+        if re.search(r"(^|/)(tests?|test_.*|.*_tests?|conftest)\.py$|\.(test|spec)\.[cm]?js$", v.get("file") or "", re.I):
+            drop["test_file_by_name"] += 1
+            continue
+        if looks_minified(v["code"]) or looks_minified(s["code"]):
+            drop["minified_code"] += 1
+            continue
+        rem, add = changed_lines(v["code"], s["code"])
+        if not sink_ok(v["label"], rem, add):
+            drop["no_sink_of_the_class_in_the_changed_lines"] += 1
+            continue
+        if per_repo[v["source"]] >= 50:
+            drop["per_repository_cap_50"] += 1
+            continue
+        per_repo[v["source"]] += 1
+        kept += [v, s]
+        after[(v["lang"], v["label"])] += 1
+    with src.open("w") as fh:
+        for r in kept:
+            fh.write(json.dumps(r) + "\n")
+    rep = json.loads((REPORT / "cvefixes.json").read_text())
+    rep["quality_filters"] = {"dropped": dict(drop), "kept_pairs_by_lang_class": {f"{a}|{b}": n for (a, b), n in sorted(after.items())},
+                              "kept_pairs": sum(after.values()), "kept_rows": len(kept), "repositories": len(per_repo)}
+    (REPORT / "cvefixes.json").write_text(json.dumps(rep, indent=1) + "\n")
+    return rep["quality_filters"]
+
+
 if __name__ == "__main__":
-    out = {"pyvul": pyvul, "jsvul": jsvul, "gitlab": gitlab, "cvefixes": cvefixes}[sys.argv[1]]()
+    out = {"pyvul": pyvul, "jsvul": jsvul, "gitlab": gitlab, "cvefixes": cvefixes, "cvefixes_filter": cvefixes_filter}[sys.argv[1]]()
     print(json.dumps({k: v for k, v in out.items() if k != "raw_by_lang_cwe_top"}, indent=1))

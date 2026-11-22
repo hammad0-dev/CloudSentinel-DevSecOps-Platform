@@ -1,0 +1,234 @@
+{
+ "source": "cvefixes",
+ "n": 50,
+ "criterion": "does the pre-fix function visibly contain the labelled CWE pattern (v2 criterion)",
+ "reviewer": "one reviewer (the assistant), no second reviewer",
+ "seed": 2026,
+ "counts": {
+  "correct": 32,
+  "weak": 10,
+  "wrong": 8
+ },
+ "strict_error_rate": 0.16,
+ "strict_ci95_wilson": [
+  0.083,
+  0.285
+ ],
+ "error_rate_with_weak": 0.36,
+ "with_weak_ci95_wilson": [
+  0.241,
+  0.499
+ ],
+ "policy": "fixed before any source after PyVul was checked: strict error rate > 25% -> drop the source; strict + weak > 50% -> sample weight 0.5; otherwise weight 1.0",
+ "decision": "weight 1.0",
+ "verdicts": [
+  {
+   "pair_id": "cvefixes:49441822286947:_calculateMenuWidth",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:14064104250801:render_markdown",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:30027234712539:extra_view_dispatch",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:247486054279938:dbLookup",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:17804596365382:sanitizeHtmlLight",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:70157117941760:fetch",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:66870583717714:set_multi",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:41754832641366:elFinder.prototype.commands.help",
+   "verdict": "wrong",
+   "note": "vendored elFinder HTML templating labelled SQLi"
+  },
+  {
+   "pair_id": "cvefixes:253194060992086:formatValue",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:125465096853714:_check_auth",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:40296882670079:_handle",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:230439473845432:test_render_quoting",
+   "verdict": "wrong",
+   "note": "Django tests.py (test file; CVEfixes keeps only the base name, so the directory test filter missed it)"
+  },
+  {
+   "pair_id": "cvefixes:25120050361336:respond_error",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:103386389735004:enable_interactive_graph",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:256211600820034:getValueRenderedWithColor",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:205529764677586:oauth_callback",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:156793419477405:loadSessionsTable",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:182883113254876:Simditor.prototype.setValue",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:270153410207994:Graph.prototype.getTooltipForCell",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:173923162919341:$scope.refresh",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:171634972114247:export_bookmarks",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:29712637527033:loadProject",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:49548764395480:didInsertElement",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:120691340253399:unadded",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:227170124812439:printDirect",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:103594102217621:model",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:44306153507661:formatSelection",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:45618888057759:AnsiUp.prototype.get_next_packet",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:257841922882829:XFormItem.prototype.setError",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:96526580553721:document.getElementById",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:140968644419817:unpack_model",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:47882514868585:App.Actions.DB.update_db_databasename_hint",
+   "verdict": "wrong",
+   "note": ".html(empty string) -> .text(empty string)"
+  },
+  {
+   "pair_id": "cvefixes:238156682802071:reqExec",
+   "verdict": "wrong",
+   "note": "refactor, no injection fix visible"
+  },
+  {
+   "pair_id": "cvefixes:181509445444701:TimeStringToSecs",
+   "verdict": "wrong",
+   "note": "minified code"
+  },
+  {
+   "pair_id": "cvefixes:271957457540028:addWell",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:11333328290852:this.refresh_rois",
+   "verdict": "wrong",
+   "note": "the fix REMOVES escapeHTML (direction reversed)"
+  },
+  {
+   "pair_id": "cvefixes:196432145091043:complete",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:2356269253889:doDrawWay",
+   "verdict": "wrong",
+   "note": "innerHTML of a number"
+  },
+  {
+   "pair_id": "cvefixes:45618888057759:AnsiUp.prototype.transform_to_html",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:181613151139515:$scope.addRequisition",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:139099447566342:_not_here_yet",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:17939549035050:render",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:142202610144430:get_html_for",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:55910589862120:main",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:173923162919341:$scope.removeAllNodes",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:106617884320946:get_credits",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:42225845269956:_keyify",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:277667540056081:inetLatency",
+   "verdict": "weak"
+  },
+  {
+   "pair_id": "cvefixes:50744441289610:block_card",
+   "verdict": "correct"
+  },
+  {
+   "pair_id": "cvefixes:70157117941760:init",
+   "verdict": "wrong",
+   "note": "constant command, no injection"
+  }
+ ]
+}
