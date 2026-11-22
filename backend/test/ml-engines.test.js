@@ -176,15 +176,29 @@ const DAST_FINDINGS = (base) => [
 ];
 
 // ---- flags ----
-test("engine flags default to sonar and zap, accept ml, reject anything else", () =>
+test("engine flags default to ml; sonar and zap are an explicit legacy opt-in; anything else is rejected", () =>
   withEnv({ SAST_ENGINE: undefined, DAST_ENGINE: undefined }, async () => {
-    assert.equal(engines.sastEngine(), "sonar");
-    assert.equal(engines.dastEngine(), "zap");
-    process.env.SAST_ENGINE = " ML "; process.env.DAST_ENGINE = "ml";
     assert.equal(engines.sastEngine(), "ml");
     assert.equal(engines.dastEngine(), "ml");
+    assert.deepEqual([engines.DEFAULT_SAST_ENGINE, engines.DEFAULT_DAST_ENGINE], ["ml", "ml"]);
+    process.env.SAST_ENGINE = "  "; process.env.DAST_ENGINE = "";
+    assert.deepEqual([engines.sastEngine(), engines.dastEngine()], ["ml", "ml"], "blank flags mean the ML default");
+    process.env.SAST_ENGINE = " ML "; process.env.DAST_ENGINE = "ml";
+    assert.deepEqual([engines.sastEngine(), engines.dastEngine()], ["ml", "ml"]);
+    process.env.SAST_ENGINE = " Sonar "; process.env.DAST_ENGINE = "zap";
+    assert.deepEqual([engines.sastEngine(), engines.dastEngine()], ["sonar", "zap"]);
+    assert.ok(engines.isLegacyEngine("sonar") && engines.isLegacyEngine("zap") && !engines.isLegacyEngine("ml"));
     process.env.SAST_ENGINE = "semgrep";
-    assert.throws(() => engines.sastEngine(), /SAST_ENGINE=semgrep is not supported; use sonar or ml/);
+    assert.throws(() => engines.sastEngine(), /SAST_ENGINE=semgrep is not supported; use ml or sonar \(legacy, benchmark only\)/);
+    process.env.DAST_ENGINE = "burp";
+    assert.throws(() => engines.dastEngine(), /DAST_ENGINE=burp is not supported; use ml or zap \(legacy, benchmark only\)/);
+  }));
+
+test("ML SAST client timeout defaults to 1,800 s (ml-sast v3 runs CodeBERT on CPU); ML_SAST_TIMEOUT_MS overrides it", () =>
+  withEnv({ ML_SAST_TIMEOUT_MS: undefined, ML_SAST_URL: "http://127.0.0.1:8001" }, async () => {
+    assert.equal(createMlSastClient().timeoutMs, 1800000);
+    process.env.ML_SAST_TIMEOUT_MS = "600000";
+    assert.equal(createMlSastClient().timeoutMs, 600000);
   }));
 
 test("untrained models are refused unless ML_ALLOW_UNTRAINED=true", () =>
@@ -509,27 +523,61 @@ const dastScanner = require("../services/dastBaselineScanner");
 dastScanner.runBaselineScan = async (args) => { zapCalls.push(args); return { scanId: 1, summary: { total: 0 }, total: 0, scanMode: "BASELINE" }; };
 const dastHandler = handlerOf(require("../routes/dast"), "/scan/:projectId");
 
-test("DAST route: default flag runs the ZAP baseline path; DAST_ENGINE=ml uses ml-dast and fails clearly when unreachable", async () => {
-  const db = dastDb({ stagingUrl: "http://owner.example" });
-  routePool = { query: async (sql, p) => (sql.startsWith("SELECT id,target_url FROM projects") ? { rows: [{ id: 11, target_url: "http://owner.example" }] } : db.pool.query(sql, p)), connect: db.pool.connect };
+test("DAST route: the default engine is ml-dast; unreachable, failing or unconfigured ml-dast fails the stage and never falls back to ZAP", async () => {
   const binding = stageProvenance.binding;
   stageProvenance.binding = async () => null;
+  const route = () => {
+    const db = dastDb({ stagingUrl: "http://owner.example" });
+    routePool = { query: async (sql, p) => (sql.startsWith("SELECT id,target_url FROM projects") ? { rows: [{ id: 11, target_url: "http://owner.example" }] } : db.pool.query(sql, p)), connect: db.pool.connect };
+    return db;
+  };
+  const zapBefore = zapCalls.length;
   try {
-    await withEnv({ DAST_ENGINE: undefined }, async () => {
+    const svc = await mockService({ info: TRAINED("ml-dast"), findings: [] });
+    await withEnv({ DAST_ENGINE: undefined, ML_DAST_URL: svc.url }, async () => {
+      const db = route();
       const res = await invoke(dastHandler, 11);
       assert.equal(res.statusCode, 200, JSON.stringify(res.body));
-      assert.equal(zapCalls.length, 1, "ZAP baseline scanner is the default");
-      assert.equal(db.scans.length, 0);
-    });
+      assert.equal(db.scans.length, 1);
+      assert.equal(db.scans[0].status, "COMPLETED");
+      assert.equal(db.scans[0].policy_name, "ml-dast", "the stored record names the ML model");
+      assert.equal(db.scans[0].tool_provenance.model.sha256, SHA);
+    }).finally(() => svc.close());
+
     const url = await closedPortUrl();
-    await withEnv({ DAST_ENGINE: "ml", ML_DAST_URL: url }, async () => {
+    await withEnv({ DAST_ENGINE: undefined, ML_DAST_URL: url }, async () => {
+      const db = route();
       const started = Date.now();
       const res = await invoke(dastHandler, 11);
       assert.equal(res.statusCode, 502);
-      assert.match(res.body.error, /ML DAST service at http:\/\/127\.0\.0\.1:\d+ is unreachable \(ECONNREFUSED\)/);
-      assert.equal(zapCalls.length, 1, "ZAP is not called when DAST_ENGINE=ml");
+      assert.match(res.body.error, /ML DAST service at http:\/\/127\.0\.0\.1:\d+ is unreachable \(ECONNREFUSED\)\. Start the service; the stage does not fall back to another engine\./);
       assert.equal(db.scans[0].status, "FAILED");
       assert.ok(Date.now() - started < 3000);
+    });
+
+    const failing = await mockService({ info: TRAINED("ml-dast"), scanStatus: 500 });
+    await withEnv({ DAST_ENGINE: undefined, ML_DAST_URL: failing.url }, async () => {
+      const db = route();
+      const res = await invoke(dastHandler, 11);
+      assert.equal(res.statusCode, 502);
+      assert.match(res.body.error, /ML DAST service at http:\/\/127\.0\.0\.1:\d+ returned HTTP 500: model scan failed/);
+      assert.equal(db.scans[0].status, "FAILED");
+    }).finally(() => failing.close());
+
+    await withEnv({ DAST_ENGINE: undefined, ML_DAST_URL: undefined }, async () => {
+      route();
+      const res = await invoke(dastHandler, 11);
+      assert.equal(res.statusCode, 500);
+      assert.match(res.body.error, /ML_DAST_URL is not set; ml-dast cannot be reached/);
+    });
+    assert.equal(zapCalls.length, zapBefore, "ZAP is never called on the default engine, even when ml-dast fails");
+
+    await withEnv({ DAST_ENGINE: "zap", ML_DAST_URL: undefined }, async () => {
+      const db = route();
+      const res = await invoke(dastHandler, 11);
+      assert.equal(res.statusCode, 200, JSON.stringify(res.body));
+      assert.equal(zapCalls.length, zapBefore + 1, "DAST_ENGINE=zap (legacy, benchmark only) still runs the ZAP baseline adapter");
+      assert.equal(db.scans.length, 0, "ml-dast is not used when ZAP is selected");
     });
   } finally { stageProvenance.binding = binding; }
 });
@@ -540,54 +588,101 @@ sastConfig.assertSonarReachable = async () => { sonarCalls.push(1); throw new Er
 const sastPipeline = require("../routes/sast/pipeline");
 sastPipeline.gitCloneAsync = async (_url, target) => { const src = sourceTree(); fs.cpSync(src, target, { recursive: true }); fs.rmSync(src, { recursive: true, force: true }); };
 require("../services/staticStageFailure").save = () => "(test: not persisted)";
+const metricsCalls = [];
+require("../routes/sast/metrics").fetchSonarMetrics = async () => { metricsCalls.push(1); return { bugs: 0, vulnerabilities: 0 }; };
 const sastHandler = handlerOf(require("../routes/sast"), "/scan/:projectId");
+const sastGetHandler = (() => { const layer = require("../routes/sast").stack.find((l) => l.route?.path === "/:projectId" && l.route.methods.get); return layer.route.stack.at(-1).handle; })();
 
 function sastRoutePool(db) {
   return { query: async (sql, p) => {
     if (sql.startsWith("SELECT * FROM projects")) return { rows: [{ id: 11, user_id: 3, repo_url: "https://github.com/example/app", is_private: false }] };
     if (sql.startsWith("SELECT id FROM scan_history WHERE project_id") || sql.startsWith("SELECT id FROM dependency_scans")) return { rows: [] };
-    if (sql.startsWith("INSERT INTO scan_history")) { db.scan.status = "RUNNING"; return { rows: [{ id: db.scan.id }] }; }
+    if (sql.startsWith("INSERT INTO scan_history")) { db.scan.status = "RUNNING"; db.scan.inserted_engine = p[2]; return { rows: [{ id: db.scan.id }] }; }
     if (sql.trim().startsWith("UPDATE scan_history SET status = 'FAILED'")) { db.scan.status = "FAILED"; return { rows: [] }; }
     return db.pool.query(sql, p);
   }, connect: db.pool.connect };
 }
 
-test("SAST route: default flag keeps SonarQube; SAST_ENGINE=ml persists ML findings and fails clearly when unreachable", async () => {
+test("SAST route: the default engine is ml-sast with model provenance; unreachable or failing ml-sast fails the stage and never falls back to SonarQube", async () => {
   const cloneRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cs-ml-clone-"));
   const prepare = stageProvenance.prepare;
   stageProvenance.prepare = async () => null;
+  const route = () => { const db = sastDb(); routePool = sastRoutePool(db); return db; };
+  const sonarBefore = sonarCalls.length;
   try {
-    await withEnv({ SAST_ENGINE: undefined, CLONE_DIR: cloneRoot }, async () => {
-      const db = sastDb();
-      routePool = sastRoutePool(db);
-      const res = await invoke(sastHandler, 11);
-      assert.equal(sonarCalls.length, 1, "SonarQube path is the default");
-      assert.equal(res.statusCode, 500);
-      assert.match(res.body.error, /SONAR_PATH_TAKEN/);
-    });
-
     const svc = await mockService({ info: TRAINED("ml-sast"), findings: SAST_FINDINGS });
-    await withEnv({ SAST_ENGINE: "ml", ML_SAST_URL: svc.url, CLONE_DIR: cloneRoot }, async () => {
-      const db = sastDb();
-      routePool = sastRoutePool(db);
+    await withEnv({ SAST_ENGINE: undefined, ML_SAST_URL: svc.url, CLONE_DIR: cloneRoot }, async () => {
+      const db = route();
       const res = await invoke(sastHandler, 11);
       assert.equal(res.statusCode, 200, JSON.stringify(res.body));
       assert.deepEqual([res.body.engine, res.body.summary.critical, res.body.summary.high, res.body.total], ["ml", 1, 1, 2]);
       assert.equal(res.body.tool, `ml-sast 1.0.0 sha256:${SHA}`);
       assert.equal(db.scan.status, "COMPLETED");
-      assert.equal(sonarCalls.length, 1, "SonarQube is not contacted when SAST_ENGINE=ml");
+      assert.equal(db.scan.inserted_engine, "ml", "scan_history is created with scan_engine=ml");
+      assert.equal(db.scan.scan_engine, "ml", "the stored record names the engine");
+      assert.deepEqual([db.scan.tool_provenance.model.name, db.scan.tool_provenance.model.version, db.scan.tool_provenance.model.sha256], ["ml-sast", "1.0.0", SHA]);
     }).finally(() => svc.close());
 
     const url = await closedPortUrl();
-    await withEnv({ SAST_ENGINE: "ml", ML_SAST_URL: url, CLONE_DIR: cloneRoot }, async () => {
-      const db = sastDb();
-      routePool = sastRoutePool(db);
+    await withEnv({ SAST_ENGINE: undefined, ML_SAST_URL: url, CLONE_DIR: cloneRoot }, async () => {
+      const db = route();
       const started = Date.now();
       const res = await invoke(sastHandler, 11);
       assert.equal(res.statusCode, 500);
-      assert.match(res.body.error, /ML SAST service at http:\/\/127\.0\.0\.1:\d+ is unreachable \(ECONNREFUSED\)/);
+      assert.match(res.body.error, /ML SAST service at http:\/\/127\.0\.0\.1:\d+ is unreachable \(ECONNREFUSED\)\. Start the service; the stage does not fall back to another engine\./);
       assert.equal(db.scan.status, "FAILED");
       assert.ok(Date.now() - started < 3000);
     });
+
+    const failing = await mockService({ info: TRAINED("ml-sast"), scanStatus: 500 });
+    await withEnv({ SAST_ENGINE: undefined, ML_SAST_URL: failing.url, CLONE_DIR: cloneRoot }, async () => {
+      const db = route();
+      const res = await invoke(sastHandler, 11);
+      assert.equal(res.statusCode, 500);
+      assert.match(res.body.error, /ML SAST service at http:\/\/127\.0\.0\.1:\d+ returned HTTP 500: model scan failed/);
+      assert.equal(db.scan.status, "FAILED");
+    }).finally(() => failing.close());
+    assert.equal(sonarCalls.length, sonarBefore, "SonarQube is never contacted on the default engine, even when ml-sast fails");
+
+    await withEnv({ SAST_ENGINE: "sonar", ML_SAST_URL: undefined, CLONE_DIR: cloneRoot }, async () => {
+      const db = route();
+      const res = await invoke(sastHandler, 11);
+      assert.equal(sonarCalls.length, sonarBefore + 1, "SAST_ENGINE=sonar (legacy, benchmark only) still runs the SonarQube adapter");
+      assert.equal(db.scan.inserted_engine, "sonar", "a legacy scan is stored with scan_engine=sonar");
+      assert.equal(res.statusCode, 500);
+      assert.match(res.body.error, /SONAR_PATH_TAKEN/);
+    });
   } finally { stageProvenance.prepare = prepare; fs.rmSync(cloneRoot, { recursive: true, force: true }); }
+});
+
+test("SAST results API: the default engine never asks SonarQube for metrics; it reports the stored engine and model, and legacy rows stay legacy", async () => {
+  const latest = { row: { scan_engine: "ml", model: { name: "ml-sast-v3-ensemble", version: "3.0.0", sha256: SHA, status: "trained" } } };
+  routePool = { query: async (sql) => {
+    if (sql.startsWith("SELECT id FROM projects")) return { rows: [{ id: 11 }] };
+    if (sql.startsWith("SELECT completed_at FROM scan_history")) return { rows: [{ completed_at: "2026-11-22T10:00:00Z" }] };
+    if (sql.startsWith("SELECT scan_engine, tool_provenance->'model' AS model FROM scan_history")) return { rows: latest.row ? [latest.row] : [] };
+    if (sql.includes("FROM scan_results sr")) return { rows: [] };
+    throw new Error(`unexpected SQL: ${sql.slice(0, 80)}`);
+  } };
+  const get = async () => {
+    const res = { statusCode: 200, status(c) { this.statusCode = c; return this; }, json(b) { this.body = b; return this; } };
+    await sastGetHandler({ params: { projectId: "11" }, user: { id: 3 }, query: {} }, res);
+    return res;
+  };
+  const before = metricsCalls.length;
+  await withEnv({ SAST_ENGINE: undefined }, async () => {
+    const res = await get();
+    assert.equal(res.statusCode, 200, JSON.stringify(res.body));
+    assert.deepEqual(res.body.engine, { name: "ml", legacy: false, model: { name: "ml-sast-v3-ensemble", version: "3.0.0", sha256: SHA } });
+    assert.equal(res.body.sonarMetrics, null);
+    latest.row = { scan_engine: null, model: null };
+    const legacy = await get();
+    assert.deepEqual(legacy.body.engine, { name: "sonar", legacy: true, model: null }, "a pre-ML row (NULL engine) is shown as SonarQube, not relabelled as ML");
+  });
+  assert.equal(metricsCalls.length, before, "no SonarQube metrics request on the default engine");
+  await withEnv({ SAST_ENGINE: "sonar" }, async () => {
+    const res = await get();
+    assert.deepEqual(res.body.sonarMetrics, { bugs: 0, vulnerabilities: 0 });
+    assert.equal(metricsCalls.length, before + 1, "SAST_ENGINE=sonar (legacy) still shows SonarQube metrics");
+  });
 });

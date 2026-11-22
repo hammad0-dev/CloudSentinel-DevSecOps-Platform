@@ -1,5 +1,8 @@
 "use strict";
 // Client for the ml-sast service (services-ml/ml-sast). Env: ML_SAST_URL, ML_SAST_TIMEOUT_MS.
+// Default timeout 1,800 s: ml-sast v3 runs CodeBERT on CPU (about 0.14-0.26 s per function), so the old
+// 300 s default was reached at about 1,100-2,100 functions. 1,800 s matches the orchestrator's stage timeout.
+const DEFAULT_TIMEOUT_MS = 1800000;
 const { createHttp, baseUrl, positiveInt, parseModelInfo, badResponse, cweNumber, confidence } = require("./mlHttp");
 
 const SERVICE = "ml-sast";
@@ -30,7 +33,7 @@ function parseFindings(data, url, submittedPaths) {
   });
 }
 
-function createMlSastClient({ url = process.env.ML_SAST_URL, timeoutMs = positiveInt(process.env.ML_SAST_TIMEOUT_MS, 300000), http } = {}) {
+function createMlSastClient({ url = process.env.ML_SAST_URL, timeoutMs = positiveInt(process.env.ML_SAST_TIMEOUT_MS, DEFAULT_TIMEOUT_MS), http } = {}) {
   const origin = baseUrl(url, "ML_SAST_URL", SERVICE);
   const client = createHttp({ url: origin, timeoutMs, service: SERVICE, label: LABEL, http });
   return {
@@ -45,4 +48,4 @@ function createMlSastClient({ url = process.env.ML_SAST_URL, timeoutMs = positiv
   };
 }
 
-module.exports = { createMlSastClient, parseFindings, SEVERITIES };
+module.exports = { createMlSastClient, parseFindings, SEVERITIES, DEFAULT_TIMEOUT_MS };

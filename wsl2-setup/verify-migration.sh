@@ -94,8 +94,14 @@ FRONTEND_ENV="${PROJECT}/frontend/.env"
 if [[ -f "${BACKEND_ENV}" ]]; then
   ok "backend/.env exists"
   ((PASS++)) || true
+  # Scan engines: ML by default; SonarQube checks apply only to the legacy SAST_ENGINE=sonar engine.
+  SAST_ENGINE_VALUE="$(grep '^SAST_ENGINE=' "${BACKEND_ENV}" | tail -1 | cut -d= -f2 | tr -d '"'"'"'\r' | tr '[:upper:]' '[:lower:]')"
+  SAST_ENGINE_VALUE="${SAST_ENGINE_VALUE:-ml}"
+  ok "SAST_ENGINE=${SAST_ENGINE_VALUE}"
   SONAR_HOST="$(grep '^SONAR_HOST=' "${BACKEND_ENV}" | cut -d= -f2)"
-  if [[ "${SONAR_HOST}" == "http://localhost:9000" ]]; then
+  if [[ "${SAST_ENGINE_VALUE}" != "sonar" ]]; then
+    ok "SonarQube settings not required (legacy SAST_ENGINE=sonar only)"
+  elif [[ "${SONAR_HOST}" == "http://localhost:9000" ]]; then
     ok "SONAR_HOST=http://localhost:9000 (correct — no old VM IP)"
     ((PASS++)) || true
   else
@@ -103,7 +109,9 @@ if [[ -f "${BACKEND_ENV}" ]]; then
     ((FAIL++)) || true
   fi
   SONAR_TOKEN="$(grep '^SONAR_TOKEN=' "${BACKEND_ENV}" | cut -d= -f2)"
-  if [[ "${SONAR_TOKEN}" == "PASTE_SONAR_TOKEN_HERE" ]] || [[ -z "${SONAR_TOKEN}" ]]; then
+  if [[ "${SAST_ENGINE_VALUE}" != "sonar" ]]; then
+    :
+  elif [[ "${SONAR_TOKEN}" == "PASTE_SONAR_TOKEN_HERE" ]] || [[ -z "${SONAR_TOKEN}" ]]; then
     warn "SONAR_TOKEN is still placeholder — fill it in before running SAST scans"
     warn "  Get token: http://localhost:9000 → My Account → Security → Generate Tokens"
   else
@@ -184,28 +192,42 @@ else
 fi
 echo ""
 
-# ── 7. SonarQube ──────────────────────────────────────────────
-echo -e "${BOLD}7. SonarQube${RESET}"
-SONAR_STATUS="$(curl -s http://localhost:9000/api/system/status 2>/dev/null || echo 'FAILED')"
-if echo "${SONAR_STATUS}" | grep -q '"status":"UP"'; then
-  VERSION="$(echo "${SONAR_STATUS}" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)"
-  ok "SonarQube UP at http://localhost:9000  (version ${VERSION})"
-  ((PASS++)) || true
-else
-  fail "SonarQube not reachable — start: docker run -d --name sonarqube -p 9000:9000 sonarqube:community"
-  ((FAIL++)) || true
-fi
+# ── 7. ML scan services (default engines) ───────────────────
+echo -e "${BOLD}7. ML scan services${RESET}"
+for svc in "ml-sast 8001" "ml-dast 8002"; do
+  set -- ${svc}
+  INFO="$(curl -s --noproxy '*' -m 10 "http://127.0.0.1:$2/model-info" 2>/dev/null || true)"
+  if echo "${INFO}" | grep -q '"status":"trained"'; then
+    ok "$1 UP on 127.0.0.1:$2 ($(echo "${INFO}" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4) $(echo "${INFO}" | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4))"
+    ((PASS++)) || true
+  else
+    fail "$1 not reachable or untrained on 127.0.0.1:$2 — start it (scripts/run-ml-sast.sh / scripts/run-ml-dast.sh); the stage fails without it"
+    ((FAIL++)) || true
+  fi
+done
 echo ""
 
-# ── 8. sonar-scanner CLI ──────────────────────────────────────
-echo -e "${BOLD}8. sonar-scanner CLI${RESET}"
-if command -v sonar-scanner &>/dev/null; then
-  ok "sonar-scanner on PATH: $(which sonar-scanner)"
-  ((PASS++)) || true
+# ── 8. SonarQube (legacy, only with SAST_ENGINE=sonar) ────────
+echo -e "${BOLD}8. SonarQube (legacy)${RESET}"
+if [[ "${SAST_ENGINE_VALUE:-ml}" != "sonar" ]]; then
+  ok "skipped: SonarQube and sonar-scanner are only needed with SAST_ENGINE=sonar (benchmark only)"
 else
-  warn "sonar-scanner not on PATH — SAST scans will fail"
-  warn "  Install: download from https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/"
-  warn "  Or run: bash ~/CloudSentinel/wsl2-setup/step2-project-setup.sh (section 6)"
+  SONAR_STATUS="$(curl -s http://localhost:9000/api/system/status 2>/dev/null || echo 'FAILED')"
+  if echo "${SONAR_STATUS}" | grep -q '"status":"UP"'; then
+    VERSION="$(echo "${SONAR_STATUS}" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)"
+    ok "SonarQube UP at http://localhost:9000  (version ${VERSION})"
+    ((PASS++)) || true
+  else
+    fail "SonarQube not reachable — start: docker run -d --name sonarqube -p 9000:9000 sonarqube:community"
+    ((FAIL++)) || true
+  fi
+  if command -v sonar-scanner &>/dev/null; then
+    ok "sonar-scanner on PATH: $(which sonar-scanner)"
+    ((PASS++)) || true
+  else
+    warn "sonar-scanner not on PATH — legacy SonarQube SAST scans will fail"
+    warn "  Install: download from https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/"
+  fi
 fi
 echo ""
 

@@ -38,6 +38,8 @@ test('ordinary pipeline keeps its two static-stage attempts and retry delay',asy
 test('commissioning keeps ordered static gates and pauses without Active execution',async()=>{const h=loadOrchestrator({commissioning:true});await h.run();assert.deepEqual(h.calls.map(x=>x.startsWith('http')?x.split('/api/')[1].split('/')[0]:x),['sast','dependencies','iac','fixture','pause']);});
 test('critical SAST gate stops before dependency, IaC and fixture',async()=>{const h=loadOrchestrator({commissioning:true,critical:true});await h.run();assert.equal(h.calls.length,1);assert(h.queries.some(s=>s.includes("status = 'STAGE_FAILED'")));});
 function loadSast(t,{failure,commissioning=true}){
+ // These tests exercise the legacy SonarQube adapter (benchmark only), so they opt in explicitly; ML is the default.
+ const previousEngine=process.env.SAST_ENGINE;process.env.SAST_ENGINE='sonar';t.after(()=>{if(previousEngine===undefined)delete process.env.SAST_ENGINE;else process.env.SAST_ENGINE=previousEngine;});
  const filename=require.resolve('../routes/sast'),local=createRequire(filename),root=temporary(t);let handler,target;
  const selection=require('../services/activeDastCommissioning');t.mock.method(selection,'selection',()=>commissioning?context:null);
  const actualConfig=local('./config');

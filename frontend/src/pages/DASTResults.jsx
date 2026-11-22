@@ -7,6 +7,7 @@ import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
 import liveApi from "../lib/api";
 import HistoricalDastDiagnostics from "../components/HistoricalDastDiagnostics";
+import { dastEngineLabel } from "../utils/scanEngine";
 
 const SEV_COLORS = {
   HIGH:          "border-red-600/40 bg-red-950/20",
@@ -114,7 +115,7 @@ export default function DASTResults() {
   if (fetchError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="DAST Scan Results" subtitle="Dynamic Application Security Testing — OWASP ZAP" />
+        <PageHeader title="DAST Scan Results" subtitle="Dynamic Application Security Testing — ML engine" />
         <div className="card p-6 border border-red-600/40 text-red-400">
           <p className="font-semibold mb-1">Failed to load DAST results</p>
           <p className="text-sm">{fetchError}</p>
@@ -128,7 +129,7 @@ export default function DASTResults() {
     <div className="space-y-6">
       <PageHeader
         title="DAST Scan Results"
-        subtitle="Dynamic Application Security Testing — OWASP ZAP Baseline"
+        subtitle={`Dynamic Application Security Testing — ${dastEngineLabel(latestScan)}`}
         actions={
           <button
             className="primary-btn inline-flex items-center gap-2"
@@ -152,7 +153,7 @@ export default function DASTResults() {
         <div className="flex items-center gap-2">
           <input
             className="input flex-1"
-            placeholder="e.g. http://localhost:3001  (the running app ZAP will attack)"
+            placeholder="e.g. http://localhost:3001  (the running app the DAST scan will probe)"
             value={targetUrl}
             onChange={(e) => setTargetUrl(e.target.value)}
           />
@@ -176,12 +177,12 @@ export default function DASTResults() {
       {/* Scan status banners */}
       {scanStatus === "RUNNING" && (
         <div className="card p-3 border border-blue-500/40 text-blue-300 text-sm flex items-center gap-2">
-          <span className="animate-pulse">⏳</span> ZAP baseline scan is running against <span className="font-mono ml-1">{latestScan?.target_url}</span> — results will appear automatically (~2–5 min).
+          <span className="animate-pulse">⏳</span> {dastEngineLabel(latestScan)} scan is running against <span className="font-mono ml-1">{latestScan?.target_url}</span> — results will appear automatically (~2–5 min).
         </div>
       )}
       {scanStatus === "FAILED" && (
         <div className="card p-3 border border-red-600/40 text-red-400 text-sm flex items-center gap-2">
-          <TriangleAlert size={14} /> Last scan failed. Make sure the target URL is reachable and the ZAP Docker image is pulled.
+          <TriangleAlert size={14} /> Last scan failed{latestScan?.failure_reason ? `: ${latestScan.failure_reason}` : "."} Make sure the target URL is reachable and the DAST engine service is running.
         </div>
       )}
 
@@ -339,6 +340,7 @@ export default function DASTResults() {
         <p className="text-xs text-[#64748b] text-right">
           Last scan: {new Date(latestScan.completed_at || latestScan.started_at).toLocaleString()} ·
           Target: <span className="font-mono">{latestScan.target_url}</span> ·
+          Engine: {dastEngineLabel(latestScan)} ·
           Status: <span className={scanStatus === "COMPLETED" ? "text-green-400" : scanStatus === "FAILED" ? "text-red-400" : "text-yellow-400"}>{latestScan.status}</span>
         </p>
       )}

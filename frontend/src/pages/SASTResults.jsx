@@ -7,6 +7,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Download } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
+import { ruleDocLink, sastEngineLabel } from "../utils/scanEngine";
 import liveApi from "../utils/api";
 
 
@@ -172,7 +173,7 @@ export default function SASTResults() {
     <div className="space-y-6">
       <PageHeader
         title="SAST Scan Results"
-        subtitle={`Last scanned: ${data.lastScan || "Not scanned"}`}
+        subtitle={`Engine: ${sastEngineLabel(data.engine)} · Last scanned: ${data.lastScan || "Not scanned"}`}
         actions={
           <div className="flex items-center gap-2">
             <button className="secondary-btn inline-flex items-center gap-2" onClick={exportReport} disabled={Boolean(executionId)}>
@@ -289,14 +290,14 @@ export default function SASTResults() {
                           {v.severity || "INFO"}
                         </span>
                         <span className="text-[#64748b]">Status: <span className="text-[#e2e8f0]">{v.status || "OPEN"}</span></span>
-                        {v.rule && (
+                        {ruleDocLink(v.rule) && (
                           <a
-                            href={`https://rules.sonarsource.com/${(v.rule || "").split(":")[0]?.toLowerCase()}/RSPEC-${(v.rule || "").match(/S(\d+)/)?.[1]}`}
+                            href={ruleDocLink(v.rule).href}
                             target="_blank"
                             rel="noreferrer"
                             className="ml-auto text-blue-400 hover:text-blue-300 underline"
                           >
-                            View SonarQube Rule Docs ↗
+                            {ruleDocLink(v.rule).label}
                           </a>
                         )}
                       </div>
