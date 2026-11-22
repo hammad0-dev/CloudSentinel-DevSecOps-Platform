@@ -187,12 +187,33 @@ This was a single check. The model was not tuned for these fixtures.
 
 ## Running the full ML pipeline
 
-**One command (current deployment).** `scripts/start-stack.sh` starts, in order, Minikube (profile `minikube`),
-ml-sast v3 on 8001 (CodeBERT from `/mnt/d/cs-data/hf-cache`, offline), ml-dast v4 on 8002 (allowlist from
-`minikube ip`) and the backend on 3000 (`nohup npm start > ~/backend.log`). It first checks Docker, PostgreSQL, the
-model files and the `backend/.env` settings (`SAST_ENGINE`, `DAST_ENGINE`, `ML_SAST_URL`, `ML_DAST_URL`,
-`ML_SAST_TIMEOUT_MS=1800000`) without printing the file. It skips anything already running with the right model.
-`--restart` restarts the three services; `--status` only reports. Service logs go to `~/cs-logs/`.
+**One command (current deployment).** `scripts/start-stack.sh` starts, in order:
+
+1. Minikube (profile `minikube`);
+2. ml-sast v3 on 8001, with CodeBERT from the local Hugging Face cache and no network access;
+3. ml-dast v4 on 8002, with the allowlist taken from `minikube ip`;
+4. the backend on 3000 (`nohup npm start > ~/backend.log`).
+
+It skips anything already running with the right model. `--restart` restarts the three services. `--status` changes
+nothing: it reports what runs, the resolved paths, and whether a start would pass its checks.
+
+**Before starting, it checks:**
+- Docker and PostgreSQL are running;
+- the model files, venvs and CodeBERT cache exist;
+- the backend's dependencies are installed;
+- the backend `.env`, read key by key and never printed:
+  - `SAST_ENGINE`/`DAST_ENGINE` are unset or `ml`;
+  - `ML_SAST_TIMEOUT_MS` is unset or at least 1,800,000;
+  - `ML_SAST_URL`/`ML_DAST_URL` point at 8001/8002.
+
+**Paths.**
+- Code comes from the checkout the script is in, so the script works from any clone or worktree.
+- Model files, Python venvs and the backend `.env` are gitignored and machine-specific. They default to the same
+  checkout and are usually set in `~/.cloudsentinel-stack.env` (template: `scripts/start-stack.env.example`;
+  parsed, never executed).
+- Environment variables (`CS_SAST_MODEL_DIR`, `CS_SAST_VENV`, `CS_DAST_MODEL_DIR`, `CS_DAST_VENV`, `CS_BACKEND_DIR`,
+  `CS_BACKEND_ENV`, `CS_HF_HOME`, …) override the file.
+- Service logs go to `~/cs-logs/`.
 
 This runs both ML engines (`SAST_ENGINE=ml`, `DAST_ENGINE=ml`) through deploy to Minikube and DAST
 against the staging app. Start Minikube first (`minikube start`). If the ml-dast lab is running, stop
