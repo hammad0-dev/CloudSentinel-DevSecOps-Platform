@@ -55,6 +55,29 @@ const latestCompletedSastResultsQuery = (columns) => `
       OR (latest_scan.sast_details_linked = FALSE AND sr.scan_history_id IS NULL)
     )
 `;
+// SonarQube metrics are fetched only when the legacy engine is selected explicitly (SAST_ENGINE=sonar).
+function sonarMetricsEnabled() {
+  try { return require("../../services/ml/engines").sastEngine() === "sonar"; } catch { return false; }
+}
+
+// Engine of the latest SAST scan, for display. Stored values are never rewritten: rows from before
+// migration 023 / before scan_engine was stamped have NULL and were produced by SonarQube.
+async function latestSastEngine(projectId) {
+  try {
+    const r = await pool.query(
+      "SELECT scan_engine, tool_provenance->'model' AS model FROM scan_history WHERE project_id = $1 AND scan_type = 'SAST' ORDER BY started_at DESC LIMIT 1",
+      [projectId]
+    );
+    const row = r.rows[0];
+    if (!row) return null;
+    const name = row.scan_engine || "sonar";
+    const model = row.model && typeof row.model === "object" ? { name: row.model.name ?? null, version: row.model.version ?? null, sha256: row.model.sha256 ?? null } : null;
+    return { name, legacy: name !== "ml", model };
+  } catch {
+    return null; // e.g. migration 023 not applied; the page still loads
+  }
+}
+
 const hasUsableProjectToken = (token) =>
   typeof token === "string" &&
   token.trim() &&
@@ -75,7 +98,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
   const continueAfterCompileFailure = continueOnBuildFailure();
 
   try {
-    const engine = require("../../services/ml/engines").sastEngine(); // SAST_ENGINE=sonar (default) | ml
+    // SAST_ENGINE=ml (default: ml-sast, fails closed, no fallback) | sonar (legacy, benchmark only)
+    const engine = require("../../services/ml/engines").sastEngine();
     const projectRes = await pool.query("SELECT * FROM projects WHERE id = $1 AND user_id = $2", [pid, req.user.id]);
     if (!projectRes.rows.length) return res.status(404).json({ error: "Project not found" });
 
@@ -116,8 +140,9 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     }
 
     const runRow = await pool.query(
-      "INSERT INTO scan_history (project_id, pipeline_execution_id, scan_type, status, started_at) VALUES ($1, $2, 'SAST', 'RUNNING', NOW()) RETURNING id",
-      [pid, pipelineExecutionId]
+      // scan_engine names the engine on the stored record (migration 023); ML scans add the model provenance.
+      "INSERT INTO scan_history (project_id, pipeline_execution_id, scan_type, status, started_at, scan_engine) VALUES ($1, $2, 'SAST', 'RUNNING', NOW(), $3) RETURNING id",
+      [pid, pipelineExecutionId, engine]
     );
     scanHistoryId = runRow.rows[0]?.id;
 
@@ -327,7 +352,7 @@ router.get("/report/:projectId", auth, async (req, res) => {
     const issues = issuesRes.rows;
     const dependencyFindings = depRes.rows;
     const compliance = (await projectSnapshot(pool,req.user.id,{...req.query,project:projectId})).compliance;
-    const metrics = await fetchSonarMetrics(projectId).catch(() => null);
+    const metrics = sonarMetricsEnabled() ? await fetchSonarMetrics(projectId).catch(() => null) : null;
     const depCritical = dependencyFindings.filter((i) => (i.severity || "").toUpperCase() === "CRITICAL").length;
     const depHigh = dependencyFindings.filter((i) => (i.severity || "").toUpperCase() === "HIGH").length;
     const depMediumOrLow = dependencyFindings.filter((i) =>
@@ -436,6 +461,7 @@ router.get("/:projectId", auth, async (req, res) => {
       "SELECT completed_at FROM scan_history WHERE project_id = $1 ORDER BY started_at DESC LIMIT 1",
       [projectId]
     );
+    const engine = await latestSastEngine(projectId);
 
     const summary = rows.rows.reduce(
       (acc, item) => {
@@ -456,17 +482,21 @@ router.get("/:projectId", auth, async (req, res) => {
       return pa - pb;
     });
 
+    // SonarQube metrics exist only for the legacy engine; the default (ML) path never contacts SonarQube.
     let sonarMetrics = null;
-    try {
-      sonarMetrics = await fetchSonarMetrics(projectId);
-    } catch {
-      sonarMetrics = null;
+    if (sonarMetricsEnabled()) {
+      try {
+        sonarMetrics = await fetchSonarMetrics(projectId);
+      } catch {
+        sonarMetrics = null;
+      }
     }
 
     return res.json({
       summary,
       vulnerabilities,
       lastScan: lastScanRes.rows[0]?.completed_at || null,
+      engine,
       sonarMetrics,
     });
   } catch (error) {

@@ -77,7 +77,7 @@ router.get('/active/:projectId/executions/:executionId',auth,async(req,res)=>{
     return res.json({active:result.rows[0]||null});
   }catch(error){return res.status(503).json({error:'Active DAST execution reporting is unavailable'});}
 });
-const scanFields = "id,status,target_url,total_findings,high,medium,low,informational,started_at,completed_at,scan_mode,scan_group_id,policy_name,policy_version,failure_reason";
+const scanFields = "id,status,target_url,total_findings,high,medium,low,informational,started_at,completed_at,scan_mode,scan_group_id,policy_name,policy_version,failure_reason,scan_engine"; // scan_engine NULL = legacy ZAP row (never rewritten)
 function positiveId(value) { const id = Number.parseInt(String(value ?? "").trim(), 10); return Number.isInteger(id) && id > 0 ? id : null; }
 function validTarget(value) { try { const parsed = new URL(String(value || "").trim()); return ["http:", "https:"].includes(parsed.protocol); } catch (_) { return false; } }
 
@@ -101,7 +101,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     const executionId = await resolvePipelineExecutionId(pool, req.user, projectId);
     const targetUrl = await require('../services/activeDastPrerequisites').baselineTarget(pool,{projectId,executionId,configuredTarget:project.rows[0].target_url});
     if (!targetUrl) return res.status(400).json({ error: "No DAST target URL configured for this project. Set one on the DAST results page first." });
-    const engine = require('../services/ml/engines').dastEngine(); // DAST_ENGINE=zap (default) | ml
+    // DAST_ENGINE=ml (default: ml-dast, fails closed, no fallback) | zap (legacy, benchmark only)
+    const engine = require('../services/ml/engines').dastEngine();
     const result = engine === 'ml'
       ? await require('../services/ml/mlDastScan').runMlBaselineScan({ pool, projectId, executionId, targetUrl, userId: req.user.id })
       : await runBaselineScan({ pool, projectId, executionId, targetUrl, userId: req.user.id });

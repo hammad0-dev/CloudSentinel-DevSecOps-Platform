@@ -41,7 +41,7 @@ function describe(error, { service, url, timeoutMs, label }) {
     return new MlServiceError(`${where} returned HTTP ${error.response.status}${text ? `: ${text.slice(0, 300)}` : ""}.`, { code: "ML_SERVICE_HTTP_ERROR", service, status: 502, cause: error });
   }
   const code = error?.code || error?.cause?.code || "NETWORK_ERROR";
-  return new MlServiceError(`${where} is unreachable (${code}). Start the service or switch the engine flag back.`, { code: "ML_SERVICE_UNREACHABLE", service, status: 502, cause: error });
+  return new MlServiceError(`${where} is unreachable (${code}). Start the service; the stage does not fall back to another engine.`, { code: "ML_SERVICE_UNREACHABLE", service, status: 502, cause: error });
 }
 
 function createHttp({ url, timeoutMs, service, label, http = axios }) {
