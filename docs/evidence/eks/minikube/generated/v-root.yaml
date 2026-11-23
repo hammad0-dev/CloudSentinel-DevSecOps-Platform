@@ -1,0 +1,22 @@
+# Module 10 FE-5 demo: this Pod violates the CloudSentinel Kyverno policies and must be
+# blocked at admission in any cloudsentinel-p-* namespace.
+#   require-run-as-non-root: runAsUser 0, no runAsNonRoot
+#   disallow-privileged:     privileged: true
+#   disallow-latest-tag:     busybox:latest
+#   require-resource-limits: no limits
+#   require-labels:          no owner label
+apiVersion: v1
+kind: Pod
+metadata:
+  name: violation-root-pod
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: violation-root-pod
+spec:
+  containers:
+    - name: root
+      image: busybox:latest
+      command: ["sh", "-c", "id && sleep 3600"]
+      securityContext:
+        runAsUser: 0
+        privileged: true

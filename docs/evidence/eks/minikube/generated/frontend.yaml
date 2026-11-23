@@ -1,0 +1,139 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: p9001-frontend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-frontend
+    owner: project-9001
+    managed-by: cloudsentinel
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::229032674007:role/cloudsentinel-p9001-frontend-irsa
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p9001-frontend-config
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-frontend
+    owner: project-9001
+    managed-by: cloudsentinel
+data:
+  BACKEND_URL: "http://p9001-backend.cloudsentinel-p-9001.svc.cluster.local"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p9001-frontend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-frontend
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: p9001-frontend
+  template:
+    metadata:
+      labels:
+        app: p9001-frontend
+        owner: project-9001
+        managed-by: cloudsentinel
+    spec:
+      serviceAccountName: p9001-frontend
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: p9001-frontend
+          image: 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-frontend:v1.0.0-mk
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: p9001-frontend-config
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p9001-frontend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-frontend
+    owner: project-9001
+    managed-by: cloudsentinel
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  selector:
+    app: p9001-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: p9001-frontend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-frontend
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: p9001-frontend
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

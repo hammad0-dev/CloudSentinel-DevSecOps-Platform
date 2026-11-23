@@ -1,0 +1,106 @@
+[14:19:20] apply 7 scoped Kyverno policies (eks-test-*, namespace cloudsentinel-p-9001 only)
+clusterpolicy.kyverno.io/eks-test-disallow-latest-tag created
+clusterpolicy.kyverno.io/eks-test-disallow-privileged created
+clusterpolicy.kyverno.io/eks-test-require-labels created
+clusterpolicy.kyverno.io/eks-test-require-resource-limits created
+clusterpolicy.kyverno.io/eks-test-require-run-as-non-root created
+clusterpolicy.kyverno.io/eks-test-disallow-privilege-escalation created
+clusterpolicy.kyverno.io/eks-test-restrict-image-registries created
+clusterpolicy.kyverno.io/eks-test-disallow-latest-tag condition met
+clusterpolicy.kyverno.io/eks-test-disallow-privilege-escalation condition met
+clusterpolicy.kyverno.io/eks-test-disallow-privileged condition met
+clusterpolicy.kyverno.io/eks-test-require-labels condition met
+clusterpolicy.kyverno.io/eks-test-require-resource-limits condition met
+clusterpolicy.kyverno.io/eks-test-require-run-as-non-root condition met
+clusterpolicy.kyverno.io/eks-test-restrict-image-registries condition met
+NAME                                     ADMISSION   BACKGROUND   READY   AGE     MESSAGE
+eks-test-disallow-latest-tag             true        true         True    8s      Ready
+eks-test-disallow-privilege-escalation   true        true         True    6s      Ready
+eks-test-disallow-privileged             true        true         True    7s      Ready
+eks-test-require-labels                  true        true         True    7s      Ready
+eks-test-require-resource-limits         true        true         True    7s      Ready
+eks-test-require-run-as-non-root         true        true         True    7s      Ready
+eks-test-restrict-image-registries       true        true         True    6s      Ready
+
+[14:19:29] Namespace from the generated manifest (Pod Security: restricted)
+namespace/cloudsentinel-p-9001 created
+NAME                   STATUS   AGE   LABELS
+cloudsentinel-p-9001   Active   1s    kubernetes.io/metadata.name=cloudsentinel-p-9001,managed-by=cloudsentinel,owner=project-9001,pod-security.kubernetes.io/enforce-version=latest,pod-security.kubernetes.io/enforce=restricted
+
+[14:22:22] build 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk with the generated Dockerfile (minikube image build)
+#11 naming to 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk
+#11 naming to 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk 0.0s done
+#11 DONE 3.7s
+
+[14:23:28] kubectl apply generated app.yaml (admission by Kyverno + Pod Security restricted)
+namespace/cloudsentinel-p-9001 unchanged
+serviceaccount/p9001-app created
+configmap/p9001-app-config created
+externalsecret.external-secrets.io/p9001-app-secrets created
+externalsecret.external-secrets.io/p9001-app-db created
+deployment.apps/p9001-app created
+service/p9001-app created
+horizontalpodautoscaler.autoscaling/p9001-app created
+Waiting for deployment "p9001-app" rollout to finish: 0 of 2 updated replicas are available...
+error: timed out waiting for the condition
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS   IMAGES                                                                             SELECT
+deployment.apps/p9001-app   0/2     2            0           4m2s   p9001-app    229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk   app=p9
+
+NAME                                   DESIRED   CURRENT   READY   AGE    CONTAINERS   IMAGES                                                                             
+replicaset.apps/p9001-app-5f895cfc66   2         2         0       4m1s   p9001-app    229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk   
+
+NAME                             READY   STATUS              RESTARTS   AGE    IP       NODE       NOMINATED NODE   READINESS GATES
+pod/p9001-app-5f895cfc66-l8mpt   0/1     ContainerCreating   0          4m1s   <none>   minikube   <none>           <none>
+pod/p9001-app-5f895cfc66-q78tk   0/1     ContainerCreating   0          4m1s   <none>   minikube   <none>           <none>
+
+NAME                TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE    SELECTOR
+service/p9001-app   LoadBalancer   10.111.12.190   <pending>     80:32749/TCP   4m1s   app=p9001-app
+
+NAME                                            REFERENCE              TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/p9001-app   Deployment/p9001-app   cpu: <unknown>/70%   2         4         2          4m1s
+
+[14:27:31] server-side dry-run of the three-tier manifests (admission only)
+serviceaccount/p9001-frontend created (server dry run)
+configmap/p9001-frontend-config created (server dry run)
+deployment.apps/p9001-frontend created (server dry run)
+service/p9001-frontend created (server dry run)
+horizontalpodautoscaler.autoscaling/p9001-frontend created (server dry run)
+serviceaccount/p9001-backend created (server dry run)
+configmap/p9001-backend-config created (server dry run)
+externalsecret.external-secrets.io/p9001-backend-db created (server dry run)
+deployment.apps/p9001-backend created (server dry run)
+service/p9001-backend created (server dry run)
+horizontalpodautoscaler.autoscaling/p9001-backend created (server dry run)
+
+[14:34:02] re-run: ClusterSecretStore fake data without a version field (first attempt set version v1, so ESO reported 'Secret does not exist')
+Warning: store cloudsentinel-aws isn't currently maintained. Please plan and prepare accordingly.
+clustersecretstore.external-secrets.io/cloudsentinel-aws configured
+error: timed out waiting for the condition on externalsecrets/p9001-app-secrets
+externalsecret.external-secrets.io/p9001-app-db condition met
+error: deployment "p9001-app" exceeded its progress deadline
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                                                             SELECTO
+deployment.apps/p9001-app   0/2     2            0           15m   p9001-app    229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk   app=p90
+
+NAME                             READY   STATUS              RESTARTS   AGE   IP       NODE       NOMINATED NODE   READINESS GATES
+pod/p9001-app-5f895cfc66-l8mpt   0/1     ContainerCreating   0          15m   <none>   minikube   <none>           <none>
+pod/p9001-app-5f895cfc66-q78tk   0/1     ContainerCreating   0          15m   <none>   minikube   <none>           <none>
+
+NAME                TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE   SELECTOR
+service/p9001-app   LoadBalancer   10.111.12.190   <pending>     80:32749/TCP   15m   app=p9001-app
+
+NAME                                            REFERENCE              TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/p9001-app   Deployment/p9001-app   cpu: <unknown>/70%   2         4         2          15m
+
+[14:40:25] wait for the app pods (they could only start once ESO had created their Secrets)
+deployment.apps/p9001-app restarted
+Waiting for deployment "p9001-app" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "p9001-app" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "p9001-app" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "p9001-app" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "p9001-app" rollout to finish: 1 old replicas are pending termination...
+deployment "p9001-app" successfully rolled out
+NAME                         READY   STATUS        RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+p9001-app-5f895cfc66-l8mpt   1/1     Terminating   0          17m   10.244.0.48   minikube   <none>           <none>
+p9001-app-5f895cfc66-q78tk   1/1     Terminating   0          17m   10.244.0.49   minikube   <none>           <none>
+p9001-app-d885f5d85-b649c    1/1     Running       0          24s   10.244.0.50   minikube   <none>           <none>
+p9001-app-d885f5d85-x6z7g    1/1     Running       0          12s   10.244.0.51   minikube   <none>           <none>

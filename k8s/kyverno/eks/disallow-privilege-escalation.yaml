@@ -1,0 +1,29 @@
+# Module 10 (EKS): every container must set allowPrivilegeEscalation: false explicitly.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privilege-escalation
+  annotations:
+    policies.kyverno.io/title: Disallow privilege escalation
+    policies.kyverno.io/category: CloudSentinel Module 10
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: privilege-escalation
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: ["cloudsentinel-p-*"]
+      validate:
+        message: "securityContext.allowPrivilegeEscalation must be false for every container."
+        pattern:
+          spec:
+            =(initContainers):
+              - securityContext:
+                  allowPrivilegeEscalation: "false"
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: "false"

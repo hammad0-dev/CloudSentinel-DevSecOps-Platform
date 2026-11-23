@@ -1,0 +1,49 @@
+[14:45:28] delete test namespaces
+namespace "cloudsentinel-p-9001" deleted
+namespace "cs-eks-load" deleted
+[14:46:19] delete scoped test policies (eks-test-*)
+clusterpolicy.kyverno.io "eks-test-disallow-latest-tag" deleted
+clusterpolicy.kyverno.io "eks-test-disallow-privilege-escalation" deleted
+clusterpolicy.kyverno.io "eks-test-disallow-privileged" deleted
+clusterpolicy.kyverno.io "eks-test-require-labels" deleted
+clusterpolicy.kyverno.io "eks-test-require-resource-limits" deleted
+clusterpolicy.kyverno.io "eks-test-require-run-as-non-root" deleted
+clusterpolicy.kyverno.io "eks-test-restrict-image-registries" deleted
+[14:46:20] delete ClusterSecretStore and uninstall External Secrets Operator
+clustersecretstore.external-secrets.io "cloudsentinel-aws" deleted
+release "external-secrets" uninstalled
+namespace "cs-eso-test" deleted
+external-secrets CRDs left: 0
+[14:46:39] disable metrics-server addon (it was disabled before the test)
+* "The 'metrics-server' addon is disabled
+[14:46:41] remove the test image from Minikube
+
+[14:46:43] state after cleanup
+NAME                 STATUS   AGE
+cloudsentinel-p-24   Active   3d15h
+cloudsentinel-p-26   Active   3d15h
+cs-dast-demo         Active   2d16h
+default              Active   3d16h
+kube-node-lease      Active   3d16h
+kube-public          Active   3d16h
+kube-system          Active   3d16h
+kyverno              Active   3d16h
+monitoring           Active   3d15h
+NAME                      ADMISSION   BACKGROUND   READY   AGE     MESSAGE
+disallow-latest-tag       true        true         True    3d16h   Ready
+disallow-privileged       true        true         True    3d16h   Ready
+require-labels            true        true         True    3d16h   Ready
+require-resource-limits   true        true         True    3d16h   Ready
+require-run-as-non-root   true        true         True    3d16h   Ready
+external-secrets CRDs: 0
+│ metrics-server              │ minikube │ disabled   │ Kubernetes                             │
+
+[14:46:47] existing project pods unchanged (same names and UIDs as before the test)?
+yes: identical (2 pods)
+NAME                                READY   STATUS    RESTARTS   AGE
+e2e-python-clean-655d84f56f-8m5v2   1/1     Running   0          22h
+cloudsentinel-p-24 e2e-node-express-856654b7f5-m49zp 1/1 Running 2
+cloudsentinel-p-26 e2e-python-clean-655d84f56f-8m5v2 1/1 Running 0
+
+C:\             277G  247G   30G  90% /mnt/c
+D:\             200G   88G  112G  44% /mnt/d

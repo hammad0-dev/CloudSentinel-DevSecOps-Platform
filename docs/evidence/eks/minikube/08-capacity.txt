@@ -1,0 +1,49 @@
+[14:45:08] memory and CPU use on the Minikube node (kubectl top, after the load test)
+NAME       CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+minikube   2932m        36%      4630Mi          23%         
+
+## per namespace (sum of pod working-set memory)
+kube-system                  pods=9   cpu=  815m mem=  1573Mi
+monitoring                   pods=9   cpu=   68m mem=   941Mi
+kyverno                      pods=4   cpu=  276m mem=   287Mi
+cs-eso-test                  pods=3   cpu=    9m mem=   108Mi
+cloudsentinel-p-24           pods=1   cpu=    1m mem=    74Mi
+cloudsentinel-p-9001         pods=2   cpu=  259m mem=    58Mi
+cs-dast-demo                 pods=1   cpu=    2m mem=    37Mi
+cloudsentinel-p-26           pods=1   cpu=    1m mem=    24Mi
+cs-eks-load                  pods=4   cpu=  977m mem=     5Mi
+
+## components that will also run on EKS
+kyverno-admission-controller-7d999b5798-m7b2r    21m    62Mi   
+kyverno-background-controller-6ccc87f6d9-h6hdh   9m     82Mi   
+kyverno-cleanup-controller-7d875b7bc7-pnwd2      6m     61Mi   
+kyverno-reports-controller-79bd5dfc55-z8wwz      240m   82Mi   
+external-secrets-cert-controller-864f8cd45b-kgx4l   3m    42Mi   
+external-secrets-f5464b5d6-2w8kk                    4m    35Mi   
+external-secrets-webhook-756c879584-4pjp8           2m    31Mi   
+alertmanager-kps-kube-prometheus-stack-alertmanager-0   2m    53Mi    
+kps-grafana-6c8c9969c-m255k                             4m    173Mi   
+kps-kube-prometheus-stack-operator-d464cdc75-s78nx      8m    52Mi    
+kps-kube-state-metrics-f479b6476-rbcfj                  4m    19Mi    
+kps-prometheus-node-exporter-zsrmd                      4m    20Mi    
+loki-0                                                  12m   153Mi   
+loki-gateway-df7d65599-sb26z                            1m    13Mi    
+prometheus-kps-kube-prometheus-stack-prometheus-0       33m   401Mi   
+promtail-7lhnn                                          0m    57Mi    
+p9001-app-d885f5d85-b649c   126m   29Mi   
+p9001-app-d885f5d85-x6z7g   133m   29Mi   
+
+## monitoring stack already installed from k8s/monitoring (not changed by this test)
+NAME    	NAMESPACE 	REVISION	UPDATED                                	STATUS  	CHART                       	APP VERSION
+kps     	monitoring	1       	2026-11-19 23:57:06.070778098 +0500 PKT	deployed	kube-prometheus-stack-93.4.1	v0.95.2    
+loki    	monitoring	1       	2026-11-19 23:49:21.606362171 +0500 PKT	deployed	loki-7.7.0                  	3.6.20     
+promtail	monitoring	1       	2026-11-19 23:49:25.569575018 +0500 PKT	deployed	promtail-6.17.1             	3.5.1      
+alertmanager-kps-kube-prometheus-stack-alertmanager-0   true,true         2,2
+kps-grafana-6c8c9969c-m255k                             false,true,true   685,2,2
+kps-kube-prometheus-stack-operator-d464cdc75-s78nx      true              3
+kps-kube-state-metrics-f479b6476-rbcfj                  true              4
+kps-prometheus-node-exporter-zsrmd                      true              2
+loki-0                                                  true,true         2,3
+loki-gateway-df7d65599-sb26z                            true              5
+prometheus-kps-kube-prometheus-stack-prometheus-0       true,true         2,2
+promtail-7lhnn                                          false             2

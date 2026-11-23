@@ -1,0 +1,48 @@
+# Stage 2 preflight (2026-11-23 14:18:04 PKT)
+kubectl context: minikube
+Kustomize Version: v5.8.1
+minikube node allocatable: 8 cpu, 20481656Ki
+
+## namespaces before
+NAME                 STATUS   AGE
+cloudsentinel-p-24   Active   3d15h
+cloudsentinel-p-26   Active   3d15h
+cs-dast-demo         Active   2d15h
+default              Active   3d15h
+kube-node-lease      Active   3d15h
+kube-public          Active   3d15h
+kube-system          Active   3d15h
+kyverno              Active   3d15h
+monitoring           Active   3d14h
+
+## existing project deployments (must stay untouched)
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS         IMAGES                                                 
+deployment.apps/e2e-node-express   1/1     1            1           3d15h   e2e-node-express   cloudsentinel-p24:run-73-attempt-1-mwnz2lmw-bf0221d08c3
+
+NAME                                    READY   STATUS    RESTARTS        AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+pod/e2e-node-express-856654b7f5-m49zp   1/1     Running   2 (2d13h ago)   3d13h   10.244.0.2   minikube   <none>           <none>
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS         IMAGES                                                 
+deployment.apps/e2e-python-clean   1/1     1            1           3d15h   e2e-python-clean   cloudsentinel-p26:run-107-attempt-1-mwrpuutv-1f7b86d224
+
+NAME                                    READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+pod/e2e-python-clean-655d84f56f-8m5v2   1/1     Running   0          22h   10.244.0.44   minikube   <none>           <none>
+
+## existing Kyverno
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
+kyverno-admission-controller    1/1     1            1           3d15h
+kyverno-background-controller   1/1     1            1           3d15h
+kyverno-cleanup-controller      1/1     1            1           3d15h
+kyverno-reports-controller      1/1     1            1           3d15h
+NAME                      ADMISSION   BACKGROUND   READY   AGE     MESSAGE
+disallow-latest-tag       true        true         True    3d15h   Ready
+disallow-privileged       true        true         True    3d15h   Ready
+require-labels            true        true         True    3d15h   Ready
+require-resource-limits   true        true         True    3d15h   Ready
+require-run-as-non-root   true        true         True    3d15h   Ready
+
+## test namespace cloudsentinel-p-9001 must not exist yet
+Error from server (NotFound): namespaces "cloudsentinel-p-9001" not found
+
+## disk
+C:\             277G  247G   31G  90% /mnt/c
+D:\             200G   88G  112G  44% /mnt/d

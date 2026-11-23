@@ -14,7 +14,7 @@ created or changed, no push, no PR, no `docs/eks-deployment.md`, no `docs/tracea
 |---|---|---|---|---|
 | Setup (worktree, baseline tests) | done | 13:05 | 13:12 | no |
 | 1 Generator and templates | done | 13:12 | 14:00 | no |
-| 2 Minikube tests | not started | | | no |
+| 2 Minikube tests | done | 14:17 | 14:47 | no |
 | 3 Shared infrastructure code, plan, cost gate | not started | | | no (plan only) |
 | 4-8 | NOT RUN (unattended mode) | | | |
 
@@ -88,6 +88,35 @@ IAM -> Users -> cloudsentinel-dev -> Add permissions -> Create policy (JSON) twi
 `terraform/docs/policies/cloudsentinel-dev-container-guardrails.json` (name `cloudsentinel-dev-container-guardrails`),
 then attach both to the user. Fix the cloudsentinel-dev credentials first (see Blocked).
 
+## Stage 2 - Minikube tests (done 14:47, nothing billable)
+
+| Item | Result |
+|---|---|
+| Kyverno CLI 1.19.2 | generated manifests (app, frontend, backend) pass 27/27 rules; 6 violating pods fail on the intended rule |
+| Kyverno admission (Enforce, 7 policies scoped to `cloudsentinel-p-9001`) | generated app admitted and running; root, latest, no-limits, privileged, untrusted-registry, privilege-escalation pods denied; policy reports 16 pass / 0 fail |
+| ESO 2.14.0, fake provider | app secret and RDS-style DB secret synced; pod gets them as env vars and mounted files |
+| Rotation | mounted file changed 30 s after the new value, env unchanged, no redeploy; `scripts/rotate-secret.sh` dry run only (no AWS in this stage) |
+| RBAC | deployer: deployments/services/configmaps/HPA, logs, no Secrets, no exec, no ExternalSecret creation; viewer: read only, no Secrets, no logs; neither reaches other namespaces |
+| HPA | 2 -> 4 replicas after about 66 s of load (CPU 129% of the 70% target) |
+| Cleanup | test namespaces, `eks-test-*` policies, ESO and CRDs, metrics-server, test image removed; existing pods unchanged |
+| Evidence | `docs/evidence/eks/minikube/` (README lists the files and the mistakes made during the run) |
+
+Measured memory (working set): Kyverno 4 pods about 290 Mi; ESO 3 pods about 110 Mi; existing monitoring stack
+(kube-prometheus-stack + Loki + Promtail) about 940 Mi (Prometheus 401 Mi, Grafana 173 Mi, Loki 153 Mi); app pod
+about 29 Mi each (126-133 m CPU under load). Node-level: 4.6-4.8 GiB of 20 GiB in use with the rest of Minikube.
+
+Sizing for EKS (decision: 2 x m7i-flex.large, 8 GiB / 2 vCPU each, min 2 / max 3): add-ons and platform about
+1.4 GiB (Kyverno, ESO, monitoring) plus EKS system pods (aws-node, kube-proxy, CoreDNS x2, metrics-server, about
+0.4 GiB per node) plus up to 8 app pods; memory fits on one node, but the VPC CNI limit of 29 pods per
+m7i-flex.large and keeping 2 replicas on separate nodes need 2 nodes. c7i-flex.large (4 GiB) would be tight with
+Prometheus; t3.small (2 GiB, 11 pods) is too small.
+
+Surprises: Minikube already had Kyverno 1.19.2 and the monitoring stack (kps, loki, promtail) installed, so they
+were measured, not reinstalled. The existing Grafana pod is crash-looping (685 restarts; not touched). The repo's
+`k8s/monitoring/README.md` says Grafana is disabled, but it is installed. Pod Security "restricted" answers before
+Kyverno for privileged/root pods, so the Kyverno-only test labelled the namespace `enforce=privileged` for the
+duration of that step.
+
 ## Decisions
 
 - decision: pin AWS provider 6.70.0, terraform-aws-modules/eks 21.29.0, terraform-aws-modules/vpc 6.7.2 because they
@@ -128,4 +157,4 @@ then attach both to the user. Fix the cloudsentinel-dev credentials first (see B
 
 ## Resume here
 
-Stage 1 is committed. Next: Stage 2 (Minikube tests in a new namespace).
+Stages 1 and 2 are committed. Next: Stage 3 (shared environment terraform/environments/aws-demo, plan, cost gate).

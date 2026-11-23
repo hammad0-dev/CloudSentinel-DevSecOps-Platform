@@ -1,0 +1,217 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudsentinel-p-9001
+  labels:
+    owner: project-9001
+    managed-by: cloudsentinel
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: p9001-app
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::229032674007:role/cloudsentinel-p9001-app-irsa
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p9001-app-config
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+data:
+  DB_HOST: "cloudsentinel-p9001-db.minikubetest1.ap-south-1.rds.amazonaws.com"
+  DB_PORT: "5432"
+  DB_NAME: "app"
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: p9001-app-secrets
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: cloudsentinel-aws
+  target:
+    name: p9001-app-secrets
+    creationPolicy: Owner
+  dataFrom:
+    - extract:
+        key: cloudsentinel/p-9001/app
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: p9001-app-db
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: cloudsentinel-aws
+  target:
+    name: p9001-app-db
+    creationPolicy: Owner
+  data:
+    - secretKey: DB_USER
+      remoteRef:
+        key: arn:aws:secretsmanager:ap-south-1:229032674007:secret:rds!db-00000000-0000-4000-8000-000000009001-Mk9001
+        property: username
+    - secretKey: DB_PASSWORD
+      remoteRef:
+        key: arn:aws:secretsmanager:ap-south-1:229032674007:secret:rds!db-00000000-0000-4000-8000-000000009001-Mk9001
+        property: password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p9001-app
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: p9001-app
+  template:
+    metadata:
+      labels:
+        app: p9001-app
+        owner: project-9001
+        managed-by: cloudsentinel
+    spec:
+      serviceAccountName: p9001-app
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: p9001-app
+          image: 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-app:v1.0.0-mk
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: p9001-app-config
+            - secretRef:
+                name: p9001-app-secrets
+            - secretRef:
+                name: p9001-app-db
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: p9001-app-secrets
+              mountPath: /var/run/secrets/cloudsentinel/p9001-app-secrets
+              readOnly: true
+            - name: p9001-app-db
+              mountPath: /var/run/secrets/cloudsentinel/p9001-app-db
+              readOnly: true
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: p9001-app-secrets
+          secret:
+            secretName: p9001-app-secrets
+            defaultMode: 0440
+        - name: p9001-app-db
+          secret:
+            secretName: p9001-app-db
+            defaultMode: 0440
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p9001-app
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  selector:
+    app: p9001-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: p9001-app
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-app
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: p9001-app
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
