@@ -227,7 +227,7 @@ test('destroy plans may delete only the applied addresses', () => {
 function fakeTools(id, calls) {
   return async (exe, args, { cwd }) => {
     calls.push([path.basename(exe), args[0]]);
-    if (args[0] === 'configure') return { code: 0, stdout: JSON.stringify({ AccessKeyId: 'ASIATESTTESTTESTTEST', SecretAccessKey: 'test-only', SessionToken: 'test-only-token', Expiration: new Date(Date.now() + 3600e3).toISOString() }), stderr: '' };
+    if (args[0] === 'configure') return { code: 0, stdout: JSON.stringify({ AccessKeyId: 'test-only-access-key-id', SecretAccessKey: 'test-only', SessionToken: 'test-only-token', Expiration: new Date(Date.now() + 3600e3).toISOString() }), stderr: '' };
     if (args[0] === 'sts') return { code: 0, stdout: JSON.stringify({ Account: '229032674007' }), stderr: '' };
     if (args[0] === 'plan') { const out = args.find(a => a.startsWith('-out=')).slice(5); await fs.writeFile(path.join(cwd, out), `plan-${Date.now()}-${args.includes('-destroy')}`); return { code: 0, stdout: '', stderr: '' }; }
     if (args[0] === 'show') {
@@ -293,7 +293,7 @@ test('full lifecycle: plan hash approval is single use, apply backs up state, de
   const audit = (await fs.readFile(path.join(e.root, '42', 'audit.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse).map(a => a.action);
   assert.deepEqual(audit.filter(a => !a.endsWith('-failed')), ['analyze', 'confirm', 'plan', 'approve-apply', 'apply-start', 'apply-done', 'destroy-plan', 'approve-destroy', 'destroy-start', 'destroy-done']);
   const stored = await fs.readFile(path.join(e.root, '42', 'metadata.json'), 'utf8');
-  assert.ok(!stored.includes('test-only') && !stored.includes('ASIATEST'), 'credentials never stored');
+  assert.ok(!stored.includes('test-only') && !stored.includes('test-only-access-key-id'), 'credentials never stored');
 });
 
 test('a Trivy run that did not evaluate the modules refuses the plan', async t => {
