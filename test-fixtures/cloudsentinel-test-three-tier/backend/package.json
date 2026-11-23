@@ -1,0 +1,13 @@
+{
+  "name": "cloudsentinel-test-three-tier-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Three-tier fixture: private Express API on PostgreSQL",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "pg": "8.13.1"
+  }
+}

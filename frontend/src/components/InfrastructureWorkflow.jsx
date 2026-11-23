@@ -1,4 +1,5 @@
 import DeploymentEligibility from './DeploymentEligibility';
+import WorkloadInfrastructure from './WorkloadInfrastructure';
 import {useEffect,useState} from 'react';
 import api from '../lib/api';
 export function InfrastructureReview({record}){
@@ -33,8 +34,9 @@ export default function InfrastructureWorkflow({projectId}){
   {record.analysis&&<div className="flex flex-wrap items-center gap-3"><label>Network policy <select className="bg-[#0b1220] p-2" value={networkPolicyMode} onChange={e=>setNetworkPolicyMode(e.target.value)}><option>ISOLATED_VPC</option><option>CONNECTED_NETWORK</option></select></label><label>Confirm architecture <select className="bg-[#0b1220] p-2" value={architecture} onChange={e=>setArchitecture(e.target.value)}><option value="">Select</option>{['one-tier','two-tier','three-tier','custom'].map(a=><option key={a}>{a}</option>)}</select></label><label>Proposed VPC CIDR <input className="bg-[#0b1220] p-2" placeholder="10.x.0.0/16" value={cidr} onChange={e=>{setCidr(e.target.value);setCidrCheck(null)}}/></label><button className="border border-slate-600 rounded p-2" disabled={busy||!architecture||!cidr} onClick={()=>action('plan',{architecture,cidr,networkPolicyMode,environment:'development',availabilityZone:'ap-south-1a'})}>Prepare / Run administrator-enabled plan</button><button className="border border-slate-600 rounded p-2" disabled={busy||!cidr} onClick={()=>action('cidr-check',{cidr})}>Check visible CIDR ranges</button></div>}
   <p>No default CIDR is allocated. Enter a proposal; it is not reserved.</p>{cidrCheck&&<p role="status">CIDR: {cidrCheck.status}. {cidrCheck.limitation}</p>}
   {record.status==='AWAITING_APPROVAL'&&!record.approval&&<button disabled={busy} onClick={()=>action('approve',{hash:record.plan.hash})}>Approve exact plan for review only</button>}
-  <button disabled className="border border-slate-700 rounded p-2 opacity-50">Apply (disabled)</button>
+  <button disabled className="border border-slate-700 rounded p-2 opacity-50">Network apply (disabled)</button>
   <p>Exact cost estimate unavailable; Flow Logs and S3 have usage-based costs.</p>
-  <p className="text-sm text-slate-400">Existing/protected infrastructure is read-only. Real planning requires administrator prerequisites; real apply is unavailable.</p>
+  <p className="text-sm text-slate-400">Existing/protected infrastructure is read-only. Network plans are never applied; container workloads below are applied only behind INFRA_APPLY_ENABLED, the kill switch and an exact plan-hash approval.</p>
+  <WorkloadInfrastructure projectId={projectId}/>
  </section>;
 }

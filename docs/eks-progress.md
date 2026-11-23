@@ -1,0 +1,131 @@
+# EKS rollout progress log (Modules 8-11)
+
+Running log for the EKS task (branch `feat/iac-generator`, worktree `~/cs-iac`). It is written so the work can be
+resumed after an interruption. Times are PKT (UTC+5).
+
+**Mode: UNATTENDED (2026-11-23).** Only Stages 1-3 (up to and including `terraform plan`). No apply, no AWS resource
+created or changed, no push, no PR, no `docs/eks-deployment.md`, no `docs/traceability.md` change.
+
+**Billable AWS resources created by this work: NONE.** (Only read-only `describe-*`/`list-*` calls and `terraform plan`.)
+
+## Status
+
+| Stage | Status | Started | Finished | Billable |
+|---|---|---|---|---|
+| Setup (worktree, baseline tests) | done | 13:05 | 13:12 | no |
+| 1 Generator and templates | done | 13:12 | 14:00 | no |
+| 2 Minikube tests | not started | | | no |
+| 3 Shared infrastructure code, plan, cost gate | not started | | | no (plan only) |
+| 4-8 | NOT RUN (unattended mode) | | | |
+
+## Setup
+
+- Worktree `~/cs-iac` on `feat/iac-generator` from `origin/master` (389bea4), upstream unset.
+- `node_modules` and `frontend/node_modules` are untracked symlinks to `~/CloudSentinel` (read only, as in `~/cs-engines`).
+- Disk at start: C: 31 GB free, D: 114 GB free (limits 15 / 60 GB).
+- Baseline backend tests (`cd backend && node --test test/*.test.js`): 961 tests, **935 pass, 23 fail, 3 skipped**
+  (the known 23 failures, not ours).
+- Tools: terraform 1.16.6, helm 3.22.1, trivy 0.52.2, aws-cli 2.38.1, kubectl, minikube; node 18.20.8.
+  Not installed: kyverno CLI, jq.
+
+## Read-only AWS findings (13:15)
+
+- `cloudsentinel-admin`: credentials valid, account 229032674007.
+- `cloudsentinel-dev`: **blocked** - the CLI fails with `AWS_ERROR_CAL_UNSUPPORTED_KEY_FORMAT: Key format is not
+  supported` before any API call. Needed only from Stage 5 on. The user must re-run `aws login --profile cloudsentinel-dev`
+  (or re-create that profile's credentials). `~/.aws` was not read.
+- EKS versions in ap-south-1 (`aws eks describe-cluster-versions`): 1.37 (default), 1.36, 1.35, 1.34 are STANDARD
+  support; 1.30-1.33 are EXTENDED (paid). 1.34 standard support ends 2026-12-02.
+- Free-plan-eligible instance types (`describe-instance-types --filters Name=free-tier-eligible,Values=true`):
+  t3.micro, t3.small, t4g.micro, t4g.small, t8i.micro, t8i.small, c7i-flex.large (4 GiB), m7i-flex.large (8 GiB).
+  m7i-flex.large is offered in ap-south-1a/b/c.
+- RDS: `db.t4g.micro` is not orderable in ap-south-1 for postgres or mysql; `db.t3.micro` is.
+- **GuardDuty: blocked by the Free plan.** `aws guardduty list-detectors` returns `SubscriptionRequiredException: The AWS
+  Access Key Id needs a subscription for the service`. Per the brief, not worked around: GuardDuty is behind a variable
+  that defaults to off, and is listed at the cost gate as needing a Paid plan.
+- Existing VPCs: default 172.31.0.0/16 and `cloudsentinel-p13-development-vpc` 10.0.0.0/16 (protected project 13).
+  No EKS cluster, no CloudTrail trail.
+
+## Stage 1 - generator and templates (done 14:00, nothing billable)
+
+| Item | Result |
+|---|---|
+| Templates | `terraform/templates/eks-project` (root), `terraform/modules/project-workload`, `terraform/modules/project-database`; aws provider = 6.70.0, lock file committed |
+| Generator | `backend/services/eksWorkload.js` (detect, classify, tfvars, Dockerfile, plan + destroy allowlist), `eksManifests.js`, `deployment.js` target=eks mode |
+| Lifecycle / gates | `backend/services/eksWorkloadEngine.js`; routes `/api/infrastructure/:id/workload/*`; `/apply` gated; CLI `scripts/infra-cli.js`; minimal UI `WorkloadInfrastructure.jsx` |
+| IAM for cloudsentinel-dev | `terraform/docs/policies/cloudsentinel-dev-container.json` + `cloudsentinel-dev-container-guardrails.json` |
+| Unit tests | `npm run test:eks`: 20/20 pass |
+| Terraform + Trivy | `npm run test:eks:terraform`: 4/4 pass (one-tier, two-tier PostgreSQL, two-tier MySQL, three-tier): fmt, init -backend=false, validate; Trivy: 0 CRITICAL, 0 HIGH |
+| Backend suite | before 961 tests / 935 pass / 23 fail / 3 skip; after 984 / 954 / 24 / 6. The extra failure is `monitoring routes: scoped logs, context, SSE` (a 1 ms timing assertion, 660001 vs 660000), not touched by this work; it passed 5/5 re-runs. The 23 known failures are unchanged (same names). |
+| Evidence | `docs/evidence/eks/stage1/` (unit-tests.txt, terraform-trivy.txt, infra-cli-smoke.txt) |
+
+Trivy findings kept (LOW/MEDIUM, demo trade-offs, listed in `terraform-trivy.txt`): AWS-managed keys instead of a CMK
+for log groups, ECR and secrets (AVD-AWS-0017/0033/0098, LOW); RDS 1-day backups, no deletion protection, no
+Performance Insights (AVD-AWS-0077/0177 MEDIUM, 0133 LOW: the demo is destroyed at the end); no Docker HEALTHCHECK
+(DS026, LOW: Kubernetes readiness probes are used); `DB_PORT` in a ConfigMap flagged as "sensitive" (KSV-01010
+MEDIUM, false positive: it is a port number; the key `PORT` was removed from the ConfigMap for the same reason).
+
+Surprises and fixes during Stage 1:
+- The AWS provider failed with "Unrecognized remote plugin message" when TMPDIR was on /mnt/d: providers bind a unix
+  socket in TMPDIR and the 9p mount cannot hold sockets. Fix: TMPDIR stays default for terraform (socket only); the
+  plugin cache stays on D: (`TF_PLUGIN_CACHE_DIR=/mnt/d/cs-data/tf-plugin-cache`).
+- Trivy is a snap with a private /tmp, so it cannot scan /tmp. The real-tool test uses `/mnt/d/cs-data/tmp`.
+- **Trivy silently checked nothing** in the generated root (1 check) because it cannot expand `for_each`/`count`
+  modules without variables. Fix: `--tf-vars terraform.tfvars.json` (7-22 checks per folder) and the engine now refuses
+  a plan if the scan did not evaluate the workload module.
+- Port detection took `DB_PORT || 5432` as the listen port; fixed (word boundary).
+- Writing the dev IAM policy showed a privilege-escalation path (a principal that can CreateRole + PutRolePolicy can
+  make itself an admin role). Fix: every IRSA role must carry the permissions boundary
+  `cloudsentinel-workload-boundary` (created by the shared environment); the dev policy allows CreateRole/PutRolePolicy
+  only with that boundary, denies removing it, AttachRolePolicy, UpdateAssumeRolePolicy and PassRole; the plan
+  allowlist checks the boundary. Residual risk: dev can still create a boundary-limited role trusted by any principal,
+  so its worst case is reading `cloudsentinel/*` secrets (documented).
+- One dev policy was 6,957 characters (limit 6,144) and is split into two managed policies.
+
+What to attach and when (user, IAM console, before Stage 5, after Stage 4 has created the boundary policy):
+IAM -> Users -> cloudsentinel-dev -> Add permissions -> Create policy (JSON) twice, from
+`terraform/docs/policies/cloudsentinel-dev-container.json` (name `cloudsentinel-dev-container`) and
+`terraform/docs/policies/cloudsentinel-dev-container-guardrails.json` (name `cloudsentinel-dev-container-guardrails`),
+then attach both to the user. Fix the cloudsentinel-dev credentials first (see Blocked).
+
+## Decisions
+
+- decision: pin AWS provider 6.70.0, terraform-aws-modules/eks 21.29.0, terraform-aws-modules/vpc 6.7.2 because they
+  are the newest releases at least two weeks old (published 2026-10-22, 2026-10-07, 2026-08-28) and eks 21.x needs
+  aws >= 6.59. The existing static-site and aws-network modules keep their own 5.100.0 pin (unchanged).
+- decision: Kyverno 1.19.2 (the version already running in Minikube) and External Secrets Operator 2.14.0 (2026-10-23)
+  because both are over two weeks old and 1.19.2 avoids changing the running Minikube Kyverno.
+- decision: RDS class `db.t3.micro` because `db.t4g.micro` is not orderable in ap-south-1.
+- decision: shared EKS VPC CIDR 10.40.0.0/16 because 10.0.0.0/16 is used by project 13's VPC.
+- decision: GuardDuty resources are behind `enable_guardduty` (default false) because the account answers
+  SubscriptionRequiredException (Free plan); the user decides at STOP 1.
+- decision: TF_PLUGIN_CACHE_DIR, HELM_*_HOME, Trivy cache and downloaded tools live under `/mnt/d/cs-data/` because
+  nothing may be cached on C:.
+- decision: PostgreSQL 17.11 and MySQL 8.4.13 because both are orderable on db.t3.micro/gp2 in ap-south-1 and are
+  mature majors (18.x and 9.x are newer).
+- decision: base images `python:3.12.15-slim-bookworm` and `node:22.23.3-alpine` (pinned tags; 22.23.3 published
+  2026-09-23) for generated Dockerfiles; UID 10001.
+- decision: per-project state is a local file in the private artifact directory (no S3 backend) because no approved
+  state bucket exists for this run; it is backed up to /mnt/d/ml-backup/eks-state/ after every apply/destroy.
+- decision: frontend + backend without a detected PostgreSQL/MySQL, or a frontend-only manifest with a database,
+  returns MANUAL_REVIEW because the brief says two/three-tier get RDS chosen from the detected database; not guessed.
+- decision: the app (one/two-tier) and the three-tier frontend get a `LoadBalancer` Service (NLB annotation); the
+  three-tier backend gets `ClusterIP`; the database is private.
+- decision: ESO reads app secrets through a ClusterSecretStore `cloudsentinel-aws` (shared IRSA role, as in the brief);
+  each project still gets its own IRSA role limited to its own secret and log group for direct SDK use.
+- decision: DB_USER/DB_PASSWORD come from the RDS-managed master secret (`rds!db-*`) via ESO; DB_HOST/PORT/NAME from a
+  ConfigMap rendered from Terraform outputs; `DATABASE_URL` is built by an ESO template only if the app reads it.
+- decision: the two new Kyverno policies (trusted registry, disallow privilege escalation) live in `k8s/kyverno/eks/`,
+  not in `k8s/kyverno/policies/`, because the trusted-registry policy would block every Minikube image if someone
+  applied the whole folder to Minikube.
+- decision: plans expire after 30 minutes and approvals after 15 minutes (whichever is first) because terraform plan
+  files go stale and the static engine uses the same short windows.
+
+## Blocked
+
+- `cloudsentinel-dev` credentials (see above) - needed from Stage 5.
+- GuardDuty (Free plan) - needs a Paid plan; excluded.
+
+## Resume here
+
+Stage 1 is committed. Next: Stage 2 (Minikube tests in a new namespace).

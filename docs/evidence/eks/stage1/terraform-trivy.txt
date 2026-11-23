@@ -1,0 +1,46 @@
+# EKS_TF_TEST=1 node --test test/eks-terraform.test.js (2026-11-23 14:04:35 PKT); terraform 1.16.6, trivy 0.52.2, aws provider 6.70.0
+ok 1 - generated one-tier folder passes fmt, init -backend=false, validate and Trivy (no CRITICAL)
+ok 2 - generated two-tier-postgres folder passes fmt, init -backend=false, validate and Trivy (no CRITICAL)
+ok 3 - generated two-tier-mysql folder passes fmt, init -backend=false, validate and Trivy (no CRITICAL)
+ok 4 - generated three-tier folder passes fmt, init -backend=false, validate and Trivy (no CRITICAL)
+# tests 4
+# pass 4
+# fail 0
+
+# Trivy findings (all severities) in the generated folders
+one-tier: terraform 7 checks, failed {'LOW': 3}; manifests+Dockerfiles 124 checks, failed {'LOW': 1}
+  terraform LOW    AVD-AWS-0017   CloudWatch log groups should be encrypted using CMK  [main.tf]
+  terraform LOW    AVD-AWS-0033   ECR Repository should use customer managed keys to allow more control  [main.tf]
+  terraform LOW    AVD-AWS-0098   Secrets Manager should use customer managed keys  [main.tf]
+  manifests LOW    DS026          No HEALTHCHECK defined  [Dockerfile.app]
+two-tier-postgres: terraform 17 checks, failed {'MEDIUM': 2, 'LOW': 4}; manifests+Dockerfiles 125 checks, failed {'LOW': 1, 'MEDIUM': 1}
+  terraform MEDIUM AVD-AWS-0077   RDS Cluster and RDS instance should have backup retention longer than default 1   [main.tf]
+  terraform LOW    AVD-AWS-0133   Enable Performance Insights to detect potential problems  [main.tf]
+  terraform MEDIUM AVD-AWS-0177   RDS Deletion Protection Disabled  [main.tf]
+  terraform LOW    AVD-AWS-0017   CloudWatch log groups should be encrypted using CMK  [main.tf]
+  terraform LOW    AVD-AWS-0033   ECR Repository should use customer managed keys to allow more control  [main.tf]
+  terraform LOW    AVD-AWS-0098   Secrets Manager should use customer managed keys  [main.tf]
+  manifests LOW    DS026          No HEALTHCHECK defined  [Dockerfile.app]
+  manifests MEDIUM AVD-KSV-01010  ConfigMap with sensitive content  [app.yaml]
+two-tier-mysql: terraform 17 checks, failed {'MEDIUM': 2, 'LOW': 4}; manifests+Dockerfiles 125 checks, failed {'LOW': 1, 'MEDIUM': 1}
+  terraform MEDIUM AVD-AWS-0077   RDS Cluster and RDS instance should have backup retention longer than default 1   [main.tf]
+  terraform LOW    AVD-AWS-0133   Enable Performance Insights to detect potential problems  [main.tf]
+  terraform MEDIUM AVD-AWS-0177   RDS Deletion Protection Disabled  [main.tf]
+  terraform LOW    AVD-AWS-0017   CloudWatch log groups should be encrypted using CMK  [main.tf]
+  terraform LOW    AVD-AWS-0033   ECR Repository should use customer managed keys to allow more control  [main.tf]
+  terraform LOW    AVD-AWS-0098   Secrets Manager should use customer managed keys  [main.tf]
+  manifests LOW    DS026          No HEALTHCHECK defined  [Dockerfile.app]
+  manifests MEDIUM AVD-KSV-01010  ConfigMap with sensitive content  [app.yaml]
+three-tier: terraform 22 checks, failed {'MEDIUM': 2, 'LOW': 7}; manifests+Dockerfiles 249 checks, failed {'LOW': 2, 'MEDIUM': 1}
+  terraform MEDIUM AVD-AWS-0077   RDS Cluster and RDS instance should have backup retention longer than default 1   [main.tf]
+  terraform LOW    AVD-AWS-0133   Enable Performance Insights to detect potential problems  [main.tf]
+  terraform MEDIUM AVD-AWS-0177   RDS Deletion Protection Disabled  [main.tf]
+  terraform LOW    AVD-AWS-0017   CloudWatch log groups should be encrypted using CMK  [main.tf]
+  terraform LOW    AVD-AWS-0017   CloudWatch log groups should be encrypted using CMK  [main.tf]
+  terraform LOW    AVD-AWS-0033   ECR Repository should use customer managed keys to allow more control  [main.tf]
+  terraform LOW    AVD-AWS-0033   ECR Repository should use customer managed keys to allow more control  [main.tf]
+  terraform LOW    AVD-AWS-0098   Secrets Manager should use customer managed keys  [main.tf]
+  terraform LOW    AVD-AWS-0098   Secrets Manager should use customer managed keys  [main.tf]
+  manifests LOW    DS026          No HEALTHCHECK defined  [Dockerfile.backend]
+  manifests LOW    DS026          No HEALTHCHECK defined  [Dockerfile.frontend]
+  manifests MEDIUM AVD-KSV-01010  ConfigMap with sensitive content  [backend.yaml]

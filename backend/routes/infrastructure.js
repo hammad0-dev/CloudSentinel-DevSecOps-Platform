@@ -35,5 +35,26 @@ router.post('/:projectId/cidrs/reserve',(req,res)=>handle(req,res,p=>reservation
 router.post('/:projectId/cidrs/release',(req,res)=>handle(req,res,p=>reservations.release(p.id,req.user.id,req.body.reservationId)));
 router.post('/:projectId/plan',(req,res)=>handle(req,res,p=>planner.plan(p,req.body)));
 router.post('/:projectId/approve',(req,res)=>handle(req,res,p=>planner.approve(p,req.user.id,req.body)));
-router.post('/:projectId/apply',(req,res)=>handle(req,res,async()=>{const e=new Error('Real apply is disabled');e.safe=true;e.status=409;throw e}));
+// ---- EKS container workload (Module 8): analyze -> confirm -> plan -> approve -> apply -> destroy-plan -> destroy.
+// Apply is real but gated: INFRA_APPLY_ENABLED=true, kill switch off, project not protected, single-use approval of
+// the exact plan SHA-256, plan allowlist passed, AWS account 229032674007 / ap-south-1 (services/eksWorkloadEngine.js).
+const {WorkloadInfrastructure}=require('../services/eksWorkloadEngine');
+const {repositoryFiles}=require('../services/infrastructurePlanning');
+const workload=new WorkloadInfrastructure({source:p=>repositoryFiles(p,{withCode:true})});
+async function workloadHandle(req,res,operation){
+ res.set('Cache-Control','no-store');
+ try{const project=await ownedProject(pool,req.user.id,req.params.projectId);res.json(workload.publicRecord(await operation(project)));}
+ catch(e){res.status(e.safe?e.status:503).json({error:e.safe?e.message:'Infrastructure operation unavailable; no infrastructure applied'});}
+}
+router.get('/:projectId/workload',(req,res)=>workloadHandle(req,res,p=>workload.get(p.id)));
+router.post('/:projectId/workload/analyze',(req,res)=>workloadHandle(req,res,p=>workload.analyze(p,req.user.id)));
+router.post('/:projectId/workload/confirm',(req,res)=>workloadHandle(req,res,p=>workload.confirm(p,req.user.id,req.body)));
+router.post('/:projectId/workload/plan',(req,res)=>workloadHandle(req,res,p=>workload.plan(p,req.user.id)));
+router.post('/:projectId/workload/approve',(req,res)=>workloadHandle(req,res,p=>workload.approve(p,req.user.id,{hash:req.body?.hash,kind:req.body?.kind==='destroy'?'destroy':'apply'})));
+router.post('/:projectId/workload/destroy-plan',(req,res)=>workloadHandle(req,res,p=>workload.destroyPlan(p,req.user.id)));
+router.post('/:projectId/workload/destroy',(req,res)=>workloadHandle(req,res,p=>workload.destroy(p,req.user.id)));
+// Network-only plans are still never applied. /apply applies the approved EKS workload plan and fails closed with
+// "Real apply is disabled: <reasons>" while any gate is closed.
+router.post('/:projectId/workload/apply',(req,res)=>workloadHandle(req,res,p=>workload.apply(p,req.user.id)));
+router.post('/:projectId/apply',(req,res)=>workloadHandle(req,res,p=>workload.apply(p,req.user.id)));
 module.exports=router;
