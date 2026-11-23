@@ -15,7 +15,7 @@ created or changed, no push, no PR, no `docs/eks-deployment.md`, no `docs/tracea
 | Setup (worktree, baseline tests) | done | 13:05 | 13:12 | no |
 | 1 Generator and templates | done | 13:12 | 14:00 | no |
 | 2 Minikube tests | done | 14:17 | 14:47 | no |
-| 3 Shared infrastructure code, plan, cost gate | not started | | | no (plan only) |
+| 3 Shared infrastructure code, plan, cost gate | done, **waiting at STOP 1** | 14:50 | 15:10 | no (plan only) |
 | 4-8 | NOT RUN (unattended mode) | | | |
 
 ## Setup
@@ -117,6 +117,32 @@ were measured, not reinstalled. The existing Grafana pod is crash-looping (685 r
 Kyverno for privileged/root pods, so the Kyverno-only test labelled the namespace `enforce=privileged` for the
 duration of that step.
 
+## Stage 3 - shared environment and cost gate (done 15:10, nothing billable)
+
+| Item | Result |
+|---|---|
+| Code | `terraform/environments/aws-demo/{main,security,variables,outputs}.tf`, `aws-demo.tfvars`, `.terraform.lock.hcl` (aws 6.70.0, tls, time, null pinned by the lock); modules vpc 6.7.2, eks 21.29.0 |
+| Checks | `terraform fmt -check`, `init`, `validate`: pass |
+| Plan | profile cloudsentinel-admin, 35 s: **82 to add, 0 change, 0 destroy**; all create; all taggable resources tagged. Saved as `terraform/environments/aws-demo/shared.tfplan` (gitignored; copy in `/mnt/d/cs-data/eks-work/`), sha256 `09485a7bc11cb289e3311394ba86066d66d72a42b56014952dd5a717ab78a44d`. **Not appliable: alert_email placeholder** |
+| Trivy | 308 checks, 0 CRITICAL, 3 HIGH: 2 in example YAML shipped inside the downloaded EKS module (not deployed), 1 AVD-AWS-0057 on the KMS key policy (`Resource: "*"` is how key policies refer to their own key) |
+| Cost gate | `docs/eks-cost-gate.md`: about $0.66/hour with the Stage 5 apps, $0.53/hour shared only, about $3.30 per 5 hours (upper estimate $4.30) |
+
+Decisions:
+- decision: Kubernetes 1.36 because it is in standard support until 2027-08-02 and is not the newest release (1.37),
+  giving add-ons and charts (Kyverno 1.19, ESO 2.14, kube-prometheus-stack) more time to support it.
+- decision: EKS API endpoint public but limited to the current public IP /32 (gitignored `local.tfvars`) plus private
+  access, because 0.0.0.0/0 is a CRITICAL finding and the backend/kubectl run from this machine. If the IP changes,
+  update `local.tfvars` and re-plan.
+- decision: CloudTrail is multi-region with global service events because the first copy of management events is
+  free and IAM/STS denials (the alarm's main signal) are global events.
+- decision: one customer-managed KMS key for CloudTrail, its log group and the SNS topic, because CloudWatch alarms
+  and EventBridge cannot publish to an SNS topic encrypted with the AWS-managed `aws/sns` key.
+- decision: no EBS CSI add-on because no component in the demo uses a PersistentVolumeClaim.
+- decision: the old `terraform/modules/eks-cluster` (unpinned, us-east-1, 1.30) is left untouched and unused; the
+  environment now calls the pinned registry modules directly.
+- decision: the plan used a placeholder alert email instead of stopping, because a plan is free and shows every
+  other resource; it is recorded as not appliable and Stage 4 must re-plan.
+
 ## Decisions
 
 - decision: pin AWS provider 6.70.0, terraform-aws-modules/eks 21.29.0, terraform-aws-modules/vpc 6.7.2 because they
@@ -154,7 +180,23 @@ duration of that step.
 
 - `cloudsentinel-dev` credentials (see above) - needed from Stage 5.
 - GuardDuty (Free plan) - needs a Paid plan; excluded.
+- `TF_VAR_alert_email` is not set in the WSL login shell - the Stage 3 plan used a placeholder; set it and re-plan
+  before Stage 4.
 
 ## Resume here
 
-Stages 1 and 2 are committed. Next: Stage 3 (shared environment terraform/environments/aws-demo, plan, cost gate).
+Stages 1-3 are committed on `feat/iac-generator` (not pushed). **Stopped at STOP 1 (cost gate); waiting for "go".**
+Billable resources: none.
+
+Exact next step after "go" (Stage 4):
+1. User: `export TF_VAR_alert_email=...` in the WSL shell (never in chat), `aws login --profile cloudsentinel-admin`.
+2. Re-plan (the saved plan has a placeholder email):
+   `cd ~/cs-iac/terraform/environments/aws-demo && export AWS_PROFILE=cloudsentinel-admin TF_PLUGIN_CACHE_DIR=/mnt/d/cs-data/tf-plugin-cache && terraform plan -input=false -var-file=aws-demo.tfvars -var-file=local.tfvars -out=shared.tfplan`
+   (check `local.tfvars` still holds the current public IP: `curl -s https://checkip.amazonaws.com`).
+3. Confirm 82 creates, record the plan sha256, write the start time here, then `terraform apply shared.tfplan`.
+4. Back up state: `mkdir -p /mnt/d/ml-backup/eks-state/shared && cp terraform.tfstate /mnt/d/ml-backup/eks-state/shared/terraform.tfstate.$(date +%F-%H%M)`.
+5. `aws eks update-kubeconfig --region ap-south-1 --name cloudsentinel-eks --profile cloudsentinel-admin`, `kubectl get nodes`, `kubectl get pods -A`.
+6. Remind the user to click the SNS confirmation email. Destroy command (once anything exists):
+   `cd ~/cs-iac/terraform/environments/aws-demo && terraform destroy -var-file=aws-demo.tfvars -var-file=local.tfvars`
+   (first delete LoadBalancer Services, PVCs, Helm releases and Kyverno policies; Stage 7).
+Before Stage 5: fix the cloudsentinel-dev credentials and attach the two dev policies (Stage 1 section).

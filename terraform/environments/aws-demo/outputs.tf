@@ -1,0 +1,14 @@
+output "cluster_name" { value = module.eks.cluster_name }
+output "cluster_endpoint" { value = module.eks.cluster_endpoint }
+output "kubernetes_version" { value = module.eks.cluster_version }
+output "kubeconfig_command" { value = "aws eks update-kubeconfig --region ap-south-1 --name ${module.eks.cluster_name} --profile cloudsentinel-admin" }
+output "oidc_provider_arn" { value = module.eks.oidc_provider_arn }
+output "node_security_group_id" { value = module.eks.node_security_group_id }
+output "vpc_id" { value = module.vpc.vpc_id }
+output "private_subnet_ids" { value = module.vpc.private_subnets }
+output "eso_role_arn" { value = aws_iam_role.eso.arn }
+output "workload_boundary_arn" { value = aws_iam_policy.workload_boundary.arn }
+output "alert_topic_arn" { value = aws_sns_topic.alerts.arn }
+output "cloudtrail_log_group" { value = aws_cloudwatch_log_group.trail.name }
+output "flow_log_group_arn" { value = module.vpc.vpc_flow_log_destination_arn }
+output "control_plane_log_group" { value = module.eks.cloudwatch_log_group_name }
