@@ -191,6 +191,19 @@ async function runPipeline(executionId, projectId, userId, options = {}) {
       }
     }
 
+    // Phase 4: Promote to EKS (services/promoteStage.js). Only reached when every earlier stage passed; the stage
+    // re-checks that itself. promote_target=none (default) returns null: no record, behaviour unchanged.
+    // Approval required / needs review / skipped (target unavailable) do not change the pipeline result.
+    const promoted = await require('./promoteStage').runForPipeline({ pool, projectId, executionId, userId, stagesCompleted: [...stagesCompleted], deployResult });
+    if (promoted && ['PROMOTED', 'ALREADY_PROMOTED', 'FAILED'].includes(promoted.status)) {
+      stagesCompleted.push('Promote');
+      await pool.query("UPDATE pipeline_executions SET stages_completed=$1 WHERE id=$2", [stagesCompleted.join(', '), executionId]);
+      if (promoted.status === 'FAILED') {
+        await pool.query("UPDATE pipeline_executions SET status='STAGE_FAILED', failure_reason=$1, completed_at=NOW() WHERE id=$2", [`Promote to EKS failed: ${promoted.reason}`, executionId]);
+        return;
+      }
+    }
+
     await pool.query(
       "UPDATE pipeline_executions SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1",
       [executionId]

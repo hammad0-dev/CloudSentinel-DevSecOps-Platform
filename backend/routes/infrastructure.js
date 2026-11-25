@@ -57,4 +57,19 @@ router.post('/:projectId/workload/destroy',(req,res)=>workloadHandle(req,res,p=>
 // "Real apply is disabled: <reasons>" while any gate is closed.
 router.post('/:projectId/workload/apply',(req,res)=>workloadHandle(req,res,p=>workload.apply(p,req.user.id)));
 router.post('/:projectId/apply',(req,res)=>workloadHandle(req,res,p=>workload.apply(p,req.user.id)));
+// ---- Promote to EKS stage settings (services/promoteStage.js): promote_target none|eks, approval manual|auto_after_gates.
+async function promoteSettings(req,res,update){
+ res.set('Cache-Control','no-store');
+ try{
+  const p=await ownedProject(pool,req.user.id,req.params.projectId);
+  if(update){
+   const target=req.body?.promote_target,approval=req.body?.promote_approval??'manual';
+   if(!['none','eks'].includes(target)||!['manual','auto_after_gates'].includes(approval))return res.status(400).json({error:'promote_target must be none|eks and promote_approval manual|auto_after_gates'});
+   await pool.query('UPDATE projects SET promote_target=$1,promote_approval=$2 WHERE id=$3 AND user_id=$4',[target,approval,p.id,req.user.id]);
+  }
+  res.json(await require('../services/promoteStage').loadSettings(pool,p.id));
+ }catch(e){res.status(e.safe?e.status:503).json({error:e.safe?e.message:e.code==='42703'?'Promote settings need migration 024':'Promote settings unavailable'});}
+}
+router.get('/:projectId/promote-settings',(req,res)=>promoteSettings(req,res,false));
+router.put('/:projectId/promote-settings',(req,res)=>promoteSettings(req,res,true));
 module.exports=router;
