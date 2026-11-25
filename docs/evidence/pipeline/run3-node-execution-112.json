@@ -1,0 +1,134 @@
+{
+ "execution": {
+  "id": 112,
+  "project_id": 24,
+  "status": "STAGE_FAILED",
+  "triggered_by": "webhook",
+  "stages_completed": "SAST",
+  "failure_reason": "CRITICAL security vulnerability found in SAST stage. Pipeline stopped.",
+  "started_at": "2026-11-25T20:52:41.053Z",
+  "completed_at": "2026-11-25T20:52:47.159Z",
+  "promote_result": null,
+  "totalSeconds": 6.1
+ },
+ "stages": [
+  {
+   "stage": "SAST",
+   "status": "COMPLETED",
+   "start": "2026-11-25T20:52:41.063Z",
+   "end": "2026-11-25T20:52:47.137Z",
+   "seconds": 6.1
+  },
+  {
+   "stage": "Dependency",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "IaC",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "Deploy (build+image scan+apply+rollout)",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "  of which image scan",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "DAST",
+   "status": "NOT_RUN",
+   "seconds": null
+  }
+ ],
+ "sast": [
+  {
+   "id": 145,
+   "status": "COMPLETED",
+   "total_issues": 3,
+   "critical": 1,
+   "high": 2,
+   "medium": 0,
+   "low": 0,
+   "started_at": "2026-11-25T20:52:41.063Z",
+   "completed_at": "2026-11-25T20:52:47.137Z",
+   "scan_engine": "ml",
+   "tool_provenance": {
+    "tool": "ml-sast-v3-ensemble 3.0.0 sha256:f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+    "files": 1,
+    "model": {
+     "name": "ml-sast-v3-ensemble",
+     "sha256": "f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+     "status": "trained",
+     "metrics": {
+      "development": {
+       "R2": {
+        "ci95": [
+         0.4634638881167124,
+         0.6638272455672704
+        ],
+        "recall": 0.75,
+        "macro_f1": 0.5707284854382113,
+        "precision": 0.5753424657534246
+       },
+       "v2": {
+        "ci95": [
+         0.5492275798916452,
+         0.7371064115933221
+        ],
+        "recall": 0.875,
+        "macro_f1": 0.6420931356894471,
+        "precision": 0.5212765957446809
+       }
+      }
+     },
+     "version": "3.0.0",
+     "trainedOn": {
+      "data": "data/processed_v3 train+val",
+      "rows": 9313
+     }
+    },
+    "engine": "ml",
+    "service": "http://127.0.0.1:8001",
+    "inputSha256": "8cd21a6b391ab632a587f33642a6a71e33265aaba6338d46dcb0551caddb3009",
+    "skippedFiles": 0
+   }
+  }
+ ],
+ "sastFindings": [
+  {
+   "severity": "HIGH",
+   "rule": "ml:javascript.hardcoded-credentials.rule:CWE-798",
+   "file_path": "app.js",
+   "line_number": 7,
+   "issue_type": "VULNERABILITY",
+   "message": "[rule-based secrets detector] Hardcoded credential or secret in top-level code (rule confidence 0.95)."
+  },
+  {
+   "severity": "CRITICAL",
+   "rule": "ml:javascript.sql-injection:CWE-89",
+   "file_path": "app.js",
+   "line_number": 17,
+   "issue_type": "VULNERABILITY",
+   "message": "SQL injection: query built from untrusted input suspected in function 'app.get \"/users\"' (model confidence 0.65; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: src_js, sql_exec, xss_safe, string_plus)."
+  },
+  {
+   "severity": "HIGH",
+   "rule": "ml:javascript.xss:CWE-79",
+   "file_path": "app.js",
+   "line_number": 26,
+   "issue_type": "VULNERABILITY",
+   "message": "Cross-site scripting: untrusted input reaches HTML output suspected in function 'app.get \"/search\"' (model confidence 0.87; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: src_js, xss_sink, html_concat, string_plus)."
+  }
+ ],
+ "dependency": [],
+ "iac": [],
+ "image": [],
+ "deployment": [],
+ "dast": [],
+ "dastFindings": []
+}

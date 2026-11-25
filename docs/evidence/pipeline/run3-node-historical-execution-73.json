@@ -1,0 +1,281 @@
+{
+ "execution": {
+  "id": 73,
+  "project_id": 24,
+  "status": "COMPLETED",
+  "triggered_by": "webhook",
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "failure_reason": null,
+  "started_at": "2026-11-19T19:57:26.016Z",
+  "completed_at": "2026-11-19T20:00:03.764Z",
+  "promote_result": null,
+  "totalSeconds": 157.7
+ },
+ "stages": [
+  {
+   "stage": "SAST",
+   "status": "COMPLETED",
+   "start": "2026-11-19T19:57:26.040Z",
+   "end": "2026-11-19T19:57:45.597Z",
+   "seconds": 19.6
+  },
+  {
+   "stage": "Dependency",
+   "status": "COMPLETED",
+   "start": "2026-11-19T19:57:45.709Z",
+   "end": "2026-11-19T19:57:52.277Z",
+   "seconds": 6.6
+  },
+  {
+   "stage": "IaC",
+   "status": "COMPLETED",
+   "start": "2026-11-19T19:57:52.304Z",
+   "end": "2026-11-19T19:57:54.574Z",
+   "seconds": 2.3
+  },
+  {
+   "stage": "Deploy (build+image scan+apply+rollout)",
+   "status": "SUCCESS",
+   "start": "2026-11-19T19:57:54.574Z",
+   "end": "2026-11-19T19:58:28.564Z",
+   "seconds": 34
+  },
+  {
+   "stage": "  of which image scan",
+   "status": "COMPLETED",
+   "start": "2026-11-19T19:57:59.890Z",
+   "end": "2026-11-19T19:58:03.573Z",
+   "seconds": 3.7
+  },
+  {
+   "stage": "DAST",
+   "status": "COMPLETED",
+   "start": "2026-11-19T19:58:28.616Z",
+   "end": "2026-11-19T20:00:03.744Z",
+   "seconds": 95.1
+  }
+ ],
+ "sast": [
+  {
+   "id": 103,
+   "status": "COMPLETED",
+   "total_issues": 1,
+   "critical": 0,
+   "high": 0,
+   "medium": 1,
+   "low": 0,
+   "started_at": "2026-11-19T19:57:26.040Z",
+   "completed_at": "2026-11-19T19:57:45.597Z",
+   "scan_engine": null,
+   "tool_provenance": null
+  }
+ ],
+ "sastFindings": [
+  {
+   "severity": "MINOR",
+   "rule": "javascript:S5689",
+   "file_path": "cloudsentinel_24:app.js",
+   "line_number": 11,
+   "issue_type": "VULNERABILITY",
+   "message": "This framework implicitly discloses version information by default. Make sure it is safe here."
+  }
+ ],
+ "dependency": [
+  {
+   "id": 59,
+   "status": "COMPLETED",
+   "target_type": "fs",
+   "total_packages": 89,
+   "critical": 0,
+   "high": 5,
+   "medium": 6,
+   "low": 2,
+   "unknown": 76,
+   "started_at": "2026-11-19T19:57:45.709Z",
+   "completed_at": "2026-11-19T19:57:52.277Z"
+  }
+ ],
+ "iac": [
+  {
+   "id": 56,
+   "status": "COMPLETED",
+   "total_findings": 0,
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "unknown": 0,
+   "started_at": "2026-11-19T19:57:52.304Z",
+   "completed_at": "2026-11-19T19:57:54.574Z"
+  }
+ ],
+ "image": [
+  {
+   "id": 20,
+   "deployment_attempt": 1,
+   "image_tag": "cloudsentinel-p24:run-73-attempt-1-mwnz2lmw-bf0221d08c39",
+   "status": "COMPLETED",
+   "total_vulnerabilities": 11,
+   "critical": 0,
+   "high": 0,
+   "medium": 11,
+   "low": 0,
+   "unknown": 0,
+   "failure_reason": null,
+   "started_at": "2026-11-19T19:57:59.890Z",
+   "completed_at": "2026-11-19T19:58:03.573Z"
+  }
+ ],
+ "deployment": [
+  {
+   "id": 33,
+   "status": "SUCCESS",
+   "deployed_at": "2026-11-19T19:58:28.564Z",
+   "staging_url": "http://192.168.49.2:31344",
+   "dockerfile_source": "generated",
+   "manifest_source": "generated",
+   "app_name": "e2e-node-express",
+   "image_tag": "cloudsentinel-p24:run-73-attempt-1-mwnz2lmw-bf0221d08c39",
+   "failure_reason": null,
+   "deployment_attempt": 1,
+   "policy_validation": {
+    "engine": "kubectl apply --dry-run=server",
+    "output": "deployment.apps/e2e-node-express configured (server dry run)\nservice/e2e-node-express unchanged (server dry run)",
+    "passed": true,
+    "checkedAt": "2026-11-19T19:58:13.985Z",
+    "namespace": "cloudsentinel-p-24",
+    "violations": []
+   }
+  }
+ ],
+ "dast": [
+  {
+   "id": 28,
+   "target_url": "http://192.168.49.2:31344",
+   "status": "COMPLETED",
+   "total_findings": 12,
+   "high": 0,
+   "medium": 2,
+   "low": 7,
+   "informational": 3,
+   "started_at": "2026-11-19T19:58:28.616Z",
+   "completed_at": "2026-11-19T20:00:03.744Z",
+   "scan_mode": "BASELINE",
+   "policy_name": "OWASP ZAP Baseline",
+   "policy_version": "zaproxy/zap-stable",
+   "failure_reason": null,
+   "scan_engine": null,
+   "tool_provenance": null
+  }
+ ],
+ "dastFindings": [
+  {
+   "severity": "INFORMATIONAL",
+   "alert": "Storable and Cacheable Content",
+   "attack_type": "Storable and Cacheable Content [10049]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344",
+   "param": "",
+   "cwe_id": 524
+  },
+  {
+   "severity": "LOW",
+   "alert": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)",
+   "attack_type": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s) [10037]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344",
+   "param": "",
+   "cwe_id": 497
+  },
+  {
+   "severity": "LOW",
+   "alert": "Cross-Origin-Resource-Policy Header Missing or Invalid",
+   "attack_type": "Cross-Origin-Resource-Policy Header Missing or Invalid [90004]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344",
+   "param": "Cross-Origin-Resource-Policy",
+   "cwe_id": 693
+  },
+  {
+   "severity": "LOW",
+   "alert": "X-Content-Type-Options Header Missing",
+   "attack_type": "X-Content-Type-Options Header Missing [10021]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344",
+   "param": "x-content-type-options",
+   "cwe_id": 693
+  },
+  {
+   "severity": "LOW",
+   "alert": "Permissions Policy Header Not Set",
+   "attack_type": "Permissions Policy Header Not Set [10063]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/robots.txt",
+   "param": "",
+   "cwe_id": 693
+  },
+  {
+   "severity": "INFORMATIONAL",
+   "alert": "Storable and Cacheable Content",
+   "attack_type": "Storable and Cacheable Content [10049]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/robots.txt",
+   "param": "",
+   "cwe_id": 524
+  },
+  {
+   "severity": "LOW",
+   "alert": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)",
+   "attack_type": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s) [10037]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/robots.txt",
+   "param": "",
+   "cwe_id": 497
+  },
+  {
+   "severity": "MEDIUM",
+   "alert": "CSP: Failure to Define Directive with No Fallback",
+   "attack_type": "CSP: Failure to Define Directive with No Fallback [10055]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/robots.txt",
+   "param": "Content-Security-Policy",
+   "cwe_id": 693
+  },
+  {
+   "severity": "LOW",
+   "alert": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)",
+   "attack_type": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s) [10037]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/sitemap.xml",
+   "param": "",
+   "cwe_id": 497
+  },
+  {
+   "severity": "LOW",
+   "alert": "Permissions Policy Header Not Set",
+   "attack_type": "Permissions Policy Header Not Set [10063]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/sitemap.xml",
+   "param": "",
+   "cwe_id": 693
+  },
+  {
+   "severity": "INFORMATIONAL",
+   "alert": "Storable and Cacheable Content",
+   "attack_type": "Storable and Cacheable Content [10049]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/sitemap.xml",
+   "param": "",
+   "cwe_id": 524
+  },
+  {
+   "severity": "MEDIUM",
+   "alert": "CSP: Failure to Define Directive with No Fallback",
+   "attack_type": "CSP: Failure to Define Directive with No Fallback [10055]",
+   "method": "GET",
+   "endpoint": "http://192.168.49.2:31344/sitemap.xml",
+   "param": "Content-Security-Policy",
+   "cwe_id": 693
+  }
+ ]
+}

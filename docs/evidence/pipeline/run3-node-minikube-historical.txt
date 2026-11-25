@@ -1,0 +1,13 @@
+# HISTORICAL: Node fixture deployed by executions 70-73 (2026-11-19, previous SAST engine). Run 3 (execution 112) was BLOCKED at SAST and deployed nothing.
+# kubectl --context minikube -n cloudsentinel-p-24, 2026-11-26 01:53:48
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS         IMAGES                                                     SELECTOR
+deployment.apps/e2e-node-express   1/1     1            1           6d2h   e2e-node-express   cloudsentinel-p24:run-73-attempt-1-mwnz2lmw-bf0221d08c39   app=e2e-node-express
+
+NAME                                    READY   STATUS    RESTARTS     AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+pod/e2e-node-express-856654b7f5-m49zp   1/1     Running   2 (5d ago)   6d    10.244.0.2   minikube   <none>           <none>
+
+NAME                       TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE    SELECTOR
+service/e2e-node-express   NodePort   10.101.228.209   <none>        80:31344/TCP   6d2h   app=e2e-node-express
+e2e-node-express-856654b7f5-m49zp cloudsentinel-p24:run-73-attempt-1-mwnz2lmw-bf0221d08c39 started=2026-11-19T19:58:15Z
+http://<minikube-ip>:31344/ -> 200
+http://<minikube-ip>:31344/health -> 200
