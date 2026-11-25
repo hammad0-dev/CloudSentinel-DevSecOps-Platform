@@ -3,6 +3,7 @@ import PageHeader from "../components/PageHeader";
 import api from "../lib/api";
 import { ChevronDown, AlertTriangle, CheckCircle, Clock, XCircle, Play, ArrowRight, Server } from "lucide-react";
 import { Link } from "react-router-dom";
+import { pipelineStageList, promoteStageView } from "../utils/pipelineStages";
 
 const PIPELINE_STAGES = ["SAST", "Dependency", "IaC", "Deploy", "DAST"];
 
@@ -93,11 +94,14 @@ export default function CICDPipeline() {
 
     const completedArray = latestPipeline.stages_completed ? latestPipeline.stages_completed.split(", ") : [];
 
-    const stages = PIPELINE_STAGES.map((stageName, index) => {
+    const stageList = pipelineStageList(latestPipeline);
+    const promoteView = promoteStageView(latestPipeline.promote_result);
+    const stages = stageList.map((stageName, index) => {
+      if (stageName === "Promote" && promoteView) return { name: "Promote to EKS", status: promoteView.status, promote: promoteView };
       let stageStatus = "Pending";
       const isCompleted = completedArray.includes(stageName);
       const isLastCompleted = completedArray[completedArray.length - 1] === stageName;
-      const prevCompleted = index === 0 || completedArray.includes(PIPELINE_STAGES[index - 1]);
+      const prevCompleted = index === 0 || completedArray.includes(stageList[index - 1]);
 
       if (isCompleted) {
         stageStatus = (isLastCompleted && latestPipeline.status === "STAGE_FAILED") ? "Failed" : "Passed";
@@ -153,6 +157,16 @@ export default function CICDPipeline() {
                   {s.status === "Failed" && <AlertTriangle size={10} />}
                   {s.status}
                 </div>
+                {/* Promote node: reason, image tag (commit), plan summary when approval is required */}
+                {s.promote && (
+                  <div className="flex flex-col items-center gap-0.5 mt-1 text-center">
+                    {s.promote.detail && <span className="text-[10px] text-[#94a3b8] break-words max-w-[8.5rem]">{s.promote.detail}</span>}
+                    {s.promote.tag && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-400 font-mono">tag {s.promote.tag}</span>}
+                    {s.promote.plan && <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-300">{s.promote.plan}</span>}
+                    {s.promote.approvedBy && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">approved by {s.promote.approvedBy}</span>}
+                    {s.promote.rolledBack && <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-300">rolled back</span>}
+                  </div>
+                )}
                 {/* Deploy node: show generated badge */}
                 {s.name === "Deploy" && s.status === "Passed" && deployInfo && (
                   <div className="flex flex-col items-center gap-0.5 mt-1">

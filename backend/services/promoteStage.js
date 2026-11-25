@@ -206,12 +206,13 @@ function toolEnv(extra = {}) {
   return { PATH: `${path.join(os.homedir(), '.local/bin')}:/usr/local/bin:/usr/bin:/bin:/snap/bin`, HOME: os.homedir(), LANG: 'C.UTF-8', AWS_PAGER: '', ...extra };
 }
 
-function kubeAdapter(cfg, { run = exec, kubectl = process.env.PROMOTE_KUBECTL_BIN || 'kubectl', transform = y => y } = {}) {
+// transform/mapNs exist for the Minikube stand-in test only (throw-away namespace); production uses the identity.
+function kubeAdapter(cfg, { run = exec, kubectl = process.env.PROMOTE_KUBECTL_BIN || 'kubectl', transform = y => y, mapNs = n => n } = {}) {
   const k = (args, opts = {}) => run(kubectl, ['--context', cfg.context, ...args], { env: toolEnv(), ...opts });
   return {
     async reachable() { const r = await k(['get', '--raw=/readyz', '--request-timeout=10s'], { timeout: 20000 }); return r.code === 0 && /ok/.test(r.stdout); },
     async deployedImage(ns, name) {
-      const r = await k(['-n', ns, 'get', 'deployment', name, '-o', 'jsonpath={.spec.template.spec.containers[0].image}', '--request-timeout=20s']);
+      const r = await k(['-n', mapNs(ns), 'get', 'deployment', name, '-o', 'jsonpath={.spec.template.spec.containers[0].image}', '--request-timeout=20s']);
       return r.code === 0 && r.stdout.trim() ? r.stdout.trim() : null;
     },
     async apply(yaml, { dryRun }) {
@@ -219,25 +220,38 @@ function kubeAdapter(cfg, { run = exec, kubectl = process.env.PROMOTE_KUBECTL_BI
       try {
         await fs.chmod(dir, 0o700);
         const file = path.join(dir, 'manifests.yaml');
-        await fs.writeFile(file, transform(yaml), { mode: 0o600 });
+        const text = transform(yaml);
+        await fs.writeFile(file, text, { mode: 0o600 });
+        if (dryRun) {
+          // A server-side dry run cannot create the namespace, so on a first promotion every namespaced object would
+          // fail with "namespace not found". Apply ONLY the generated Namespace document (PSA restricted + labels)
+          // for real first; everything else is then admitted (Kyverno) as a dry run.
+          const nsDoc = text.split(/^---$/m).find(d => /^kind: Namespace$/m.test(d));
+          if (nsDoc) {
+            const nsFile = path.join(dir, 'namespace.yaml');
+            await fs.writeFile(nsFile, nsDoc.trim() + '\n', { mode: 0o600 });
+            const n = await k(['apply', '-f', nsFile, '--request-timeout=60s'], { timeout: 120000 });
+            if (n.code !== 0) throw promoteError(tail(n.stderr || n.stdout), 'KUBECTL_APPLY');
+          }
+        }
         const r = await k(['apply', ...(dryRun ? ['--dry-run=server'] : []), '-f', file, '--request-timeout=60s'], { timeout: 120000 });
         if (r.code !== 0) throw promoteError(tail(r.stderr || r.stdout), 'KUBECTL_APPLY');
         return tail(r.stdout);
       } finally { await fs.rm(dir, { recursive: true, force: true }); }
     },
     async rollout(ns, name, seconds) {
-      const r = await k(['-n', ns, 'rollout', 'status', `deployment/${name}`, `--timeout=${seconds}s`], { timeout: (seconds + 30) * 1000 });
+      const r = await k(['-n', mapNs(ns), 'rollout', 'status', `deployment/${name}`, `--timeout=${seconds}s`], { timeout: (seconds + 30) * 1000 });
       return { ok: r.code === 0, detail: tail(r.code === 0 ? r.stdout : r.stderr || r.stdout) };
     },
     async undo(ns, name, seconds) {
-      const u = await k(['-n', ns, 'rollout', 'undo', `deployment/${name}`]);
+      const u = await k(['-n', mapNs(ns), 'rollout', 'undo', `deployment/${name}`]);
       if (u.code !== 0) return { ok: false, detail: tail(u.stderr) };
       const r = await this.rollout(ns, name, seconds);
       return { ok: r.ok, detail: `undo: ${tail(u.stdout)}; ${r.detail}` };
     },
     async health(ns, name, port, healthPath = '/') {
       const local = await freePort();
-      const child = spawn(kubectl, ['--context', cfg.context, '-n', ns, 'port-forward', `deployment/${name}`, `${local}:${port}`, '--address', '127.0.0.1'], { env: toolEnv(), stdio: ['ignore', 'pipe', 'pipe'] });
+      const child = spawn(kubectl, ['--context', cfg.context, '-n', mapNs(ns), 'port-forward', `deployment/${name}`, `${local}:${port}`, '--address', '127.0.0.1'], { env: toolEnv(), stdio: ['ignore', 'pipe', 'pipe'] });
       try {
         await new Promise((resolve, reject) => {
           const t = setTimeout(() => reject(promoteError('port-forward did not start', 'PORT_FORWARD')), 20000);
