@@ -36,27 +36,48 @@ my estimates, not measurements.
 | Node EBS gp3 | $0.0912 / GB-month | 40 GB | 0.0050 |
 | NAT gateway (hours) | $0.056 / hour | 1 | 0.0560 |
 | NAT gateway (data) | $0.056 / GB | **est.** 0.4 GB/h (image pulls, Helm charts) | 0.0224 |
-| Public IPv4 | $0.005 / address-hour | NAT 1 + **est.** 2 NLBs x 2 AZs = 5 | 0.0250 |
-| Network Load Balancers (Stage 5 apps) | $0.0239 / hour + $0.006 / LCU-hour | **est.** 2 NLBs, 1 LCU each | 0.0598 |
-| RDS db.t3.micro PostgreSQL + 20 GB gp2 | $0.026 / hour + $0.131 / GB-month | 1 instance (two-tier project) | 0.0296 |
+| Public IPv4 | $0.005 / address-hour | NAT 1 + 3 NLBs x 2 public subnets = 7 | 0.0350 |
+| Network Load Balancers (Stage 5 apps) | $0.0239 / hour + $0.006 / LCU-hour | 3 NLBs (one per public Service: one-tier app, two-tier app, three-tier frontend; the three-tier backend is ClusterIP, Grafana is port-forward only), **est.** 1 LCU each | 0.0897 |
+| RDS db.t3.micro PostgreSQL + 20 GB gp2 | $0.026 / hour + $0.131 / GB-month (= $0.0036 / hour for 20 GB) | 2 instances (two-tier Flask fixture and three-tier backend; both detected as PostgreSQL) | 0.0592 |
 | CloudWatch Logs ingestion (control plane, CloudTrail, app) | $0.67 / GB | **est.** 0.15 GB/h (audit log volume is the main unknown) | 0.1005 |
 | CloudWatch vended logs (VPC flow logs) | $0.67 / GB (first 10 TB) | **est.** 0.05 GB/h | 0.0335 |
 | CloudWatch storage, 1 alarm | $0.03 / GB-month, $0.10 / alarm-month | small | 0.0003 |
 | KMS keys | $1 / key-month | 2 (prorated) | 0.0027 |
-| Secrets Manager | $0.40 / secret-month, $0.05 / 10k calls | **est.** 3 secrets, ESO refresh every 1 min | 0.0025 |
+| Secrets Manager | $0.40 / secret-month, $0.05 / 10k calls | 4 project secrets (one-tier 1, two-tier 1, three-tier 2) + 2 RDS-managed master secrets; **est.** 6 ExternalSecrets refreshing every 1 min | 0.0051 |
 | ECR storage, S3 trail bucket, CloudTrail | $0.10/GB-mo; management events first copy free | < 1 GB | 0.0005 |
 | Data transfer out | $0.1093 / GB | **est.** 0.2 GB/h (curl, Grafana via port-forward) | 0.0219 |
 | GuardDuty | n/a (not created) | 0 | 0.0000 |
-| **Total (with Stage 5 apps running)** | | | **about 0.66** |
+| **Total (all three architectures applied in Stage 5)** | | | **about 0.73** |
+
+Updated 2026-11-25 after "go": the first version priced 1 RDS instance, 2 NLBs and 5 public IPv4 addresses (total
+about $0.66/hour). You asked to apply one-tier, two-tier and three-tier, which needs **2 RDS instances and 3 NLBs**;
+the static site is planned and checked only (not applied), so it adds nothing.
 
 - Shared environment alone (Stage 4, before any project): about **$0.53/hour** (no NLB, RDS, extra IPs).
-- **5-hour session: about $3.30** (estimate). If EKS audit logging is 3x my estimate (0.45 GB/h), add about
-  $0.20/hour: **upper estimate about $0.86/hour, $4.30 for 5 hours.**
-- Credit assumption: **$94** remaining (Free plan, ends 2027-02-14). A 5-hour session uses about 3.5-4.6 % of it.
+- **5-hour session: about $3.70** (estimate). If EKS audit logging is 3x my estimate (0.45 GB/h), add about
+  $0.20/hour: **upper estimate about $0.93/hour, $4.70 for 5 hours.**
+- Credit assumption: **$94** remaining (Free plan, ends 2027-02-14). A 5-hour session uses about 4-5 % of it.
+- Capacity check for all three apps: 8 app pods at 2 replicas (16 at the HPA maximum of 4) plus about 29 platform
+  pods, against 2 x 29 pods (VPC CNI limit for m7i-flex.large); memory about 2 GiB of 2 x 8 GiB.
 - Not included: anything left running after the session (the main risk). Destroy commands are in
   `docs/eks-progress.md`; Stage 7 checks for leftovers.
 - Risks I cannot check without creating something: whether the Free plan accepts EKS, NAT gateways and RDS
   db.t3.micro (GuardDuty is known to be refused). Per your rule, if AWS asks for a Paid plan I stop.
+
+## Pre-apply checks after "go" (2026-11-25)
+
+| Check | Result |
+|---|---|
+| GuardDuty EventBridge rule | removed from the code (rule, target, and the `events.amazonaws.com` grants in the SNS and KMS policies); verification plan: 0 event rules, 0 GuardDuty resources |
+| EKS add-ons | were unpinned (`{}` = latest); now pinned to the EKS default builds for 1.36: vpc-cni v1.22.4-eksbuild.14, kube-proxy v1.36.0-eksbuild.65, coredns v1.14.7-eksbuild.35, metrics-server v0.9.1-eksbuild.2 |
+| Kyverno | **1.19 does not support 1.36** (supports 1.33-1.35). Pinned 1.20.0 / chart 3.10.0 (supports 1.34-1.37; published 2026-11-12, one day under the two-week rule; no older release supports 1.36). 1.20 no longer runs ClusterPolicy: the seven policies were ported to CEL ValidatingPolicy (`k8s/kyverno/eks-cel/`), same CLI results |
+| External Secrets | 2.14.0 kept (tested up to Kubernetes 1.37) |
+| kube-prometheus-stack | was unpinned; pinned 93.1.2 (2026-11-10; kube-state-metrics 2.20 = client-go 1.36) |
+| Logs | Promtail chart is deprecated; Loki 7.5.0 + Grafana Alloy 1.14.4 pinned instead |
+| Falco | was unpinned; pinned 9.2.2 / 0.45.2 (2026-10-29; kernel-based, no Kubernetes constraint) |
+
+Pins: `k8s/eks/versions.env`. Verification plan (placeholder email, never applied): 82 to add, all tagged, sha256
+`76b49e65e0d7fecb61b8478c7415e4aebafcc4c6bc48888943bbf5c5127321e2`.
 
 ## To say "go"
 

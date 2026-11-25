@@ -99,11 +99,12 @@ module "eks" {
   enabled_log_types                      = ["api", "audit", "authenticator"]
   cloudwatch_log_group_retention_in_days = 7
 
+  # Pinned to the EKS default build for Kubernetes 1.36 (aws eks describe-addon-versions, 2026-11-25); never "latest".
   addons = {
-    vpc-cni        = { before_compute = true }
-    kube-proxy     = {}
-    coredns        = {}
-    metrics-server = {}
+    vpc-cni        = { addon_version = "v1.22.4-eksbuild.14", most_recent = false, before_compute = true }
+    kube-proxy     = { addon_version = "v1.36.0-eksbuild.65", most_recent = false }
+    coredns        = { addon_version = "v1.14.7-eksbuild.35", most_recent = false }
+    metrics-server = { addon_version = "v0.9.1-eksbuild.2", most_recent = false }
     # No EBS CSI driver: nothing in the demo uses a PersistentVolumeClaim (Prometheus/Loki use emptyDir).
   }
 

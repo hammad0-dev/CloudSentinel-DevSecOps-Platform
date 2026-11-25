@@ -1,0 +1,64 @@
+# Kyverno 1.20 CLI test of the CEL ValidatingPolicy port (k8s/kyverno/eks-cel), 2026-11-25 16:53:24 PKT
+# Version: v1.20.0. Kyverno 1.19 (Stage 2) supports Kubernetes 1.33-1.35 only; 1.20 supports 1.34-1.37.
+# Kyverno 1.20 rejects kyverno.io/v1 ClusterPolicy (see the first attempt below), so the seven policies were ported to CEL.
+
+## first attempt: the Stage 2 ClusterPolicy files with the 1.20 CLI (expected to be refused)
+Error: failed to load file /mnt/d/cs-data/eks-work/minikube/policies-scoped.yaml: failed to process kyverno.io/v1, Kind=ClusterPolicy: kyverno.io/v1 ClusterPolicy: Kyverno v1.20 removed execution of legacy kyverno.io policy types and no longer accepts create o
+
+## generated manifests: one-tier/two-tier app, three-tier frontend and backend (expect: pass)
+Applying 7 policy rule(s) to 19 resource(s)...
+pass: 21, fail: 0, warn: 0, error: 0, skip: 0 
+
+## violation: v-root.yaml (expect: fail)
+Applying 7 policy rule(s) to 1 resource(s)...
+policy disallow-latest-tag -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation Using the mutable image tag 'latest' is not allowed.
+policy disallow-privilege-escalation -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation securityContext.allowPrivilegeEscalation must be false for every container.
+policy disallow-privileged -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation Privileged containers are not allowed. securityContext.privileged must be unset or false.
+policy require-labels -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation The labels 'app' and 'owner' are required.
+policy require-resource-limits -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation CPU and memory limits are required for every container.
+policy require-run-as-non-root -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation Running as root is not allowed. Set securityContext.runAsNonRoot to true on the Pod or every container.
+policy restrict-image-registries -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validation Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry).
+pass: 0, fail: 7, warn: 0, error: 0, skip: 0 
+
+## violation: v-latest.yaml (expect: fail)
+Applying 7 policy rule(s) to 1 resource(s)...
+policy disallow-latest-tag -> resource cloudsentinel-p-9001/Pod/latest-tag-pod failed:
+1 - validation Using the mutable image tag 'latest' is not allowed.
+pass: 6, fail: 1, warn: 0, error: 0, skip: 0 
+
+## violation: v-nolimits.yaml (expect: fail)
+Applying 7 policy rule(s) to 1 resource(s)...
+policy require-resource-limits -> resource cloudsentinel-p-9001/Pod/no-limits-pod failed:
+1 - validation CPU and memory limits are required for every container.
+pass: 6, fail: 1, warn: 0, error: 0, skip: 0 
+
+## violation: v-privileged.yaml (expect: fail)
+Applying 7 policy rule(s) to 1 resource(s)...
+policy disallow-privilege-escalation -> resource cloudsentinel-p-9001/Pod/privileged-pod failed:
+1 - validation securityContext.allowPrivilegeEscalation must be false for every container.
+policy disallow-privileged -> resource cloudsentinel-p-9001/Pod/privileged-pod failed:
+1 - validation Privileged containers are not allowed. securityContext.privileged must be unset or false.
+pass: 5, fail: 2, warn: 0, error: 0, skip: 0 
+
+## violation: v-registry.yaml (expect: fail)
+Applying 7 policy rule(s) to 1 resource(s)...
+policy restrict-image-registries -> resource cloudsentinel-p-9001/Pod/untrusted-registry-pod failed:
+1 - validation Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry).
+pass: 6, fail: 1, warn: 0, error: 0, skip: 0 
+
+## violation: v-escalation.yaml (expect: fail)
+Applying 7 policy rule(s) to 1 resource(s)...
+policy disallow-privilege-escalation -> resource cloudsentinel-p-9001/Pod/escalation-pod failed:
+1 - validation securityContext.allowPrivilegeEscalation must be false for every container.
+pass: 6, fail: 1, warn: 0, error: 0, skip: 0 
+
+## scope: the root pod in namespace other-team (expect: no policy applies)
+Applying 7 policy rule(s) to 1 resource(s)...
+pass: 0, fail: 0, warn: 0, error: 0, skip: 7 

@@ -1,5 +1,5 @@
 # Module 9/11 shared security services: KMS, CloudTrail -> CloudWatch Logs, unauthorized-API-call alarm -> SNS email,
-# optional GuardDuty (+ EventBridge -> SNS), the ESO IRSA role and the permissions boundary for project roles.
+# optional GuardDuty detector (off; no EventBridge rule), the ESO IRSA role and the permissions boundary for project roles.
 
 # ---- KMS key for the security pipeline (CloudTrail, its log group, SNS) -------------------------------------------
 data "aws_iam_policy_document" "security_key" {
@@ -41,12 +41,12 @@ data "aws_iam_policy_document" "security_key" {
     }
   }
   statement {
-    sid       = "AlarmAndEventsPublishToEncryptedSns"
+    sid       = "AlarmPublishToEncryptedSns"
     actions   = ["kms:GenerateDataKey*", "kms:Decrypt"]
     resources = ["*"]
     principals {
       type        = "Service"
-      identifiers = ["cloudwatch.amazonaws.com", "events.amazonaws.com"]
+      identifiers = ["cloudwatch.amazonaws.com"]
     }
   }
 }
@@ -71,12 +71,12 @@ resource "aws_sns_topic" "alerts" {
 
 data "aws_iam_policy_document" "alerts" {
   statement {
-    sid       = "AlarmsAndEvents"
+    sid       = "CloudWatchAlarms"
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.alerts.arn]
     principals {
       type        = "Service"
-      identifiers = ["cloudwatch.amazonaws.com", "events.amazonaws.com"]
+      identifiers = ["cloudwatch.amazonaws.com"]
     }
     condition {
       test     = "StringEquals"
@@ -284,21 +284,8 @@ resource "aws_guardduty_detector_feature" "eks_audit" {
   status      = "ENABLED"
 }
 
-resource "aws_cloudwatch_event_rule" "guardduty" {
-  count       = var.enable_guardduty ? 1 : 0
-  name        = "cloudsentinel-guardduty-findings"
-  description = "GuardDuty findings to the CloudSentinel alert topic"
-  event_pattern = jsonencode({
-    source        = ["aws.guardduty"]
-    "detail-type" = ["GuardDuty Finding"]
-  })
-}
-
-resource "aws_cloudwatch_event_target" "guardduty" {
-  count = var.enable_guardduty ? 1 : 0
-  rule  = aws_cloudwatch_event_rule.guardduty[0].name
-  arn   = aws_sns_topic.alerts.arn
-}
+# The GuardDuty -> EventBridge -> SNS rule was removed (2026-11-25, user decision): GuardDuty needs a Paid plan, so
+# nothing may publish GuardDuty findings. Re-adding it also needs events.amazonaws.com in the SNS and KMS policies.
 
 # ---- External Secrets Operator IRSA role (shared by all projects: a known isolation limitation) -------------------
 data "aws_iam_policy_document" "eso_assume" {

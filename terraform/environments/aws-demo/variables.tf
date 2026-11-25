@@ -68,7 +68,7 @@ variable "alert_email" {
 }
 
 variable "enable_guardduty" {
-  description = "GuardDuty detector + EKS audit-log monitoring + EventBridge -> SNS. Off: the Free plan answered SubscriptionRequiredException."
+  description = "GuardDuty detector + EKS audit-log monitoring (no EventBridge rule). Off: the Free plan answered SubscriptionRequiredException."
   type        = bool
   default     = false
 }

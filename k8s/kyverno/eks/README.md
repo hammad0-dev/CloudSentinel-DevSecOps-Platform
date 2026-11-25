@@ -1,5 +1,8 @@
 # Kyverno policies for the shared EKS cluster (Module 10)
 
+> The EKS cluster (Kubernetes 1.36) runs Kyverno 1.20, which no longer runs `ClusterPolicy`. Use the CEL port in
+> `../eks-cel/` there. The ClusterPolicy files below are for Kyverno 1.19 (Minikube, `scripts/kyverno-scoped-copy.sh`).
+
 On EKS apply both folders, all in `Enforce` mode, matching `cloudsentinel-p-*`:
 
 ```bash

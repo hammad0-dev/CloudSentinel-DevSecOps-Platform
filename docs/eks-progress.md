@@ -143,6 +143,37 @@ Decisions:
 - decision: the plan used a placeholder alert email instead of stopping, because a plan is free and shows every
   other resource; it is recorded as not appliable and Stage 4 must re-plan.
 
+## Stage 4 pre-checks after "go" (2026-11-25 16:20-17:00 PKT, nothing billable)
+
+| Item | Result |
+|---|---|
+| Alert email | `TF_VAR_alert_email` **not visible** to my shells (not in the WSL login shell, profile files, or Windows env); an `export` in your own terminal does not reach them. Stage 4 apply not started |
+| cloudsentinel-dev | still `AWS_ERROR_CAL_UNSUPPORTED_KEY_FORMAT` |
+| Public IP | changed since Stage 3; `local.tfvars` refreshed |
+| Cost gate | updated for 2 RDS (both PostgreSQL) + 3 NLBs + 7 IPv4: about $0.73/hour, $3.70 per 5 hours (upper $4.70) |
+| GuardDuty EventBridge | rule, target and `events.amazonaws.com` grants removed |
+| Versions | add-ons pinned; Kyverno 1.20.0 (1.19 not supported on 1.36); kps 93.1.2, Loki 7.5.0, Alloy 1.14.4, Falco 9.2.2; `k8s/eks/versions.env` |
+| Kyverno CEL port | `k8s/kyverno/eks-cel/` (7 ValidatingPolicy); CLI 1.20.0 (checksum-verified): generated 21/21 pass, every violation fails on its rule, other namespace skipped 7/7 |
+| Verification plan | placeholder email, saved as `check-placeholder.tfplan` (never apply): 82 creates, all tagged, sha256 `76b49e65...321e2` |
+
+Decisions:
+- decision: Kyverno 1.20.0 / chart 3.10.0 on EKS because 1.19 supports Kubernetes 1.33-1.35 only and the user said
+  not to lower the cluster version; it is 13 days old (one day under the two-week rule) because no older release
+  supports 1.36.
+- decision: port the seven policies to CEL ValidatingPolicy in a new folder `k8s/kyverno/eks-cel/` because Kyverno 1.20
+  refuses ClusterPolicy; Minikube keeps 1.19.2 and the ClusterPolicy files unchanged.
+- decision: EKS add-ons pinned to the AWS default build for 1.36 because `{}` installs the latest build.
+- decision: Loki + Grafana Alloy instead of Promtail because the Promtail chart is marked deprecated.
+- decision: keep the GuardDuty detector code behind `enable_guardduty=false` but remove the EventBridge rule and the
+  events grants, as the user asked.
+- decision: when `TF_VAR_alert_email` is missing, the plan script reads `~/.config/cloudsentinel/alert-email`
+  (mode 600, outside the repo, never printed); with neither, it saves `check-placeholder.tfplan`, never `shared.tfplan`.
+
+Mistake: a `mkdir` on a UNC path failed and the seven new policy files were written into the root of
+`~/CloudSentinel` for about one minute. They were untracked new files (nothing overwritten, never in its history)
+and were moved to `~/cs-iac/k8s/kyverno/eks-cel/`. `~/CloudSentinel` also has an untracked
+`terraform/environments/aws-demo/.terraform.lock.hcl` dated 2026-11-22 16:06, older than this session; left as is.
+
 ## Decisions
 
 - decision: pin AWS provider 6.70.0, terraform-aws-modules/eks 21.29.0, terraform-aws-modules/vpc 6.7.2 because they
@@ -180,19 +211,18 @@ Decisions:
 
 - `cloudsentinel-dev` credentials (see above) - needed from Stage 5.
 - GuardDuty (Free plan) - needs a Paid plan; excluded.
-- `TF_VAR_alert_email` is not set in the WSL login shell - the Stage 3 plan used a placeholder; set it and re-plan
-  before Stage 4.
+- `TF_VAR_alert_email` is not visible to the shells I start (checked again 2026-11-25) - needed for the Stage 4 plan.
 
 ## Resume here
 
-Stages 1-3 are committed on `feat/iac-generator` (not pushed). **Stopped at STOP 1 (cost gate); waiting for "go".**
-Billable resources: none.
+Stages 1-3 and the Stage 4 pre-checks are committed on `feat/iac-generator` (not pushed). "go" was given on
+2026-11-25; **Stage 4 apply is waiting for the alert email to be readable** (see Blocked). Billable resources: none.
 
-Exact next step after "go" (Stage 4):
-1. User: `export TF_VAR_alert_email=...` in the WSL shell (never in chat), `aws login --profile cloudsentinel-admin`.
-2. Re-plan (the saved plan has a placeholder email):
-   `cd ~/cs-iac/terraform/environments/aws-demo && export AWS_PROFILE=cloudsentinel-admin TF_PLUGIN_CACHE_DIR=/mnt/d/cs-data/tf-plugin-cache && terraform plan -input=false -var-file=aws-demo.tfvars -var-file=local.tfvars -out=shared.tfplan`
-   (check `local.tfvars` still holds the current public IP: `curl -s https://checkip.amazonaws.com`).
+Exact next step (Stage 4):
+1. User: put the address in `~/.config/cloudsentinel/alert-email` (`mkdir -p ~/.config/cloudsentinel && chmod 700
+   ~/.config/cloudsentinel`, then write the file and `chmod 600` it; never in chat or the repo), or export
+   `TF_VAR_alert_email` in `~/.bashrc`.
+2. `bash ~/cs-iac/scripts/eks-shared-plan.sh` (refreshes `local.tfvars`, reads the address, writes `shared.tfplan`).
 3. Confirm 82 creates, record the plan sha256, write the start time here, then `terraform apply shared.tfplan`.
 4. Back up state: `mkdir -p /mnt/d/ml-backup/eks-state/shared && cp terraform.tfstate /mnt/d/ml-backup/eks-state/shared/terraform.tfstate.$(date +%F-%H%M)`.
 5. `aws eks update-kubeconfig --region ap-south-1 --name cloudsentinel-eks --profile cloudsentinel-admin`, `kubectl get nodes`, `kubectl get pods -A`.

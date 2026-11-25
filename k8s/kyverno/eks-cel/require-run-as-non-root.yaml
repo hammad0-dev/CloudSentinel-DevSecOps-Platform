@@ -1,0 +1,45 @@
+# Module 10 (EKS, Kyverno 1.20): CEL port of the ClusterPolicy with the same name (Kyverno 1.20 no longer runs
+# kyverno.io/v1 ClusterPolicy). Same rule, same scope: Pods (and Deployments via autogen) in cloudsentinel-p-*.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-run-as-non-root
+  annotations:
+    policies.kyverno.io/title: Require runAsNonRoot
+    policies.kyverno.io/category: CloudSentinel Module 10
+    policies.kyverno.io/severity: high
+spec:
+  validationActions: [Deny]
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: true
+  autogen:
+    podControllers:
+      controllers: [deployments]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  matchConditions:
+    - name: project-namespaces-only
+      expression: >-
+        (has(object.metadata.namespace) && object.metadata.namespace != '' ? object.metadata.namespace : request.namespace).startsWith('cloudsentinel-p-')
+  variables:
+    - name: containers
+      expression: "object.spec.containers + object.spec.?initContainers.orValue([])"
+    - name: allContainers
+      expression: "variables.containers + object.spec.?ephemeralContainers.orValue([])"
+  validations:
+    - expression: >-
+        (object.spec.?securityContext.?runAsNonRoot.orValue(false) == true &&
+          variables.containers.all(c, c.?securityContext.?runAsNonRoot.orValue(true) == true)) ||
+        variables.containers.all(c, c.?securityContext.?runAsNonRoot.orValue(false) == true)
+      message: "Running as root is not allowed. Set securityContext.runAsNonRoot to true on the Pod or every container."
+    - expression: >-
+        object.spec.?securityContext.?runAsUser.orValue(1) > 0 &&
+        variables.containers.all(c, c.?securityContext.?runAsUser.orValue(1) > 0)
+      message: "runAsUser 0 (root) is not allowed."
