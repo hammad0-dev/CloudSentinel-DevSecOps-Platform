@@ -532,20 +532,23 @@ async function deployProject(projectId, userId, options = {}) {
       throw new Error(`Deployment ${safeAppName} is not ready (${status.readyReplicas ?? 0}/${desired} ready)`);
     }
 
+    // Only pods of the deployment's CURRENT ReplicaSet count. During a rolling update the old ReplicaSet's pods can
+    // still be Running and ready while they terminate, so selecting by app label alone can pick an old pod.
+    const currentHash = currentPodTemplateHash(deployment, JSON.parse(await execute(
+      "kubectl get replicasets",
+      "kubectl",
+      ["get", "replicasets", "--namespace", namespace, "-l", `app=${safeAppName}`, "-o", "json"],
+      cloneDir,
+      30000
+    )), safeAppName);
     const deployedPods = JSON.parse(await execute(
       "kubectl get deployed pods",
       "kubectl",
-      ["get", "pods", "--namespace", namespace, "-l", `app=${safeAppName}`, "-o", "json"],
+      ["get", "pods", "--namespace", namespace, "-l", `app=${safeAppName},pod-template-hash=${currentHash}`, "-o", "json"],
       cloneDir,
       30000
     ));
-    const runningPod = (deployedPods.items || []).find(pod =>
-      pod.status?.phase === "Running" &&
-      (pod.status?.containerStatuses || []).some(container => container.name === applicationContainer.name && container.ready)
-    );
-    if (!runningPod) throw new Error(`No ready pod is running the deployed application container ${applicationContainer.name}`);
-    const podContainer = (runningPod.spec?.containers || []).find(container => container.name === applicationContainer.name);
-    if (podContainer?.image !== imageTag) throw new Error(`Running pod does not reference expected image ${imageTag}`);
+    const runningPod = selectCurrentPod(deployedPods, applicationContainer.name, currentHash, imageTag);
     const podContainerStatus = (runningPod.status?.containerStatuses || []).find(container => container.name === applicationContainer.name);
     const runningImageId = String(podContainerStatus?.imageID || "").trim();
     if (!runningImageId) throw new Error(`Running pod did not report an image ID for ${applicationContainer.name}`);
@@ -637,4 +640,30 @@ async function deployProject(projectId, userId, options = {}) {
   }
 }
 
-module.exports = { deployProject, detectContainerPort, generateDockerfileContent, generateK8sManifests, getProjectNamespace };
+// pod-template-hash of the ReplicaSet that belongs to the deployment's current revision (owner uid must match).
+function currentPodTemplateHash(deployment, replicaSets, appName) {
+  const revision = deployment?.metadata?.annotations?.["deployment.kubernetes.io/revision"];
+  const uid = deployment?.metadata?.uid;
+  if (!revision || !uid) throw new Error(`Deployment ${appName} has no current revision; cannot identify its pods`);
+  const current = (replicaSets?.items || []).filter(rs =>
+    rs.metadata?.annotations?.["deployment.kubernetes.io/revision"] === revision &&
+    (rs.metadata?.ownerReferences || []).some(o => o.kind === "Deployment" && o.uid === uid));
+  const hash = current.length === 1 ? current[0].metadata?.labels?.["pod-template-hash"] : null;
+  if (!hash || !/^[a-z0-9]{1,20}$/.test(hash)) throw new Error(`Deployment ${appName} revision ${revision} has no unique current ReplicaSet`);
+  return hash;
+}
+
+// A ready, non-terminating pod of the current ReplicaSet; every such pod must run the expected image.
+function selectCurrentPod(pods, containerName, hash, imageTag) {
+  const live = (pods?.items || []).filter(pod => pod.metadata?.labels?.["pod-template-hash"] === hash && !pod.metadata?.deletionTimestamp);
+  const ready = live.filter(pod => pod.status?.phase === "Running" &&
+    (pod.status?.containerStatuses || []).some(c => c.name === containerName && c.ready));
+  if (!ready.length) throw new Error(`No ready pod is running the deployed application container ${containerName}`);
+  for (const pod of ready) {
+    const container = (pod.spec?.containers || []).find(c => c.name === containerName);
+    if (container?.image !== imageTag) throw new Error(`Running pod does not reference expected image ${imageTag}`);
+  }
+  return ready[0];
+}
+
+module.exports = { deployProject, detectContainerPort, generateDockerfileContent, generateK8sManifests, getProjectNamespace, currentPodTemplateHash, selectCurrentPod };
