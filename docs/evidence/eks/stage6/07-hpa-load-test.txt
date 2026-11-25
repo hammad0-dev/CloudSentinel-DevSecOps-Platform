@@ -1,0 +1,46 @@
+# HPA load test on 9101 (2026-11-25 19:11:32 PKT): 24 threads for 240 s from a Job in namespace cs-loadtest (in-cluster;
+# no public load balancer on this account). HPA: min 2, max 4, target 70 % CPU of the request.
+time      cpu            replicas 
+19:11:32  1%             2        
+19:11:52  1%             2        
+19:12:12  379%           4        
+19:12:32  125%           4        
+19:12:50  87%            4        
+19:13:08  123%           4        
+19:13:25  222%           4        
+19:13:42  173%           4        
+19:14:01  146%           4        
+19:14:19  158%           4        
+19:14:36  224%           4        
+19:14:55  226%           4        
+19:15:13  160%           4        
+19:15:31  213%           4        
+19:15:50  221%           4        
+19:16:07  90%            4        
+19:16:25  1%             4        
+19:16:43  1%             4        
+19:17:01  1%             4        
+19:17:19  1%             4        
+19:17:38  1%             4        
+19:17:59  1%             4        
+19:18:21  1%             4        
+19:18:42  1%             4        
+19:19:04  1%             4        
+19:19:28  1%             4        
+
+NAME        REFERENCE              TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+p9101-app   Deployment/p9101-app   cpu: 1%/70%   2         4         4          59m
+NAME                        STATUS   NODE
+p9101-app-6965589576-6v8nq  Running  <node-b>
+p9101-app-6965589576-8hprk  Running  <node-a>
+p9101-app-6965589576-jsf4s  Running  <node-b>
+p9101-app-6965589576-rsg8g  Running  <node-a>
+
+Events:
+  Type     Reason                        Age                From                       Message
+  ----     ------                        ----               ----                       -------
+  Warning  FailedGetResourceMetric       58m (x2 over 58m)  horizontal-pod-autoscaler  failed to get cpu utilization: did not receive metrics for targeted pods (pods might be unready)
+  Warning  FailedComputeMetricsReplicas  58m (x2 over 58m)  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: did not receive metrics for targeted pods (pods might be unready)
+  Normal   SuccessfulRescale             8m7s               horizontal-pod-autoscaler  New size: 4; reason: cpu resource utilization (percentage of request) above target
+
+load job: requests sent: 268718

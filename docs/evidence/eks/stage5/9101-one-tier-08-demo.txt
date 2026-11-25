@@ -1,0 +1,23 @@
+# 9101 one-tier demo (2026-11-25 18:48:17 PKT)
+The generated product output keeps a public Service (type LoadBalancer, NLB annotations). This AWS account is on
+the Free plan, which cannot create load balancers (OperationNotPermitted), so the Service stays Pending:
+NAME        TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+p9101-app   LoadBalancer   172.20.237.57   <pending>     80:32343/TCP   27m
+
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                                                
+deployment.apps/p9101-app   2/2     2            2           27m   p9101-app    229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9101-app
+
+NAME                                            REFERENCE              TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/p9101-app   Deployment/p9101-app   cpu: 1%/70%   2         4         2          27m
+
+NAME                             READY   STATUS    RESTARTS   AGE   IP             NODE                                          NOMINATED NODE   READ
+pod/p9101-app-6965589576-8hprk   1/1     Running   0          27m   10.40.10.149   <node-a>   <none>           <non
+pod/p9101-app-6965589576-jsf4s   1/1     Running   0          27m   10.40.21.204   <node-b>    <none>           <non
+
+$ kubectl -n cloudsentinel-p-9101 port-forward svc/p9101-app 18101:80   (local demo access; no public load balancer on this account)
+$ curl http://127.0.0.1:18101/
+{"status":"ok"}
+  [HTTP 200]
+$ curl http://127.0.0.1:18101/health
+{"status":"healthy"}
+  [HTTP 200]

@@ -335,3 +335,26 @@ test('env-var and port detection read names only', () => {
   assert.equal(W.portFrom('nothing here'), null);
   const sha = crypto.createHash('sha256').update('x').digest('hex'); assert.equal(sha.length, 64);
 });
+
+test('recovery after a failed apply may delete only state resources that belong to the approved plan', () => {
+  const planned = ['module.workload["app"].aws_ecr_repository.this', 'module.database[0].aws_db_instance.this', 'module.database[0].aws_security_group.this'];
+  const st = res => ({ resources: res.map(([module, type, name]) => ({ mode: 'managed', module, type, name, instances: [{}] })).concat([{ mode: 'data', type: 'aws_eks_cluster', name: 'shared', instances: [{}] }]) });
+  assert.deepEqual(W.recoveryAddresses(st([['module.workload["app"]', 'aws_ecr_repository', 'this'], ['module.database[0]', 'aws_security_group', 'this']]), planned),
+    ['module.workload["app"].aws_ecr_repository.this', 'module.database[0].aws_security_group.this']);
+  assert.throws(() => W.recoveryAddresses(st([['module.workload["app"]', 'aws_ecr_repository', 'this'], [undefined, 'aws_iam_user', 'x']]), planned), /STATE_OUTSIDE_APPROVED_PLAN/);
+  assert.throws(() => W.recoveryAddresses(st([]), planned), /NOTHING_TO_RECOVER/);
+});
+
+test('terraform runs with the AWS profile (refreshable), never with exported static keys', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cs-eks-env-')); t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const seen = [], base = fakeTools(42, []);
+  const run = async (exe, args, o) => { if (path.basename(exe) === 'terraform' && args[0] === 'plan') seen.push({ ...o.env }); return base(exe, args, o); };
+  const e = new WorkloadInfrastructure({ root: path.join(root, 'eks'), source: () => W.localSource(path.join(FIX, 'cloudsentinel-test-flask-postgres')), run, backupDir: '' });
+  await e.analyze({ id: 42 }, 'u'); await e.confirm({ id: 42 }, 'u', { architecture: 'two-tier' });
+  await e.plan({ id: 42 }, 'u').catch(() => {});
+  assert.ok(seen.length >= 1);
+  for (const env of seen) {
+    assert.equal(env.AWS_PROFILE, 'cloudsentinel-dev');
+    for (const k of ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']) assert.equal(env[k], undefined);
+  }
+});

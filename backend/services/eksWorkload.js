@@ -409,6 +409,23 @@ function inspectPlan(plan, expected) {
 }
 
 // Destroy plans may only delete exactly the addresses that the approved apply created.
+// Addresses a recovery destroy may delete after a failed apply: every managed resource in the state must belong to
+// the approved plan (otherwise something else is in this state and a human must look).
+function recoveryAddresses(state, planned) {
+  if (!state || !Array.isArray(state.resources) || !Array.isArray(planned)) reject('MALFORMED_STATE');
+  const allowed = new Set(planned), inState = [];
+  for (const r of state.resources) {
+    if (r.mode !== 'managed') continue;
+    for (const i of r.instances || []) {
+      if (i.index_key !== undefined) reject('UNEXPECTED_INDEXED_RESOURCE');
+      inState.push(`${r.module ? r.module + '.' : ''}${r.type}.${r.name}`);
+    }
+  }
+  if (!inState.length) reject('NOTHING_TO_RECOVER');
+  if (inState.some(a => !allowed.has(a))) reject('STATE_OUTSIDE_APPROVED_PLAN');
+  return inState;
+}
+
 function inspectDestroyPlan(plan, { projectId, addresses }) {
   assertProject(projectId);
   if (!plan || plan.errored || !Array.isArray(plan.resource_changes) || !Array.isArray(addresses) || !addresses.length) reject('MALFORMED_DESTROY_PLAN');
@@ -425,6 +442,6 @@ function inspectDestroyPlan(plan, { projectId, addresses }) {
 
 module.exports = {
   ACCOUNT, REGION, PROTECTED_PROJECTS, MODULE_TAG, DEFAULT_CLUSTER, ECR_HOST, BASE_IMAGES, TEMPLATE_DIRS, REPO_ROOT,
-  localSource, classify, buildTfvars, generate, generateDockerfile, inspectPlan, inspectDestroyPlan, assertProject,
+  localSource, classify, buildTfvars, generate, generateDockerfile, inspectPlan, inspectDestroyPlan, recoveryAddresses, assertProject,
   envNamesFrom, portFrom, MANIFEST, CODE, SKIP_DIR,
 };

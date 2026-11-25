@@ -13,8 +13,9 @@
 //   - the AWS identity is account 229032674007 and the region ap-south-1
 // State is one local file per project (<artifact root>/eks-workloads/<id>/state/terraform.tfstate), copied to
 // INFRA_STATE_BACKUP_DIR after every apply/destroy. Every step is appended to <...>/<id>/audit.jsonl.
-// Credentials come from `aws configure export-credentials --profile $INFRA_AWS_PROFILE` and are passed to the child
-// process environment only; tool output is redacted before it is stored.
+// Credentials: Terraform and the AWS CLI run with AWS_PROFILE=$INFRA_AWS_PROFILE so the SDK refreshes short-lived
+// `aws login` credentials during long applies; `aws configure export-credentials` is used only to pre-check expiry
+// and identity and to redact the keys from stored tool output.
 
 const fs = require('node:fs/promises');
 const path = require('node:path');
@@ -115,7 +116,11 @@ class WorkloadInfrastructure {
     let c; try { c = JSON.parse(r.stdout); } catch { throw fail('AWS credentials unavailable'); }
     if (!c.AccessKeyId || !c.SecretAccessKey) throw fail('AWS credentials unavailable');
     if (c.Expiration && Date.parse(c.Expiration) <= Date.now() + 5 * 60 * 1000) throw fail(`AWS credentials for ${this.profile} expire within 5 minutes; run: aws login --profile ${this.profile}`);
-    Object.assign(env, { AWS_ACCESS_KEY_ID: c.AccessKeyId, AWS_SECRET_ACCESS_KEY: c.SecretAccessKey, ...(c.SessionToken ? { AWS_SESSION_TOKEN: c.SessionToken } : {}) });
+    // Child processes get the PROFILE, not the exported keys: `aws login` credentials last about 15 minutes and only
+    // the SDK's profile provider refreshes them, so static keys expired in the middle of a 10-minute RDS create.
+    // The exported keys are used only for the checks above and to redact any accidental echo in tool output.
+    Object.assign(env, { AWS_PROFILE: this.profile });
+    for (const k of ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']) delete env[k];
     const secrets = [c.AccessKeyId, c.SecretAccessKey, c.SessionToken].filter(Boolean);
     const id = await this.run(TOOLS.aws, ['sts', 'get-caller-identity', '--output', 'json'], { env, cwd, timeout: 20000 });
     let account; try { account = JSON.parse(id.stdout).Account; } catch { /* below */ }
@@ -251,8 +256,9 @@ class WorkloadInfrastructure {
           data.status = 'APPLIED';
         } else {
           data.status = 'DESTROYED';
-          data.destroyed = { at: now(), planHash: data.approval.hash, stateBackup: backup ? path.basename(backup) : null };
+          data.destroyed = { at: now(), planHash: data.approval.hash, stateBackup: backup ? path.basename(backup) : null, recovery: Boolean(data.recovery) };
           delete data.outputs;
+          delete data.recovery;
         }
         await this.audit(dir, { action: `${kind}-done`, userId, result: data.status });
         return this.save(dir, data);
@@ -276,13 +282,23 @@ class WorkloadInfrastructure {
     W.assertProject(project.id);
     return this.store.locked(project.id, async dir => {
       const data = await this.get(project.id);
-      if (!['APPLIED', 'AWAITING_DESTROY_APPROVAL'].includes(data.status) || !data.applied) throw fail('Only applied project infrastructure can be destroyed through this path');
+      // Recovery after a failed apply (NEEDS_OPERATOR_REVIEW): the only way forward is a scoped destroy of what the
+      // failed apply created: resources that are in the saved state AND in the approved plan, nothing else.
+      const recovering = data.status === 'NEEDS_OPERATOR_REVIEW' || (data.status === 'AWAITING_DESTROY_APPROVAL' && data.recovery);
+      if (!recovering && (!['APPLIED', 'AWAITING_DESTROY_APPROVAL'].includes(data.status) || !data.applied)) throw fail('Only applied project infrastructure can be destroyed through this path');
+      let addresses = data.applied?.addresses;
+      if (recovering) {
+        if (!data.job?.stateDir || !data.plan?.summary) throw fail('No saved state or approved plan to recover from; manual review required');
+        const state = JSON.parse(await fs.readFile(path.join(data.job.stateDir, 'terraform.tfstate'), 'utf8'));
+        addresses = W.recoveryAddresses(state, data.plan.summary.map(r => r.address));
+        data.recovery = { addresses, at: now() };
+      }
       const env = this.baseEnv(), logs = [];
       try {
         const secrets = await this.credentials(env, data.job.root);
         await this.step(logs, 'destroy-plan', ['plan', '-destroy', '-input=false', '-no-color', '-lock=true', '-out=destroy.tfplan'], { cwd: data.job.root, env, secrets });
         const shown = await this.step(logs, 'show', ['show', '-json', 'destroy.tfplan'], { cwd: data.job.root, env, secrets });
-        const summary = W.inspectDestroyPlan(JSON.parse(shown.stdout), { projectId: project.id, addresses: data.applied.addresses });
+        const summary = W.inspectDestroyPlan(JSON.parse(shown.stdout), { projectId: project.id, addresses });
         const file = path.join(data.job.root, 'destroy.tfplan');
         await fs.chmod(file, 0o400);
         const hash = sha256(await fs.readFile(file));

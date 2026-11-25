@@ -250,7 +250,26 @@ allow something; no workaround (NodePort, port-forward as "public" access, other
 - GuardDuty (Free plan) - needs a Paid plan; excluded.
 - `TF_VAR_alert_email` is not visible to the shells I start (checked again 2026-11-25) - needed for the Stage 4 plan.
 
-## Resume here (2026-11-25 18:35 PKT) - BILLABLE: shared cluster since 17:46:48 PKT, about $0.55/hour
+## Option 2 (user, 2026-11-25 ~18:40): no public load balancers, port-forward demos, RDS for 9102/9103
+
+| Time (PKT) | Event |
+|---|---|
+| 18:44 | dev policy v2 (KMS via RDS/Secrets Manager) published by the user; live == repo |
+| 18:45 | engine gap: NEEDS_OPERATOR_REVIEW had no way out; added a scoped recovery destroy (state must be a subset of the approved plan; `recoveryAddresses`, unit test) |
+| 18:48-18:53 | 9102 recovery destroy (7 resources), fresh plan (8 creates), apply started |
+| 18:59 | 9102 apply failed: the engine's **exported** `aws login` credentials (about 15 min lifetime) expired while Terraform waited for RDS. Engine fixed: child processes now get `AWS_PROFILE` (refreshable); regression test added |
+| 19:02-19:05 | 9103 recovery destroy (12), fresh plan (13), apply started; 9102 destroy-plan refused: `rds:DescribeDBInstances` on `db:*` |
+| 19:13 | 9103 apply failed the same way: the AWS provider reads a DB instance by resource-id filter, which IAM authorizes on `db:*`. **Both RDS instances exist** (available, private, encrypted), both projects NEEDS_OPERATOR_REVIEW |
+
+Needed: dev policy v3 (`DescribeDbInstancesReadOnly`: `rds:DescribeDBInstances` on `db:*`, read-only) - in the repo, must be
+published by the user. Then for 9102 and 9103: recovery destroy (scoped) -> analyze -> confirm -> plan -> approve -> apply
+(`scratchpad s5_recover.sh` steps; the same CLI commands as Stage 5).
+
+Stage 6 done so far (no RDS needed): RBAC table, Kyverno admission + policy reports, monitoring stack, planted key
+(SAST + Trivy), saved Logs Insights queries (Terraform), alarm + SNS history, HPA 2 -> 4. Shared fix applied:
+CloudTrail role lacked KMS on its encrypted log group (denied every ~5 min, which kept tripping the alarm).
+
+## Resume here (2026-11-25 19:20 PKT) - BILLABLE: shared cluster since 17:46:48 PKT (about $0.53/hour) + 2 RDS since about 18:55/19:07 (about $0.06/hour)
 
 Stopped in Stage 5: the Free plan refuses load balancers. Waiting for the user's decision:
 - upgrade to a Paid plan, then: publish dev policy v2 (below), re-plan 9102/9103 (the engine re-plans from the

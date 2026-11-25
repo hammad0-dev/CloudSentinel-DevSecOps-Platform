@@ -217,6 +217,12 @@ data "aws_iam_policy_document" "trail_logs" {
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["${aws_cloudwatch_log_group.trail.arn}:log-stream:*"]
   }
+  # The log group is encrypted with the security key; CloudTrail's delivery session (this role) needs the key too.
+  # Without it every delivery was denied kms:GenerateDataKey and tripped the unauthorized-API-call alarm.
+  statement {
+    actions   = ["kms:GenerateDataKey*", "kms:Decrypt"]
+    resources = [aws_kms_key.security.arn]
+  }
 }
 
 resource "aws_iam_role" "trail_logs" {
@@ -354,4 +360,44 @@ resource "aws_iam_policy" "workload_boundary" {
   name        = "cloudsentinel-workload-boundary"
   description = "Permissions boundary for per-project IRSA roles (cloudsentinel-p*-irsa)"
   policy      = data.aws_iam_policy_document.workload_boundary.json
+}
+
+# ---- Saved CloudWatch Logs Insights queries for investigation (Module 11) -------------------------------------------
+locals {
+  flow_log_group = element(split(":log-group:", module.vpc.vpc_flow_log_destination_arn), 1)
+}
+
+resource "aws_cloudwatch_query_definition" "denied_api_calls" {
+  name            = "cloudsentinel/denied-api-calls"
+  log_group_names = [aws_cloudwatch_log_group.trail.name]
+  query_string    = <<-EOQ
+    fields eventTime, userIdentity.arn, eventSource, eventName, errorCode, awsRegion, sourceIPAddress
+    | filter errorCode like /UnauthorizedOperation|AccessDenied/
+    | sort eventTime desc
+    | limit 50
+  EOQ
+}
+
+resource "aws_cloudwatch_query_definition" "eks_audit_secrets_and_exec" {
+  name            = "cloudsentinel/eks-audit-secrets-and-exec"
+  log_group_names = [module.eks.cloudwatch_log_group_name]
+  query_string    = <<-EOQ
+    fields @timestamp, user.username, verb, objectRef.namespace, objectRef.resource, objectRef.subresource, objectRef.name, responseStatus.code
+    | filter @logStream like /kube-apiserver-audit/
+    | filter objectRef.resource = "secrets" or objectRef.subresource = "exec"
+    | sort @timestamp desc
+    | limit 50
+  EOQ
+}
+
+resource "aws_cloudwatch_query_definition" "vpc_flow_rejects" {
+  name            = "cloudsentinel/vpc-flow-rejects"
+  log_group_names = [local.flow_log_group]
+  query_string    = <<-EOQ
+    fields @timestamp, srcAddr, dstAddr, dstPort, protocol, action
+    | filter action = "REJECT"
+    | stats count(*) as rejects by srcAddr, dstAddr, dstPort
+    | sort rejects desc
+    | limit 25
+  EOQ
 }

@@ -12,3 +12,4 @@ output "alert_topic_arn" { value = aws_sns_topic.alerts.arn }
 output "cloudtrail_log_group" { value = aws_cloudwatch_log_group.trail.name }
 output "flow_log_group_arn" { value = module.vpc.vpc_flow_log_destination_arn }
 output "control_plane_log_group" { value = module.eks.cloudwatch_log_group_name }
+output "flow_log_group" { value = local.flow_log_group }
