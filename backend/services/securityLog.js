@@ -36,6 +36,19 @@ const PUSH_WARN_INTERVAL_MS = 60 * 1000;
 const pending = [];
 let pushTimer = null;
 let lastPushWarn = -Infinity;
+// Circuit breaker: after PUSH_PAUSE_AFTER consecutive failures, stop pushing (and stop queueing) for a back-off that
+// doubles from 1 min up to 30 min, logged once per pause. A successful push resets it. A dead or unconfigured
+// endpoint therefore costs one warning per pause instead of a request every 2 s.
+const PUSH_PAUSE_AFTER = 3;
+const PUSH_PAUSE_BASE_MS = 60 * 1000;
+const PUSH_PAUSE_MAX_MS = 30 * 60 * 1000;
+let pushFailures = 0;
+let pushPausedUntil = 0;
+const DISABLED_VALUES = new Set(["", "off", "false", "0", "no", "none", "disabled"]);
+function pushTarget() {
+  const raw = String(process.env.LOKI_PUSH_URL ?? "").trim();
+  return DISABLED_VALUES.has(raw.toLowerCase()) ? null : raw;
+}
 const defaultPoster = (url, body, opts) => require("axios").post(url, body, opts);
 let poster = defaultPoster;
 
@@ -70,19 +83,31 @@ function pushFailed(err, url, dropped, now) {
 }
 
 function flushPush({ now = Date.now } = {}) {
-  const url = process.env.LOKI_PUSH_URL;
+  const url = pushTarget();
   const values = pending.splice(0);
-  if (!url || !values.length) return Promise.resolve();
+  if (!url || !values.length || now() < pushPausedUntil) return Promise.resolve();
   const target = lokiPushUrl(url);
   return Promise.resolve()
     .then(() => poster(target,
       { streams: [{ stream: { source: "backend", job: "cloudsentinel-backend" }, values }] },
       { timeout: 5000 }))
-    .then(() => undefined, (err) => pushFailed(err, target, values.length, now()));
+    .then(() => {
+      if (pushFailures >= PUSH_PAUSE_AFTER) logEvent({ level: "info", event: "loki_push_resumed", detail: { url: safeUrl(target), afterFailures: pushFailures } }, { now: now(), push: false });
+      pushFailures = 0;
+    }, (err) => {
+      const at = now();
+      pushFailed(err, target, values.length, at);
+      pushFailures += 1;
+      if (pushFailures >= PUSH_PAUSE_AFTER) {
+        const pauseMs = Math.min(PUSH_PAUSE_MAX_MS, PUSH_PAUSE_BASE_MS * 2 ** (pushFailures - PUSH_PAUSE_AFTER));
+        pushPausedUntil = at + pauseMs;
+        logEvent({ level: "warn", event: "loki_push_paused", detail: { url: safeUrl(target), consecutiveFailures: pushFailures, pauseSeconds: pauseMs / 1000 } }, { now: at, push: false });
+      }
+    });
 }
 
 function queuePush(entry, line) {
-  if (!process.env.LOKI_PUSH_URL) return;
+  if (!pushTarget() || Date.parse(entry.ts) < pushPausedUntil) return;
   pending.push([String(Date.parse(entry.ts) * 1e6), line]);
   if (pending.length > 5000) pending.splice(0, pending.length - 5000);
   if (pushTimer) return;
@@ -156,6 +181,8 @@ function _reset() {
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = null;
   lastPushWarn = -Infinity;
+  pushFailures = 0;
+  pushPausedUntil = 0;
   poster = defaultPoster;
 }
 

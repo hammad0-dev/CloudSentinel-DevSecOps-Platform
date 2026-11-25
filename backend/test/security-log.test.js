@@ -67,3 +67,49 @@ test("push failure logs one structured warn per minute and is not re-pushed", as
   });
   assert.equal(posts, 3, "the warn itself is never queued for push");
 });
+
+test("a dead Loki endpoint pauses pushing with back-off and resumes after a success", async () => {
+  securityLog._reset();
+  process.env.LOKI_PUSH_URL = "http://127.0.0.1:3100";
+  let posts = 0, up = false;
+  securityLog._setPoster(async () => { posts += 1; if (!up) throw Object.assign(new Error("connect ECONNREFUSED 127.0.0.1:3100"), { code: "ECONNREFUSED" }); });
+  const t0 = Date.now();
+  const at = async (ms) => { securityLog.logEvent({ event: "http_request" }, { now: t0 + ms }); await securityLog.flushPush({ now: () => t0 + ms }); };
+  await at(0); await at(2000); await at(4000);             // 3 consecutive failures -> pause 60 s
+  await at(10000); await at(50000);                        // paused: no request is sent
+  const pausedPosts = posts;
+  const paused = securityLog.recentEvents(Infinity).filter((e) => e.event === "loki_push_paused");
+  await at(65000);                                         // after the pause: one try, fails again -> pause 120 s
+  await at(120000);                                        // still paused
+  const secondPause = securityLog.recentEvents(Infinity).filter((e) => e.event === "loki_push_paused");
+  up = true;
+  await at(190000);                                        // after the second pause: succeeds and resumes
+  const resumed = securityLog.recentEvents(Infinity).filter((e) => e.event === "loki_push_resumed");
+  await at(192000);
+  const finalPosts = posts;
+  securityLog._reset();
+  delete process.env.LOKI_PUSH_URL;
+  assert.equal(pausedPosts, 3);
+  assert.equal(paused.length, 1);
+  assert.equal(paused[0].detail.pauseSeconds, 60);
+  assert.equal(paused[0].detail.url, "http://127.0.0.1:3100/loki/api/v1/push");
+  assert.equal(secondPause.length, 2);
+  assert.equal(secondPause[1].detail.pauseSeconds, 120);
+  assert.equal(resumed.length, 1);
+  assert.equal(finalPosts, 6, "pushes resume normally after a success");
+});
+
+test("LOKI_PUSH_URL unset, empty or off disables pushing cleanly", async () => {
+  for (const value of [undefined, "", "off", "OFF", "none", "false"]) {
+    securityLog._reset();
+    if (value === undefined) delete process.env.LOKI_PUSH_URL; else process.env.LOKI_PUSH_URL = value;
+    let posts = 0;
+    securityLog._setPoster(async () => { posts += 1; });
+    securityLog.logEvent({ event: "http_request" });
+    await securityLog.flushPush();
+    assert.equal(posts, 0, String(value));
+    assert.equal(securityLog.recentEvents(Infinity).filter((e) => e.event.startsWith("loki_push")).length, 0);
+  }
+  securityLog._reset();
+  delete process.env.LOKI_PUSH_URL;
+});
