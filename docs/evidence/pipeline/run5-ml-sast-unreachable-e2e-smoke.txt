@@ -1,0 +1,16 @@
+# Run 5b: ml-sast unreachable. Temporary second backend on :3200 (same master code, same DB), ML_SAST_URL=http://127.0.0.1:8999 (nothing listening), stale-scan cleanup and provenance recovery off. The stack on :3000 was not touched.
+e2e-python-clean: project 26, triggering pipeline
+  execution 114: TRIGGERED []
+  execution 114: RUNNING []
+  execution 114: ERROR []
+
+== e2e-python-clean (project 26, execution 114) ERROR in 64s
+SAST       FAILED             2s  C0 H0 M0 L0 total=0
+Dependency NOT_RUN            -s  
+IaC        NOT_RUN            -s  
+Image      NOT_RUN            -s  
+Deploy     NOT_RUN            -s  
+DAST       NOT_RUN            -s  
+Gate: BLOCKED — Stage SAST failed after 2 attempts: ML SAST service at http://127.0.0.1:8999 is unreachable (ECONNREFUSED). Start the service; the stage does not fall back to another engine.
+Staging URL: -
+e2e-smoke rc=1
