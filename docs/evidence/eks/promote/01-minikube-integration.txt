@@ -1,0 +1,54 @@
+# Promote stage: Minikube stand-in integration test (test/promote-minikube.integration.test.js)
+# context minikube, throw-away namespace cs-promote-it-70a56d (deleted afterwards); registry stand-in = minikube image load
+
+## run: first -> PROMOTED
+reason: p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1 rolled out to minikube and is healthy
+  infrastructure  APPLIED    already applied
+  cluster         REACHABLE  minikube
+  push            PUSHED     229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1
+  dry-run         ADMITTED   
+  apply           APPLIED    
+  rollout         OK         Waiting for deployment "p9901-app" rollout to finish: 0 of 2 updated replicas are available... | Waiting for deployment "p9901-app" rollout to finish: 1 of 2 updated replicas are available... | deployment "p9901-app" successfully rolled out
+  health          OK         GET / -> 200 via port-forward
+
+## run: rerun -> PROMOTED
+reason: p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1 rolled out to minikube and is healthy
+  infrastructure  APPLIED    already applied
+  cluster         REACHABLE  minikube
+  push            SKIPPED    tag already holds this exact image
+  dry-run         ADMITTED   
+  apply           APPLIED    
+  rollout         OK         deployment "p9901-app" successfully rolled out
+  health          OK         GET / -> 200 via port-forward
+
+## run: broken -> FAILED
+reason: rollout failed; rollback done
+  infrastructure  APPLIED    already applied
+  cluster         REACHABLE  minikube
+  push            PUSHED     229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9901-app:b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2
+  dry-run         ADMITTED   
+  apply           APPLIED    
+  rollout         FAILED     error: timed out waiting for the condition
+  rollback        OK         undo: deployment.apps/p9901-app rolled back; Waiting for deployment "p9901-app" rollout to finish: 1 old replicas are pending termination... | deployment "p9901-app" successfully rolled out
+
+## run: conflict -> FAILED
+reason: tag b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2 already exists in the registry with a different image; refusing to overwrite
+
+## audit entries
+  {'executionId': 1, 'action': 'promote-start', 'commit': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'image': 'sha256:6f377655b0eb4c0b88e4f3242f640cd8225282266d2eec4da8d71c7c18188357'}
+  {'executionId': 1, 'action': 'promote-push', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'result': 'PUSHED', 'profile': 'cloudsentinel-dev'}
+  {'executionId': 1, 'action': 'promote-apply', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'result': 'APPLIED', 'previousImage': None}
+  {'executionId': 1, 'action': 'promote-rollout', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'result': 'HEALTHY', 'health': 'GET / -> 200 via port-forward'}
+  {'executionId': 1, 'action': 'promote-result', 'result': 'PROMOTED', 'reason': 'p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1 rolled out to minikube and is healthy', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'approvedBy': None}
+  {'executionId': 1, 'action': 'promote-start', 'commit': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'image': 'sha256:6f377655b0eb4c0b88e4f3242f640cd8225282266d2eec4da8d71c7c18188357'}
+  {'executionId': 1, 'action': 'promote-apply', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'result': 'APPLIED', 'previousImage': '229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'}
+  {'executionId': 1, 'action': 'promote-rollout', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'result': 'HEALTHY', 'health': 'GET / -> 200 via port-forward'}
+  {'executionId': 1, 'action': 'promote-result', 'result': 'PROMOTED', 'reason': 'p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1 rolled out to minikube and is healthy', 'tag': 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', 'approvedBy': None}
+  {'executionId': 1, 'action': 'promote-start', 'commit': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'image': 'sha256:84ea4da93476ea812ed15bbcaef82aa8d3ef23908b0614145138787dab6ff938'}
+  {'executionId': 1, 'action': 'promote-push', 'tag': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'result': 'PUSHED', 'profile': 'cloudsentinel-dev'}
+  {'executionId': 1, 'action': 'promote-apply', 'tag': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'result': 'APPLIED', 'previousImage': '229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'}
+  {'executionId': 1, 'action': 'promote-rollback', 'tag': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'result': 'ROLLED_BACK', 'restoredImage': '229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9901-app:a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'}
+  {'executionId': 1, 'action': 'promote-result', 'result': 'FAILED', 'reason': 'rollout failed; rollback done', 'tag': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'approvedBy': None}
+  {'executionId': 1, 'action': 'promote-start', 'commit': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'image': 'sha256:6f377655b0eb4c0b88e4f3242f640cd8225282266d2eec4da8d71c7c18188357'}
+  {'executionId': 1, 'action': 'promote-push', 'tag': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'result': 'REFUSED_TAG_EXISTS'}
+  {'executionId': 1, 'action': 'promote-result', 'result': 'FAILED', 'reason': 'tag b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2 already exists in the registry with a different image; refusing to overwrite', 'tag': 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', 'approvedBy': None}

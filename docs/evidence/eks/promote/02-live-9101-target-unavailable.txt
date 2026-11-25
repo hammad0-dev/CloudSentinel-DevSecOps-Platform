@@ -1,0 +1,40 @@
+# Live check, project 9101 (already APPLIED), 2026-11-25 22:31:49 PKT
+# direct stage invocation (scripts/promote-verify.js); earlier stages asserted by the operator, not run
+## image: built from test-fixtures/cloudsentinel-test-python-clean with the generated Dockerfile
+commit 14320fceb4da0fd4fae07aa63bfb0b309f2c1dec
+image  sha256:af0a41fc5fe4f98cee3d2bbb86ce369e7121522ecdcc816932e6ad43b1260772
+## image scan (Trivy, CRITICAL blocks)
+├──────────────┼────────────────┤          ├──────────────┼───────────────────┼───────────────┼────────────────────────────────────────────────────────┤
+│ zlib1g       │ CVE-2023-45853 │          │ will_not_fix │ 1:1.2.13.dfsg-1   │               │ zlib: integer overflow and resultant heap-based buffer │
+│              │                │          │              │                   │               │ overflow in zipOpenNewFileInZip4_6                     │
+│              │                │          │              │                   │               │ https://avd.aquasec.com/nvd/cve-2023-45853             │
+└──────────────┴────────────────┴──────────┴──────────────┴───────────────────┴───────────────┴────────────────────────────────────────────────────────┘
+trivy exit: 1
+## stage run (PROMOTE_KUBE_CONTEXT=eks-cloudsentinel)
+{
+ "stage": "Promote",
+ "target": "eks",
+ "approval": "manual",
+ "startedAt": "2026-11-25T17:33:19.458Z",
+ "steps": [
+  {
+   "name": "infrastructure",
+   "outcome": "APPLIED",
+   "detail": "already applied",
+   "at": "2026-11-25T17:33:19.463Z"
+  }
+ ],
+ "status": "SKIPPED",
+ "reason": "target unavailable: cluster not reachable",
+ "finishedAt": "2026-11-25T17:33:29.540Z"
+}
+exit: 1
+## ECR: tag present? (expect: no, nothing pushed)
+v1.0.0
+## audit entries appended
+{"at":"2026-11-25T13:14:28.857Z","action":"apply-done","userId":"cli:hammad","result":"APPLIED"}
+{"at":"2026-11-25T17:33:19.460Z","executionId":null,"by":"operator:promote-verify","action":"promote-start","commit":"14320fceb4da0fd4fae07aa63bfb0b309f2c1dec","image":"sha256:af0a41fc5fe4f98cee3d2bbb86ce369e7121522ecdcc816932e6ad43b1260772"}
+{"at":"2026-11-25T17:33:29.542Z","executionId":null,"by":"operator:promote-verify","action":"promote-result","result":"SKIPPED","reason":"target unavailable: cluster not reachable","tag":null,"approvedBy":null}
+## promote-verify with the image gate (expect refusal: CRITICAL zlib CVE-2023-45853)
+promote-verify: image fails the image security gate (CRITICAL OS-package vulnerability); not promoted
+exit: 2

@@ -59,6 +59,8 @@ class WorkloadInfrastructure {
   gate() { return applyGate(this.root); }
   async audit(dir, entry) { await fs.appendFile(path.join(dir, 'audit.jsonl'), JSON.stringify({ at: now(), ...entry }) + '\n', { mode: 0o600 }); }
   async get(id) { return this.store.get(id); }
+  // Audit entries from other stages (the promote stage); never contains secrets.
+  async recordAudit(projectId, entry) { W.assertProject(projectId); return this.store.locked(projectId, dir => this.audit(dir, entry)); }
   async save(dir, data) { data.updatedAt = now(); data.history = [...(data.history || []).slice(-29), { status: data.status, at: data.updatedAt }]; await this.store.save(dir, data); return data; }
 
   publicRecord(data) {
@@ -192,8 +194,11 @@ class WorkloadInfrastructure {
   }
 
   // ---- approval (single use, exact hash) ----------------------------------------------------------------------
-  async approve(project, userId, { hash, kind = 'apply' } = {}) {
+  // approvedBy: optional label of what approved (the promote stage passes "pipeline gates (execution N)"); recorded
+  // in the approval and the audit log. The approval is still bound to userId (consume() checks it).
+  async approve(project, userId, { hash, kind = 'apply', approvedBy } = {}) {
     W.assertProject(project.id);
+    if (approvedBy !== undefined && (typeof approvedBy !== 'string' || !/^[A-Za-z0-9 ():_.-]{1,100}$/.test(approvedBy))) throw fail('Invalid approver label', 400);
     return this.store.locked(project.id, async dir => {
       const data = await this.get(project.id);
       const plan = kind === 'destroy' ? data.destroyPlan : data.plan;
@@ -203,8 +208,8 @@ class WorkloadInfrastructure {
       if (Date.parse(plan.expiresAt) <= Date.now()) throw fail('Plan expired; plan again');
       if (typeof hash !== 'string' || hash !== plan.hash) throw fail('Plan checksum mismatch');
       if (sha256(await fs.readFile(path.join(data.job.root, plan.file || (kind === 'destroy' ? 'destroy.tfplan' : 'project.tfplan')))) !== plan.hash) throw fail('Plan file changed after review');
-      data.approval = { kind, hash, userId, at: now(), expiresAt: new Date(Math.min(Date.parse(plan.expiresAt), Date.now() + APPROVAL_TTL_MS)).toISOString(), consumedAt: null };
-      await this.audit(dir, { action: `approve-${kind}`, userId, planHash: hash });
+      data.approval = { kind, hash, userId, ...(approvedBy ? { approvedBy } : {}), at: now(), expiresAt: new Date(Math.min(Date.parse(plan.expiresAt), Date.now() + APPROVAL_TTL_MS)).toISOString(), consumedAt: null };
+      await this.audit(dir, { action: `approve-${kind}`, userId, planHash: hash, ...(approvedBy ? { approvedBy } : {}) });
       return this.save(dir, data);
     });
   }
