@@ -37,8 +37,10 @@ data "aws_eks_cluster" "shared" {
   name = var.cluster_name
 }
 
+# Looked up by ARN (iam:GetOpenIDConnectProvider on this provider only); a lookup by url needs
+# iam:ListOpenIDConnectProviders on every provider, which the scoped cloudsentinel-dev policy does not grant.
 data "aws_iam_openid_connect_provider" "shared" {
-  url = data.aws_eks_cluster.shared.identity[0].oidc[0].issuer
+  arn = "arn:aws:iam::229032674007:oidc-provider/${replace(data.aws_eks_cluster.shared.identity[0].oidc[0].issuer, "https://", "")}"
 }
 
 data "aws_subnets" "private" {

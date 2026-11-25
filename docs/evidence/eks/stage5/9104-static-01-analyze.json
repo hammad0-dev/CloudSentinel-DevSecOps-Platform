@@ -1,0 +1,58 @@
+{
+  "projectId": 9104,
+  "status": "ANALYZED",
+  "commit": "34dee4a61212c4e0b01b0e6cd678908e68d19b254a8c45849cfbd7af8f3129cf",
+  "classification": {
+    "analysis": {
+      "architecture": "one-tier",
+      "confidence": "medium",
+      "reason": "One application role detected, with no database dependency established in inspected files; this is not proof of absence.",
+      "confirmationRequired": true,
+      "languages": [
+        "HTML"
+      ],
+      "frameworks": [],
+      "databases": [],
+      "ports": [],
+      "components": [
+        {
+          "file": "index.html",
+          "role": "frontend",
+          "name": "Static HTML",
+          "kind": "source",
+          "runtimeConfirmed": false
+        }
+      ],
+      "evidence": [
+        "index.html: Static HTML (frontend; source, runtime not verified)"
+      ],
+      "warnings": [],
+      "confirmedRuntimeServices": [],
+      "supportedTemplate": "network-only",
+      "applicationDeploymentSupported": false,
+      "limitations": "Repository declarations only, not confirmed runtime services. Networking-only template; no application, compute or database deployment."
+    },
+    "detectedArchitecture": "one-tier",
+    "confirmationRequired": true,
+    "warnings": [],
+    "result": "STATIC_SITE",
+    "template": "static-site",
+    "architecture": "static",
+    "reason": "Only static HTML files; handled by the existing static-site engine (S3 + CloudFront), unchanged.",
+    "components": [],
+    "database": null
+  },
+  "history": [
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T12:47:48.510Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T12:47:48.510Z",
+  "applyEnabled": false,
+  "applyBlockers": [
+    "INFRA_APPLY_ENABLED is not true"
+  ],
+  "account": "229032674007",
+  "region": "ap-south-1"
+}

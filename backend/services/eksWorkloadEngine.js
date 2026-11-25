@@ -125,7 +125,12 @@ class WorkloadInfrastructure {
   async step(logs, name, args, { cwd, env, secrets = [], timeout = 300000, exe = TOOLS.terraform, allowCodes = [0] }) {
     const r = await this.run(exe, args, { cwd, env, timeout, limit: 32 * 1024 * 1024 });
     logs.push({ step: name, code: r.code, stdout: name === 'show' || name === 'output' ? '[WITHHELD]' : redact(r.stdout, secrets), stderr: redact(r.stderr, secrets) });
-    if (!allowCodes.includes(r.code)) throw fail(`Terraform ${name} failed; nothing applied`);
+    if (!allowCodes.includes(r.code)) {
+      // apply/destroy can fail part-way: some resources may exist (they are in the saved state). Never say otherwise.
+      throw fail(['apply', 'destroy'].includes(name)
+        ? `Terraform ${name} failed part-way; resources may have changed (see state); operator review required`
+        : `Terraform ${name} failed; nothing applied`);
+    }
     return r;
   }
   async writeLog(dir, name, logs) { await fs.writeFile(path.join(dir, `${name}-${Date.now()}.log.json`), JSON.stringify(logs, null, 1), { mode: 0o600 }); }

@@ -1,0 +1,166 @@
+{
+  "projectId": 9101,
+  "status": "AWAITING_APPROVAL",
+  "commit": "b7714e7e36ce9e7a3ec05bdcd862cb2d8682b645a83c6bc8c47afa67843e5c55",
+  "classification": {
+    "analysis": {
+      "architecture": "one-tier",
+      "confidence": "medium",
+      "reason": "One application role detected, with no database dependency established in inspected files; this is not proof of absence.",
+      "confirmationRequired": true,
+      "languages": [
+        "Python"
+      ],
+      "frameworks": [
+        "flask"
+      ],
+      "databases": [],
+      "ports": [],
+      "components": [
+        {
+          "file": "requirements.txt",
+          "role": "backend",
+          "name": "flask",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        }
+      ],
+      "evidence": [
+        "requirements.txt: flask (backend; dependency, runtime not verified)",
+        "requirements.txt: Python dependency manifest; clients do not prove a deployed database"
+      ],
+      "warnings": [],
+      "confirmedRuntimeServices": [],
+      "supportedTemplate": "network-only",
+      "applicationDeploymentSupported": false,
+      "limitations": "Repository declarations only, not confirmed runtime services. Networking-only template; no application, compute or database deployment."
+    },
+    "detectedArchitecture": "one-tier",
+    "confirmationRequired": true,
+    "warnings": [],
+    "result": "CONTAINER",
+    "template": "eks-project",
+    "architecture": "one-tier",
+    "reason": "one-tier: app (python/flask)",
+    "components": [
+      {
+        "name": "app",
+        "dir": "",
+        "stack": "python",
+        "framework": "flask",
+        "role": "backend",
+        "entrypoint": {
+          "kind": "python",
+          "file": "app.py"
+        },
+        "port": 8080,
+        "portSource": "app.py listen call",
+        "secretKeys": [],
+        "dbEnv": [],
+        "usesDatabase": false,
+        "public": true,
+        "dockerfile": "generated"
+      }
+    ],
+    "database": null,
+    "needsConfirmation": []
+  },
+  "history": [
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T12:47:47.452Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:03:59.931Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:09:20.172Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:10:42.870Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:13:53.480Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T13:13:53.480Z",
+  "confirmation": {
+    "userId": "cli:hammad",
+    "architecture": "one-tier",
+    "entrypoints": {},
+    "at": "2026-11-25T13:09:20.171Z"
+  },
+  "plan": {
+    "kind": "apply",
+    "hash": "05be66f551b20c68e5561316a908fdecc571c521658ad62e2b202b9f88232a3d",
+    "configurationHash": "0c9dd33a00e687784de55905aab3926b025a5517f070f593671f689422ae834b",
+    "expected": {
+      "projectId": 9101,
+      "components": [
+        "app"
+      ],
+      "database": null
+    },
+    "summary": [
+      {
+        "address": "module.workload[\"app\"].aws_cloudwatch_log_group.this",
+        "type": "aws_cloudwatch_log_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9101
+      },
+      {
+        "address": "module.workload[\"app\"].aws_ecr_repository.this",
+        "type": "aws_ecr_repository",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9101
+      },
+      {
+        "address": "module.workload[\"app\"].aws_iam_role.irsa",
+        "type": "aws_iam_role",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9101
+      },
+      {
+        "address": "module.workload[\"app\"].aws_iam_role_policy.irsa",
+        "type": "aws_iam_role_policy",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9101
+      },
+      {
+        "address": "module.workload[\"app\"].aws_secretsmanager_secret.this",
+        "type": "aws_secretsmanager_secret",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9101
+      }
+    ],
+    "createdAt": "2026-11-25T13:10:42.869Z",
+    "expiresAt": "2026-11-25T13:40:42.869Z",
+    "stateKey": "projects/9101/eks/terraform.tfstate"
+  },
+  "approval": {
+    "kind": "apply",
+    "hash": "05be66f551b20c68e5561316a908fdecc571c521658ad62e2b202b9f88232a3d",
+    "userId": "cli:hammad",
+    "at": "2026-11-25T13:13:53.479Z",
+    "expiresAt": "2026-11-25T13:28:53.479Z",
+    "consumedAt": null
+  },
+  "applyEnabled": true,
+  "applyBlockers": [],
+  "account": "229032674007",
+  "region": "ap-south-1"
+}

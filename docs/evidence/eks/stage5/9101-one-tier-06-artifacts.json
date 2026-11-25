@@ -1,0 +1,11 @@
+{
+  "projectId": 9101,
+  "written": [
+    {
+      "component": "app",
+      "dir": ".",
+      "manifests": "app.yaml",
+      "dockerfile": "app.Dockerfile"
+    }
+  ]
+}

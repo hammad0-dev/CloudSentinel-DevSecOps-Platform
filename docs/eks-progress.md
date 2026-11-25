@@ -187,6 +187,30 @@ and were moved to `~/cs-iac/k8s/kyverno/eks-cel/`. `~/CloudSentinel` also has an
 - Before destroy: delete LoadBalancer Services, helm uninstall, delete policies before Kyverno (Stage 7). Destroy command (after Stage 7 step 1-2 cleanup):
   `cd ~/cs-iac/terraform/environments/aws-demo && AWS_PROFILE=cloudsentinel-admin TF_VAR_alert_email=$(cat ~/.config/cloudsentinel/alert-email) terraform destroy -var-file=aws-demo.tfvars -var-file=local.tfvars`
 
+## Stage 5 - projects (STOPPED 2026-11-25 18:32 PKT: Free plan refuses load balancers)
+
+| Project | Fixture | Result |
+|---|---|---|
+| 9101 one-tier | cloudsentinel-test-python-clean | analyze, confirm, plan (allowlist OK), approve (single use; reuse refused), apply: 5 resources. Image built from the generated Dockerfile, pushed with cloudsentinel-dev, ECR rejected a tag overwrite (immutable). Deployed: Kyverno admitted it, 2 pods Running on both nodes. **Public Service stuck: `OperationNotPermitted: This AWS account currently does not support creating load balancers.`** |
+| 9102 two-tier | cloudsentinel-test-flask-postgres | plan OK (8 resources); apply **failed at RDS**: `KMSKeyNotAccessibleFault` (cloudsentinel-dev may not use the aws/rds key). 7 of 8 resources exist (no DB instance) |
+| 9103 three-tier | cloudsentinel-test-three-tier | same RDS failure; 12 of 13 resources exist (no DB instance) |
+| 9104 static | cloudsentinel-test-static-site | not applied (as specified). Direct plan of the static module failed: `No valid credential sources found` (the module pins aws provider 5.100.0, which cannot read `aws login` credentials; the EKS templates use 6.70.0) |
+
+Evidence: `docs/evidence/eks/stage5/` (per step JSON, `9101-one-tier-07-deploy.txt`, `stop-load-balancer.txt`).
+Gate evidence: `gate-off.json` (blocked without `INFRA_APPLY_ENABLED`), `gate-on.json`.
+
+Fixes during Stage 5:
+- Project template: OIDC provider looked up by ARN (`iam:GetOpenIDConnectProvider`, allowed) instead of by URL,
+  which needs `iam:ListOpenIDConnectProviders` (not in the scoped dev policy). All three plans failed safely first.
+- Engine: a failed apply said "nothing applied" although 7 resources existed; the message now says resources may
+  have changed (state is saved either way).
+- Dev policy (repo copy only): two KMS statements limited by `kms:ViaService` (RDS, Secrets Manager) and
+  `kms:GrantIsForAWSResource`. Changing the live IAM policy was refused by the tool permission check: the user must
+  publish it.
+
+decision: stop at the load-balancer refusal because the brief says to stop when AWS answers that the plan does not
+allow something; no workaround (NodePort, port-forward as "public" access, other LB types) was tried.
+
 ## Decisions
 
 - decision: pin AWS provider 6.70.0, terraform-aws-modules/eks 21.29.0, terraform-aws-modules/vpc 6.7.2 because they
@@ -226,7 +250,19 @@ and were moved to `~/cs-iac/k8s/kyverno/eks-cel/`. `~/CloudSentinel` also has an
 - GuardDuty (Free plan) - needs a Paid plan; excluded.
 - `TF_VAR_alert_email` is not visible to the shells I start (checked again 2026-11-25) - needed for the Stage 4 plan.
 
-## Resume here
+## Resume here (2026-11-25 18:35 PKT) - BILLABLE: shared cluster since 17:46:48 PKT, about $0.55/hour
+
+Stopped in Stage 5: the Free plan refuses load balancers. Waiting for the user's decision:
+- upgrade to a Paid plan, then: publish dev policy v2 (below), re-plan 9102/9103 (the engine re-plans from the
+  saved partial state), approve, apply; the 9101 Service gets its NLB on its own (Kubernetes keeps retrying); or
+- accept no public endpoint (user decision; demonstrate apps with `kubectl port-forward`), or
+- destroy now (Stage 7): delete namespaces cloudsentinel-p-9101 first, per-project destroy 9101-9103
+  (`node scripts/infra-cli.js destroy-plan|approve --kind destroy|destroy --dir <fixture> --project-id <n>` with
+  INFRA_APPLY_ENABLED=true and the env in Stage 5), helm uninstall external-secrets and kyverno (delete the 7
+  ValidatingPolicies first), then the shared destroy command in the Stage 4 section.
+Dev policy v2 for RDS: `terraform/docs/policies/cloudsentinel-dev-container.json` (repo has it; AWS still has v1).
+
+Previous resume notes (Stages 1-3):
 
 Stages 1-3 and the Stage 4 pre-checks are committed on `feat/iac-generator` (not pushed). "go" was given on
 2026-11-25; **Stage 4 apply is waiting for the alert email to be readable** (see Blocked). Billable resources: none.
