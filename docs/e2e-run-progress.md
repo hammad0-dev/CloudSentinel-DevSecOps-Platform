@@ -12,3 +12,4 @@ settings changed here.
 |---|---|---|---|
 | Setup | done | 01:47 | worktree, env flags checked (names only), ML services healthy (/health 200, model trained), Minikube running, metrics API not installed (resource use sampled with `docker stats` on the Minikube container) |
 | Run 1 demo-forms | done (as expected) | 01:48 | execution 110 STAGE_FAILED at SAST in 19 s: 6 findings (2 CRITICAL, 4 HIGH), engine ml; no rows for later stages; CI/CD API view: SAST Failed, Dependency/IaC/Deploy/DAST Skipped |
+| Run 2 python-clean | done (as expected) | 01:49-01:52 | execution 111 COMPLETED in 135 s; Deploy 125 s of which Trivy image scan 64 s (0 CRITICAL, 54 HIGH: gate blocks CRITICAL only); pod Running with the run-111 image, NodePort 200 on / and /health; DAST only 1 page / 3 requests / 0 injection points (app has no forms or parameters), 1 INFO finding |
