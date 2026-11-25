@@ -1,0 +1,55 @@
+{
+ "apiRoute": "GET /api/projects/26/pipelines",
+ "execution": {
+  "id": 113,
+  "status": "COMPLETED",
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "failure_reason": null,
+  "promote_result": {
+   "stage": "Promote",
+   "steps": [],
+   "reason": "target unavailable: PROMOTE_KUBE_CONTEXT not set; PROMOTE_AWS_ACCOUNT must be the approved account 229032674007; PROMOTE_AWS_REGION must be ap-south-1; PROMOTE_REGISTRY must be the ECR registry of that account and region",
+   "status": "SKIPPED",
+   "target": "eks",
+   "approval": "manual",
+   "startedAt": "2026-11-25T20:55:46.750Z",
+   "finishedAt": "2026-11-25T20:55:46.751Z"
+  }
+ },
+ "isLatestOnPage": true,
+ "uiNodes": [
+  {
+   "name": "SAST",
+   "status": "Passed"
+  },
+  {
+   "name": "Dependency",
+   "status": "Passed"
+  },
+  {
+   "name": "IaC",
+   "status": "Passed"
+  },
+  {
+   "name": "Deploy",
+   "status": "Passed"
+  },
+  {
+   "name": "DAST",
+   "status": "Passed"
+  },
+  {
+   "name": "Promote to EKS",
+   "status": "Skipped",
+   "detail": {
+    "status": "Skipped",
+    "raw": "SKIPPED",
+    "detail": "target unavailable: PROMOTE_KUBE_CONTEXT not set; PROMOTE_AWS_ACCOUNT must be the approved account 229032674007; PROMOTE_AWS_REGION must be ap-south-1; PROMOTE_REGISTRY must be the ECR registry of tha",
+    "tag": null,
+    "plan": null,
+    "approvedBy": null,
+    "rolledBack": false
+   }
+  }
+ ]
+}

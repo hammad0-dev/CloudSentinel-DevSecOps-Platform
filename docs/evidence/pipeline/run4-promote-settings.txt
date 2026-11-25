@@ -1,0 +1,5 @@
+GET  /api/infrastructure/26/promote-settings -> 200 {"target":"none","approval":"manual"}
+PUT  /api/infrastructure/26/promote-settings {promote_target:eks,promote_approval:manual} -> 200 {"target":"eks","approval":"manual"}
+# reset after run 4
+GET  /api/infrastructure/26/promote-settings -> 200 {"target":"eks","approval":"manual"}
+PUT  /api/infrastructure/26/promote-settings {promote_target:none,promote_approval:manual} -> 200 {"target":"none","approval":"manual"}
