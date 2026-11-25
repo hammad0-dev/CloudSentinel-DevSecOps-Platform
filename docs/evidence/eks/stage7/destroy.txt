@@ -1,0 +1,16 @@
+Stage 7 destroy, 2026-11-25/26 (PKT). Profiles: cloudsentinel-admin (shared), cloudsentinel-dev (per project, via the engine).
+23:41  backup: docs/evidence + all audit.jsonl -> /mnt/d/ml-backup/eks-evidence/2026-11-25-2341/ (232 files); shared state copy -> /mnt/d/ml-backup/eks-state/shared/
+23:41  scripts/eks-shared-plan.sh: 0 add, 2 change (cluster public_access_cidrs + OIDC thumbprint_list "known after apply") -> stopped, user chose a targeted plan
+00:00  plan -target=module.eks.aws_eks_cluster.this[0]: 0 add, 1 change; only vpc_config.public_access_cidrs (1 entry); plan sha256 d9079a22...48a3; applied 00:00:41-00:02:17; /readyz ok
+00:02  LoadBalancer Services deleted (p9101-app, p9102-app, p9103-frontend); elbv2=0 classic=0 at 00:02:51
+00:04  namespaces cloudsentinel-p-9101..9103 deleted
+00:09  engine destroy 9103: 13 deletes -> DESTROYED (reused the saved destroy plan, see engine bug)
+00:11  engine destroy 9102: 8 deletes -> DESTROYED
+00:14  engine destroy 9101: 5 deletes -> DESTROYED
+00:15  7 Kyverno ValidatingPolicies deleted; helm uninstall falco, alloy, kps, loki, external-secrets, then kyverno; 0 PVC/PV; 16 chart CRDs and the 4 add-on namespaces deleted
+00:20  shared terraform plan -destroy: 85 deletes, no other action; apply complete 00:34:01, 85 destroyed, state empty
+00:34  leftover check ap-south-1 + us-east-1: EKS 0, EC2 0, NAT 0, EIP 0, EBS 0, snapshots 0, ENI 0, VPC endpoints 0, ELB/NLB 0, RDS 0, RDS snapshots 0, ECR 0, secrets 0, customer KMS aliases 0, log groups 0, SNS 0, alarms 0, IAM OIDC providers 0, IAM roles cloudsentinel*/eks* 0
+       kept (pre-existing, not EKS): VPC 10.0.0.0/16 (project 13), budget "eks" (USD 10, actual 0.00), customer-managed IAM policies (cloudsentinel-dev-*, CloudSentinelP13*)
+       GuardDuty: SubscriptionRequiredException (never enabled)
+Also: 3 demo rows 9101-9103 deleted (rowCount 3, 0 left); temp servers on 3100/5180 stopped; main stack untouched.
+Engine bug found: destroyPlan cannot re-plan when an earlier destroy.tfplan exists (file is chmod 0400, terraform "permission denied"). Fix later: unlink destroy.tfplan before planning.

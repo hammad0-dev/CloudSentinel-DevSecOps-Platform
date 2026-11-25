@@ -288,7 +288,14 @@ CloudTrail role lacked KMS on its encrypted log group (denied every ~5 min, whic
 
 ## Resume here (2026-11-25 20:30 PKT) - STOP 2. BILLABLE: shared cluster since 17:46:48 PKT (about $0.53/hour) + 2 RDS (about $0.06/hour) + 1 NLB since 15:06 UTC (about $0.04/hour with IPs)
 
-Waiting for "destroy". Stage 7 order: (1) delete the LoadBalancer Services (9101 has a real NLB; wait until
+UI check (2026-11-25 20:45 PKT, user request): temporary backend on 3100 (env file ~/CloudSentinel/backend/.env,
+provenance recovery and stale-scan cleanup disabled, INFRA_APPLY_ENABLED unset) and Vite on 5180
+(VITE_API_BASE_URL=http://localhost:3100/api); pids in /mnt/d/cs-data/eks-work/ui/*.pid. With the user's approval,
+3 demo rows inserted into the real `projects` table: ids 9101-9103, owner user 4, repo_url
+https://github.com/cloudsentinel-demo/eks-*, no token, no webhook. Cleanup: /mnt/d/cs-data/eks-work/ui/delete-demo-rows.sql
+(run after the destroy), then stop both pids.
+
+Waiting for "destroy". Stage 7 order: (0) after the destroy: delete the 3 demo rows and stop the 3100/5180 servers, (1) delete the LoadBalancer Services (9101 has a real NLB; wait until
 `aws elbv2 describe-load-balancers` is empty), (2) delete namespaces cloudsentinel-p-9101..9103, (3) per-project destroy
 9103, 9102, 9101 through the engine (destroy-plan, approve --kind destroy, destroy), (4) helm uninstall falco, alloy,
 kps, loki, external-secrets; delete the 7 ValidatingPolicies, then helm uninstall kyverno; delete CRDs left by charts,
@@ -323,3 +330,9 @@ Exact next step (Stage 4):
    `cd ~/cs-iac/terraform/environments/aws-demo && terraform destroy -var-file=aws-demo.tfvars -var-file=local.tfvars`
    (first delete LoadBalancer Services, PVCs, Helm releases and Kyverno policies; Stage 7).
 Before Stage 5: fix the cloudsentinel-dev credentials and attach the two dev policies (Stage 1 section).
+
+## Stage 7 - destroy (DONE 2026-11-26 00:34 PKT)
+Order as planned (allowed-IP refresh by targeted single-change plan, LBs, namespaces, 9103/9102/9101 via the engine,
+Kyverno policies before Kyverno, Helm releases, shared destroy 85/85, leftover check both regions: nothing left except
+pre-existing project 13 VPC, the "eks" budget and the IAM policies). Evidence: `docs/evidence/eks/stage7/destroy.txt`.
+Billable resources: none. Open: engine destroy re-plan bug (unlink the 0400 destroy.tfplan before `plan -destroy`).
