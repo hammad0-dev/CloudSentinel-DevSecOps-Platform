@@ -1,0 +1,22 @@
+# Clean Node fixture pre-check, 2026-11-26 02:39:52 PKT
+## 1. ml-sast (running service :8001, same request the SAST stage sends)
+files: ['app.js'] findings: 0
+
+## 2. dependency scan (trivy fs, vuln) on the lockfile
+vulnerabilities: 0 {}
+
+## 3. docker build with the fixture Dockerfile, then the image gate (trivy image, OS packages, CRITICAL blocks)
+build ok: sha256:840da111a2135ae9091f8c510b15cbf62d8f82303d4c547ef1f8ada39e0eb81f user=10001:10001
+OS vulnerabilities: 11 {'MEDIUM': 7, 'LOW': 4}
+
+## 4. run as UID 10001 with a read-only root filesystem and no capabilities
+/                            -> {"status":"ok","service":"node-clean"} [200]
+/health                      -> {"status":"healthy"} [200]
+/api/items?limit=2           -> {"items":[{"id":1,"name":"alpha"},{"id":2,"name":"beta"}]} [200]
+/api/items?limit=%27%3Cscript%3E -> {"items":[{"id":1,"name":"alpha"},{"id":2,"name":"beta"},{"id":3,"name":"gamma"}]} [200]
+/nope                        -> {"error":"not found"} [404]
+headers: X-Content-Type-Options: nosniff X-Frame-Options: DENY Content-Security-Policy: default-src 'none'; frame-ancestors 'none' 
+misconfigurations: 1
+  DS026 LOW No HEALTHCHECK defined
+misconfigurations after HEALTHCHECK: 0
+healthcheck: healthy
