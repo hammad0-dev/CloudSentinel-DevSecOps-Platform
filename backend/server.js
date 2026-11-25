@@ -293,6 +293,8 @@ const boot = async () => {
     console.log(`CloudSentinel API listening on http://localhost:${port}`);
     console.log(`Health check: http://localhost:${port}/api/health`);
     const { logEvent, recentEvents } = require("./services/securityLog");
+    // Keep the image-scan Trivy DB warm so the Deploy stage never downloads it mid-run (TRIVY_DB_WARM=off disables).
+    require("./services/trivyDb").startWarmer({ log: (e) => logEvent(e) });
     require("./services/threatDetection").start({
       getEvents: () => recentEvents(),
       createAlert: (d) => require("./services/alertStore").createAlert(pool, d),
