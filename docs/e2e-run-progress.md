@@ -1,0 +1,13 @@
+# End-to-end pipeline run on the local stack: progress log
+
+Worktree `~/cs-e2e-run`, branch `test/e2e-evidence` from origin/master 45ca0e1 (PRs #22-#24 merged). The running
+stack (3000/5173/8001/8002) is master 45ca0e1; it was not restarted. Engines: `SAST_ENGINE=ml`, `DAST_ENGINE=ml`.
+Staging: Minikube (default context `minikube`, unchanged). No AWS, no EKS.
+
+Test user: the existing e2e user (id 5). Test projects: the existing e2e projects 24 (node), 25 (python-flask),
+26 (python-clean), 27 (demo-forms), created 2026-11-19/20. None were created in this run, so cleanup only restores
+settings changed here.
+
+| Step | Status | Time (PKT) | Notes |
+|---|---|---|---|
+| Setup | done | 01:47 | worktree, env flags checked (names only), ML services healthy (/health 200, model trained), Minikube running, metrics API not installed (resource use sampled with `docker stats` on the Minikube container) |
