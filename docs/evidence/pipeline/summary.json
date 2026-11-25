@@ -1,0 +1,461 @@
+[
+ {
+  "run": "run1",
+  "app": "demo-forms",
+  "execution": 110,
+  "status": "STAGE_FAILED",
+  "total_s": 19.1,
+  "stages_completed": "SAST",
+  "stage_s": {
+   "SAST": 19,
+   "Dependency": null,
+   "IaC": null,
+   "Deploy (build+image scan+apply+rollout)": null,
+   "  of which image scan": null,
+   "DAST": null
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "NOT_RUN",
+   "IaC": "NOT_RUN",
+   "Deploy (build+image scan+apply+rollout)": "NOT_RUN",
+   "  of which image scan": "NOT_RUN",
+   "DAST": "NOT_RUN"
+  },
+  "deploy_attempts": 0,
+  "sast": {
+   "engine": "ml",
+   "findings": 6,
+   "C": 2,
+   "H": 4,
+   "M": 0,
+   "L": 0,
+   "models_agree": {
+    "3 of 3 models": 6
+   }
+  },
+  "image": null,
+  "dast": null,
+  "promote": null,
+  "minikube_during_deploy": null
+ },
+ {
+  "run": "run2",
+  "app": "python-clean",
+  "execution": 111,
+  "status": "COMPLETED",
+  "total_s": 135,
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "stage_s": {
+   "SAST": 3.8,
+   "Dependency": 2.4,
+   "IaC": 3.2,
+   "Deploy (build+image scan+apply+rollout)": 125.4,
+   "  of which image scan": 64.3,
+   "DAST": 0.1
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "COMPLETED",
+   "IaC": "COMPLETED",
+   "Deploy (build+image scan+apply+rollout)": "SUCCESS",
+   "  of which image scan": "COMPLETED",
+   "DAST": "COMPLETED"
+  },
+  "deploy_attempts": 1,
+  "sast": {
+   "engine": "ml",
+   "findings": 0,
+   "C": 0,
+   "H": 0,
+   "M": 0,
+   "L": 0,
+   "models_agree": {}
+  },
+  "image": {
+   "critical": 0,
+   "high": 54,
+   "medium": 76,
+   "low": 77,
+   "total_vulnerabilities": 225
+  },
+  "dast": {
+   "engine": "ml",
+   "mode": "BASELINE",
+   "findings": 1,
+   "coverage": {
+    "forms": 0,
+    "pages": 1,
+    "stopped": null,
+    "requests": 3,
+    "points_found": 0,
+    "points_probed": 0,
+    "stored_xss_fields_written": 0
+   },
+   "endpoints": [
+    "GET http://192.168.49.2:32707"
+   ]
+  },
+  "promote": null,
+  "minikube_during_deploy": {
+   "samples": 29,
+   "cpu_pct_mean": 57.1,
+   "cpu_pct_peak": 227.21,
+   "mem_mib_mean": 4471,
+   "mem_mib_peak": 4650,
+   "idle_before_cpu_pct": 25.42,
+   "idle_before_mem_mib": 4473
+  }
+ },
+ {
+  "run": "run3",
+  "app": "node",
+  "execution": 112,
+  "status": "STAGE_FAILED",
+  "total_s": 6.1,
+  "stages_completed": "SAST",
+  "stage_s": {
+   "SAST": 6.1,
+   "Dependency": null,
+   "IaC": null,
+   "Deploy (build+image scan+apply+rollout)": null,
+   "  of which image scan": null,
+   "DAST": null
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "NOT_RUN",
+   "IaC": "NOT_RUN",
+   "Deploy (build+image scan+apply+rollout)": "NOT_RUN",
+   "  of which image scan": "NOT_RUN",
+   "DAST": "NOT_RUN"
+  },
+  "deploy_attempts": 0,
+  "sast": {
+   "engine": "ml",
+   "findings": 3,
+   "C": 1,
+   "H": 2,
+   "M": 0,
+   "L": 0,
+   "models_agree": {
+    "rule-based detector": 1,
+    "3 of 3 models": 2
+   }
+  },
+  "image": null,
+  "dast": null,
+  "promote": null,
+  "minikube_during_deploy": null
+ },
+ {
+  "run": "run4",
+  "app": "python-clean-promote",
+  "execution": 113,
+  "status": "COMPLETED",
+  "total_s": 67.7,
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "stage_s": {
+   "SAST": 7.4,
+   "Dependency": 7,
+   "IaC": 3.9,
+   "Deploy (build+image scan+apply+rollout)": 49.1,
+   "  of which image scan": 6.3,
+   "DAST": 0.1
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "COMPLETED",
+   "IaC": "COMPLETED",
+   "Deploy (build+image scan+apply+rollout)": "SUCCESS",
+   "  of which image scan": "COMPLETED",
+   "DAST": "COMPLETED"
+  },
+  "deploy_attempts": 1,
+  "sast": {
+   "engine": "ml",
+   "findings": 0,
+   "C": 0,
+   "H": 0,
+   "M": 0,
+   "L": 0,
+   "models_agree": {}
+  },
+  "image": {
+   "critical": 0,
+   "high": 54,
+   "medium": 76,
+   "low": 77,
+   "total_vulnerabilities": 225
+  },
+  "dast": {
+   "engine": "ml",
+   "mode": "BASELINE",
+   "findings": 1,
+   "coverage": {
+    "forms": 0,
+    "pages": 1,
+    "stopped": null,
+    "requests": 3,
+    "points_found": 0,
+    "points_probed": 0,
+    "stored_xss_fields_written": 0
+   },
+   "endpoints": [
+    "GET http://192.168.49.2:32707"
+   ]
+  },
+  "promote": "SKIPPED",
+  "minikube_during_deploy": {
+   "samples": 11,
+   "cpu_pct_mean": 485.2,
+   "cpu_pct_peak": 612.04,
+   "mem_mib_mean": 4642,
+   "mem_mib_peak": 4709,
+   "idle_before_cpu_pct": 158.0,
+   "idle_before_mem_mib": 4734
+  }
+ },
+ {
+  "run": "run5",
+  "app": "ml-sast-unreachable",
+  "execution": 114,
+  "status": "ERROR",
+  "total_s": 64.4,
+  "stages_completed": null,
+  "stage_s": {
+   "SAST": 1.8,
+   "Dependency": null,
+   "IaC": null,
+   "Deploy (build+image scan+apply+rollout)": null,
+   "  of which image scan": null,
+   "DAST": null
+  },
+  "stage_status": {
+   "SAST": "FAILED",
+   "Dependency": "NOT_RUN",
+   "IaC": "NOT_RUN",
+   "Deploy (build+image scan+apply+rollout)": "NOT_RUN",
+   "  of which image scan": "NOT_RUN",
+   "DAST": "NOT_RUN"
+  },
+  "deploy_attempts": 0,
+  "sast": {
+   "engine": "ml",
+   "findings": 0,
+   "C": 0,
+   "H": 0,
+   "M": 0,
+   "L": 0,
+   "models_agree": {}
+  },
+  "image": null,
+  "dast": null,
+  "promote": null,
+  "minikube_during_deploy": null
+ },
+ {
+  "run": "run6a",
+  "app": "python-clean-repeat",
+  "execution": 115,
+  "status": "COMPLETED",
+  "total_s": 49.6,
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "stage_s": {
+   "SAST": 9,
+   "Dependency": 5.6,
+   "IaC": 4.4,
+   "Deploy (build+image scan+apply+rollout)": 30.3,
+   "  of which image scan": 4.1,
+   "DAST": 0.1
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "COMPLETED",
+   "IaC": "COMPLETED",
+   "Deploy (build+image scan+apply+rollout)": "SUCCESS",
+   "  of which image scan": "COMPLETED",
+   "DAST": "COMPLETED"
+  },
+  "deploy_attempts": 1,
+  "sast": {
+   "engine": "ml",
+   "findings": 0,
+   "C": 0,
+   "H": 0,
+   "M": 0,
+   "L": 0,
+   "models_agree": {}
+  },
+  "image": {
+   "critical": 0,
+   "high": 54,
+   "medium": 76,
+   "low": 77,
+   "total_vulnerabilities": 225
+  },
+  "dast": {
+   "engine": "ml",
+   "mode": "BASELINE",
+   "findings": 1,
+   "coverage": {
+    "forms": 0,
+    "pages": 1,
+    "stopped": null,
+    "requests": 3,
+    "points_found": 0,
+    "points_probed": 0,
+    "stored_xss_fields_written": 0
+   },
+   "endpoints": [
+    "GET http://192.168.49.2:32707"
+   ]
+  },
+  "promote": null,
+  "minikube_during_deploy": {
+   "samples": 7,
+   "cpu_pct_mean": 74.7,
+   "cpu_pct_peak": 184.9,
+   "mem_mib_mean": 4511,
+   "mem_mib_peak": 4545,
+   "idle_before_cpu_pct": 641.74,
+   "idle_before_mem_mib": 4605
+  }
+ },
+ {
+  "run": "run6b",
+  "app": "python-clean-repeat",
+  "execution": 116,
+  "status": "COMPLETED",
+  "total_s": 39.5,
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "stage_s": {
+   "SAST": 4.1,
+   "Dependency": 2.8,
+   "IaC": 2.1,
+   "Deploy (build+image scan+apply+rollout)": 30.3,
+   "  of which image scan": 3.1,
+   "DAST": 0.1
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "COMPLETED",
+   "IaC": "COMPLETED",
+   "Deploy (build+image scan+apply+rollout)": "SUCCESS",
+   "  of which image scan": "COMPLETED",
+   "DAST": "COMPLETED"
+  },
+  "deploy_attempts": 1,
+  "sast": {
+   "engine": "ml",
+   "findings": 0,
+   "C": 0,
+   "H": 0,
+   "M": 0,
+   "L": 0,
+   "models_agree": {}
+  },
+  "image": {
+   "critical": 0,
+   "high": 54,
+   "medium": 76,
+   "low": 77,
+   "total_vulnerabilities": 225
+  },
+  "dast": {
+   "engine": "ml",
+   "mode": "BASELINE",
+   "findings": 1,
+   "coverage": {
+    "forms": 0,
+    "pages": 1,
+    "stopped": null,
+    "requests": 3,
+    "points_found": 0,
+    "points_probed": 0,
+    "stored_xss_fields_written": 0
+   },
+   "endpoints": [
+    "GET http://192.168.49.2:32707"
+   ]
+  },
+  "promote": null,
+  "minikube_during_deploy": {
+   "samples": 8,
+   "cpu_pct_mean": 67.6,
+   "cpu_pct_peak": 138.92,
+   "mem_mib_mean": 4578,
+   "mem_mib_peak": 4657,
+   "idle_before_cpu_pct": 30.92,
+   "idle_before_mem_mib": 4563
+  }
+ },
+ {
+  "run": "run6c",
+  "app": "python-clean-repeat",
+  "execution": 117,
+  "status": "COMPLETED",
+  "total_s": 128.5,
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "stage_s": {
+   "SAST": 5.5,
+   "Dependency": 3.2,
+   "IaC": 2.1,
+   "Deploy (build+image scan+apply+rollout)": 117.6,
+   "  of which image scan": 3.7,
+   "DAST": 0.1
+  },
+  "stage_status": {
+   "SAST": "COMPLETED",
+   "Dependency": "COMPLETED",
+   "IaC": "COMPLETED",
+   "Deploy (build+image scan+apply+rollout)": "SUCCESS",
+   "  of which image scan": "COMPLETED",
+   "DAST": "COMPLETED"
+  },
+  "deploy_attempts": 2,
+  "sast": {
+   "engine": "ml",
+   "findings": 0,
+   "C": 0,
+   "H": 0,
+   "M": 0,
+   "L": 0,
+   "models_agree": {}
+  },
+  "image": {
+   "critical": 0,
+   "high": 54,
+   "medium": 76,
+   "low": 77,
+   "total_vulnerabilities": 225
+  },
+  "dast": {
+   "engine": "ml",
+   "mode": "BASELINE",
+   "findings": 1,
+   "coverage": {
+    "forms": 0,
+    "pages": 1,
+    "stopped": null,
+    "requests": 3,
+    "points_found": 0,
+    "points_probed": 0,
+    "stored_xss_fields_written": 0
+   },
+   "endpoints": [
+    "GET http://192.168.49.2:32707"
+   ]
+  },
+  "promote": null,
+  "minikube_during_deploy": {
+   "samples": 28,
+   "cpu_pct_mean": 50.3,
+   "cpu_pct_peak": 149.95,
+   "mem_mib_mean": 4642,
+   "mem_mib_peak": 4727,
+   "idle_before_cpu_pct": 44.21,
+   "idle_before_mem_mib": 4652
+  }
+ }
+]
