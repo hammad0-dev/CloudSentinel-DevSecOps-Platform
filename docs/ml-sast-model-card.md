@@ -38,7 +38,7 @@ The e2e apps (one source file each) took 4–6 s per SAST stage. Larger reposito
   so any download attempt fails instead of reaching the network. Scans succeed under these settings, and the process
   opened no outgoing connections.
 
-**Start command (v3 on 8001):**
+**Start command (v3 on 8001).** `scripts/start-stack.sh` starts the whole stack with these settings; v3 alone:
 ```bash
 cd ~/cs-sast && ML_SAST_MODEL_DIR=$HOME/cs-sast/services-ml/ml-sast/models/release_v3 ML_SAST_PORT=8001 \
   HF_HOME=/mnt/d/cs-data/hf-cache HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
