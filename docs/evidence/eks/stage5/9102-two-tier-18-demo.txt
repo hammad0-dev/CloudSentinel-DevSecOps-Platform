@@ -1,0 +1,14 @@
+# 9102 two-tier demo (2026-11-25 20:18:40 PKT). Public Service Pending (Free plan: no load balancers); access by port-forward.
+NAME        TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
+p9102-app   LoadBalancer   172.20.34.5   <pending>     80:32590/TCP   13m
+
+$ kubectl -n cloudsentinel-p-9102 port-forward svc/p9102-app 18102:80   (local demo access; no public load balancer on this account)
+$ curl http://127.0.0.1:18102/
+{"greeting":true,"status":"ok"}
+  [HTTP 200]
+$ curl http://127.0.0.1:18102/health
+{"status":"healthy"}
+  [HTTP 200]
+$ curl http://127.0.0.1:18102/db
+{"connected":true,"db_user":"csadmin","mounted_secret_dirs":["p9102-app-db","p9102-app-secrets"],"server":"PostgreSQL 17.11 on x86_64-pc-linux-gnu"}
+  [HTTP 200]

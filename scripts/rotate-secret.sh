@@ -46,7 +46,12 @@ if [[ $dry -eq 1 ]]; then
   exit 0
 fi
 export AWS_PAGER=""
-out=$(gen | aws secretsmanager put-secret-value --cli-input-json file:///dev/stdin --region ap-south-1 --profile "$profile" \
+# AWS CLI v2 cannot read --cli-input-json from a pipe (file:///dev/stdin gives "Invalid JSON received"), so the
+# request goes through a private file: RAM-backed /run/user/<uid> when available, dir 0700, file 0600, removed on exit.
+umask 077
+tmpd=$(mktemp -d "${XDG_RUNTIME_DIR:-/tmp}/cs-rotate.XXXXXX"); trap 'rm -rf "$tmpd"' EXIT
+gen > "$tmpd/req.json"
+out=$(aws secretsmanager put-secret-value --cli-input-json "file://$tmpd/req.json" --region ap-south-1 --profile "$profile" \
         --query '{id:Name,version:VersionId}' --output text 2>&1) || {
   if grep -qiE 'expired|sso|login' <<<"$out"; then echo "AWS login for profile $profile has expired: run aws login --profile $profile" >&2
   else echo "put-secret-value failed: $(sed -E 's/[A-Za-z0-9+/]{32,}/[REDACTED]/g' <<<"$out" | head -c 300)" >&2; fi

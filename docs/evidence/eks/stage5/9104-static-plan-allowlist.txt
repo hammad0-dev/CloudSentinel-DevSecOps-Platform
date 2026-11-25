@@ -25,3 +25,13 @@ Error: UNSAFE_PLAN_SCOPE
     at node:internal/main/eval_string:30:3
 
 Node.js v18.20.8
+
+## retry 2026-11-25 20:25:59 PKT: the static module pins aws provider 5.100.0, which cannot read 'aws login' profiles
+## (known issue, module NOT changed). This plan-only run gives that one terraform process exported short-lived
+## credentials of cloudsentinel-dev in its environment (never printed); the EKS engine uses the refreshable profile.
+Plan: 7 to add, 0 to change, 0 to destroy.
+plan sha256 1e0efae1ee784813edbf2f72d338b5a363f66f3c128373ba1911f95a75fb2605
+resources: aws_cloudfront_distribution:create, aws_cloudfront_origin_access_control:create, aws_s3_bucket:create, aws_s3_bucket_ownership_controls:create, aws_s3_bucket_policy:create, aws_s3_bucket_public_access_block:create, aws_s3_bucket_server_side_encryption_configuration:create
+inspectPlan (static allowlist): ACCEPTED
+negative test (plan + an extra aws_iam_user): REJECTED - UNSAFE_PLAN_SCOPE
+NOT applied (static stays plan-only, as decided).

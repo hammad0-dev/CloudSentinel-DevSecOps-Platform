@@ -1,0 +1,204 @@
+{
+  "projectId": 9103,
+  "status": "CONFIRMED",
+  "commit": "6257052d62d4189936dbc17ceb41ff9d2dd1cb238cb2f252dd1178a8eb1b4075",
+  "classification": {
+    "analysis": {
+      "architecture": "three-tier",
+      "confidence": "medium",
+      "reason": "Frontend and backend components plus database evidence suggest three logical tiers; runtime topology is unverified.",
+      "confirmationRequired": true,
+      "languages": [
+        "JavaScript/TypeScript",
+        "HTML"
+      ],
+      "frameworks": [
+        "express",
+        "react",
+        "react-dom"
+      ],
+      "databases": [
+        "PostgreSQL"
+      ],
+      "ports": [],
+      "components": [
+        {
+          "file": "backend/package.json",
+          "role": "backend",
+          "name": "express",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "backend/package.json",
+          "role": "database-client",
+          "name": "pg",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/package.json",
+          "role": "backend",
+          "name": "express",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/package.json",
+          "role": "frontend",
+          "name": "react",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/package.json",
+          "role": "frontend",
+          "name": "react-dom",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/public/index.html",
+          "role": "frontend",
+          "name": "Static HTML",
+          "kind": "source",
+          "runtimeConfirmed": false
+        }
+      ],
+      "evidence": [
+        "backend/package.json: express (backend; dependency, runtime not verified)",
+        "backend/package.json: pg (database-client; dependency, runtime not verified)",
+        "frontend/package.json: express (backend; dependency, runtime not verified)",
+        "frontend/package.json: react (frontend; dependency, runtime not verified)",
+        "frontend/package.json: react-dom (frontend; dependency, runtime not verified)",
+        "frontend/public/index.html: Static HTML (frontend; source, runtime not verified)"
+      ],
+      "warnings": [],
+      "confirmedRuntimeServices": [],
+      "supportedTemplate": "network-only",
+      "applicationDeploymentSupported": false,
+      "limitations": "Repository declarations only, not confirmed runtime services. Networking-only template; no application, compute or database deployment."
+    },
+    "detectedArchitecture": "three-tier",
+    "confirmationRequired": true,
+    "warnings": [],
+    "result": "CONTAINER",
+    "template": "eks-project",
+    "architecture": "three-tier",
+    "reason": "three-tier: frontend (node/react), backend (node/express) + RDS postgres",
+    "components": [
+      {
+        "name": "frontend",
+        "dir": "frontend",
+        "stack": "node",
+        "framework": "react",
+        "role": "frontend",
+        "entrypoint": {
+          "kind": "npm-start",
+          "script": "node server.js"
+        },
+        "port": 3000,
+        "portSource": "frontend/server.js listen call",
+        "secretKeys": [],
+        "dbEnv": [],
+        "usesDatabase": false,
+        "public": true,
+        "dockerfile": "generated"
+      },
+      {
+        "name": "backend",
+        "dir": "backend",
+        "stack": "node",
+        "framework": "express",
+        "role": "backend",
+        "entrypoint": {
+          "kind": "npm-start",
+          "script": "node server.js"
+        },
+        "port": 3001,
+        "portSource": "backend/server.js listen call",
+        "secretKeys": [],
+        "dbEnv": [
+          "DB_HOST",
+          "DB_NAME",
+          "DB_PASSWORD",
+          "DB_PORT",
+          "DB_USER"
+        ],
+        "usesDatabase": true,
+        "public": false,
+        "dockerfile": "generated"
+      }
+    ],
+    "database": {
+      "engine": "postgres",
+      "name": "app"
+    },
+    "needsConfirmation": []
+  },
+  "history": [
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T12:47:48.167Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:06:38.398Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:12:00.511Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:13:20.771Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:14:59.662Z"
+    },
+    {
+      "status": "APPLYING",
+      "at": "2026-11-25T13:15:02.314Z"
+    },
+    {
+      "status": "NEEDS_OPERATOR_REVIEW",
+      "at": "2026-11-25T13:15:25.295Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:03:16.941Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:03:17.367Z"
+    },
+    {
+      "status": "DESTROYING",
+      "at": "2026-11-25T14:03:20.289Z"
+    },
+    {
+      "status": "DESTROYED",
+      "at": "2026-11-25T14:03:45.483Z"
+    },
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T14:03:45.694Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T14:03:45.896Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T14:03:45.896Z",
+  "confirmation": {
+    "userId": "cli:hammad",
+    "architecture": "three-tier",
+    "entrypoints": {},
+    "at": "2026-11-25T14:03:45.895Z"
+  },
+  "applyEnabled": true,
+  "applyBlockers": [],
+  "account": "229032674007",
+  "region": "ap-south-1"
+}

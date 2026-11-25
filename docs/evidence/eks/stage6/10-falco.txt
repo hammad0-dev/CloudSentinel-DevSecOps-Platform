@@ -1,0 +1,34 @@
+# Falco 9.2.2 (optional, time-boxed 20 min), modern eBPF driver (2026-11-25 19:39:43 PKT)
+Full list of outputs: https://github.com/falcosecurity/charts/tree/master/charts/falcosidekick.
+You can enable its deployment with `--set falcosidekick.enabled=true` or in your values.yaml.
+See: https://github.com/falcosecurity/charts/blob/master/charts/falcosidekick/values.yaml for configuration values.
+NAME         READY  STATUS   NODE
+falco-gkzdm  2/2    Running  <node-a>
+falco-ml45h  1/2    Running  <node-b>
+
+## driver
+Wed Nov 25 14:40:18 2026: Loaded event sources: syscall
+Wed Nov 25 14:40:18 2026: Enabled event sources: syscall
+Wed Nov 25 14:40:18 2026: Opening 'syscall' source with modern BPF probe.
+Wed Nov 25 14:40:18 2026: [libs]: libpman: disabled BPF iterators (not running in the root PID namespace, or failed to determine it)
+
+## trigger: kubectl exec into p9101-app-6965589576-8hprk and run a shell command (as cluster admin)
+  uid=10001(app) gid=10001(app) groups=10001(app)
+  cat: /etc/shadow: Permission denied
+
+## Falco alerts for the pod (last 2 min)
+
+elapsed: 69 s
+NAME                                          CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+<node-a>   211m         10%      1013Mi          14%         
+<node-b>    132m         6%       1587Mi          22%         
+
+## Falco pod falco-gkzdm on the same node: alert lines since install (pod-name filter above was wrong: the default
+## output prints k8s_pod_name=..., which needs no JSON parsing; corrected here)
+
+## trigger 2: interactive shell with a TTY (kubectl exec -it via script(1)), 19:41:25
+  uid=10001(app) gid=10001(app) groups=10001(app)
+## alerts from falco-gkzdm (last 1 min)
+14:41:27.393152873: Notice A shell was spawned in a container with an attached terminal | evt_type=execve user=app user_uid=10001 user_loginuid=-1 process=sh proc_exepath=/usr/bin/dash parent=containerd-shim command=sh -c id; exit terminal=34816 exe_flags=EXE_LOWER_LAYER container_id=2b43de4cb0d2 container_name=p9101-app container_image_repository=229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9101-app container_image_tag=v1.0.0 k8s_pod_name=p9101-app-6965589576-8hprk k8s_ns_name=
+
+Falco memory: falco-gkzdm=66Mi falco-ml45h=67Mi 

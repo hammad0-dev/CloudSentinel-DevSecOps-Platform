@@ -269,7 +269,32 @@ Stage 6 done so far (no RDS needed): RBAC table, Kyverno admission + policy repo
 (SAST + Trivy), saved Logs Insights queries (Terraform), alarm + SNS history, HPA 2 -> 4. Shared fix applied:
 CloudTrail role lacked KMS on its encrypted log group (denied every ~5 min, which kept tripping the alarm).
 
-## Resume here (2026-11-25 19:20 PKT) - BILLABLE: shared cluster since 17:46:48 PKT (about $0.53/hour) + 2 RDS since about 18:55/19:07 (about $0.06/hour)
+## Stages 5-6 completed (2026-11-25 19:40-20:30 PKT)
+
+| Item | Result | Evidence |
+|---|---|---|
+| dev policy v3 | published by the user, live == repo | - |
+| 9102 / 9103 | recovery destroy, fresh plan, approval, apply: APPLIED 19:51 / 20:03; RDS PostgreSQL 17.11 db.t3.micro, private, encrypted | stage5/9102-*, 9103-* |
+| rotate-secret.sh | real run failed (AWS CLI v2 cannot read `--cli-input-json` from a pipe); fixed: private 0600 file in `$XDG_RUNTIME_DIR`, removed on exit | stage5/9102-two-tier-17-deploy.txt |
+| two-tier demo | port-forward: `/`, `/health`, `/db` 200; `/db` connects to RDS as `csadmin` with credentials from the RDS-managed secret via ESO | stage5/9102-two-tier-18-demo.txt |
+| Module 9 | manifest has references only; env + mounted file; rotation: file changed after 100 s (ESO 1 m + kubelet sync), env unchanged, generation 1 -> 1, 0 restarts | stage6/12-secrets-runtime-and-rotation.txt |
+| three-tier | frontend `/api/items` -> backend -> RDS rows; backend ClusterIP, nodes have no public IP, direct TCP fails; RDS not public, private IP, SG only from node SG on 5432, direct TCP fails. Limitation: no NetworkPolicy inside the cluster | stage5/9103-three-tier-18-demo.txt |
+| static 9104 | plan only (exported short-lived credentials for the 5.100.0 provider, module unchanged): 7 creates, static allowlist ACCEPTED, negative test REJECTED; not applied | stage5/9104-static-plan-allowlist.txt |
+| logs/metrics | Loki (Alloy) has project, Kyverno, ESO logs; Prometheus node/pod/HPA metrics; all targets up | stage6/09-logs-and-metrics.txt |
+| Falco 9.2.2 | modern eBPF; `kubectl exec -it` -> "A shell was spawned in a container with an attached terminal" (first non-TTY attempt did not match the rule); 66 Mi per node | stage6/10-falco.txt |
+| incident | walkthrough of the real 14:13 UTC denial across CloudTrail, metric, alarm, SNS, engine audit, EKS audit, flow logs | stage6/11-incident-walkthrough.md |
+| capacity | 17-18 pods per node (limit 29), memory 1.1 / 1.7 GiB of 7 GiB per node; Grafana 401 without login and with the chart default password | stage6/13-capacity-and-access.txt |
+| **surprise** | **one internet-facing NLB was created for 9101 at 15:06 UTC** by the service controller's retries; 9102/9103 still refused (OperationNotPermitted). Public curl `/health` 200 | stage5/9101-one-tier-09-nlb-surprise.txt |
+
+## Resume here (2026-11-25 20:30 PKT) - STOP 2. BILLABLE: shared cluster since 17:46:48 PKT (about $0.53/hour) + 2 RDS (about $0.06/hour) + 1 NLB since 15:06 UTC (about $0.04/hour with IPs)
+
+Waiting for "destroy". Stage 7 order: (1) delete the LoadBalancer Services (9101 has a real NLB; wait until
+`aws elbv2 describe-load-balancers` is empty), (2) delete namespaces cloudsentinel-p-9101..9103, (3) per-project destroy
+9103, 9102, 9101 through the engine (destroy-plan, approve --kind destroy, destroy), (4) helm uninstall falco, alloy,
+kps, loki, external-secrets; delete the 7 ValidatingPolicies, then helm uninstall kyverno; delete CRDs left by charts,
+(5) shared terraform destroy (command in the Stage 4 section), (6) leftover check.
+
+Previous resume notes:
 
 Stopped in Stage 5: the Free plan refuses load balancers. Waiting for the user's decision:
 - upgrade to a Paid plan, then: publish dev policy v2 (below), re-plan 9102/9103 (the engine re-plans from the

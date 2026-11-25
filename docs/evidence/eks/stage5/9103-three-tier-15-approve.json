@@ -196,18 +196,58 @@
     {
       "status": "AWAITING_APPROVAL",
       "at": "2026-11-25T14:05:15.462Z"
+    },
+    {
+      "status": "APPLYING",
+      "at": "2026-11-25T14:05:18.457Z"
+    },
+    {
+      "status": "NEEDS_OPERATOR_REVIEW",
+      "at": "2026-11-25T14:13:21.513Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:52:22.697Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:52:22.892Z"
+    },
+    {
+      "status": "DESTROYING",
+      "at": "2026-11-25T14:52:24.687Z"
+    },
+    {
+      "status": "DESTROYED",
+      "at": "2026-11-25T14:54:31.392Z"
+    },
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T14:54:31.529Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T14:54:31.666Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:55:42.063Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:55:42.247Z"
     }
   ],
-  "updatedAt": "2026-11-25T14:05:15.462Z",
+  "updatedAt": "2026-11-25T14:55:42.247Z",
   "confirmation": {
     "userId": "cli:hammad",
     "architecture": "three-tier",
     "entrypoints": {},
-    "at": "2026-11-25T14:03:45.895Z"
+    "at": "2026-11-25T14:54:31.666Z"
   },
   "plan": {
     "kind": "apply",
-    "hash": "53206ab6bebfed19412550b4f9ade8f20a048398537d4be4d45a8dd95ea69c24",
+    "hash": "0e01b0a90c937d2b8421fb445d261b3da7c8139e920168f036e2a3f0296e67c8",
     "configurationHash": "d54f08f481365a2d61b1181dda1285fae06d6db8ced7e0cb458293c80f97570b",
     "expected": {
       "projectId": 9103,
@@ -323,16 +363,16 @@
         "projectId": 9103
       }
     ],
-    "createdAt": "2026-11-25T14:05:15.244Z",
-    "expiresAt": "2026-11-25T14:35:15.244Z",
+    "createdAt": "2026-11-25T14:55:42.062Z",
+    "expiresAt": "2026-11-25T15:25:42.062Z",
     "stateKey": "projects/9103/eks/terraform.tfstate"
   },
   "approval": {
     "kind": "apply",
-    "hash": "53206ab6bebfed19412550b4f9ade8f20a048398537d4be4d45a8dd95ea69c24",
+    "hash": "0e01b0a90c937d2b8421fb445d261b3da7c8139e920168f036e2a3f0296e67c8",
     "userId": "cli:hammad",
-    "at": "2026-11-25T14:05:15.461Z",
-    "expiresAt": "2026-11-25T14:20:15.461Z",
+    "at": "2026-11-25T14:55:42.246Z",
+    "expiresAt": "2026-11-25T15:10:42.246Z",
     "consumedAt": null
   },
   "applyEnabled": true,

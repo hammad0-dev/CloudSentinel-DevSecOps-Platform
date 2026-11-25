@@ -1,0 +1,9 @@
+# CloudTrail delivery-role KMS denials before/after the 19:09 PKT fix (2026-11-25 19:38:51 PKT)
+   bin(10m)=2026-11-25 13:00:00.000 | denials=1
+   bin(10m)=2026-11-25 13:10:00.000 | denials=1
+   bin(10m)=2026-11-25 13:20:00.000 | denials=2
+   bin(10m)=2026-11-25 13:30:00.000 | denials=2
+   bin(10m)=2026-11-25 13:40:00.000 | denials=1
+   bin(10m)=2026-11-25 13:50:00.000 | denials=2
+   bin(10m)=2026-11-25 14:00:00.000 | denials=2
+   (fix applied 2026-11-25 14:09 UTC; bins after it should be absent)

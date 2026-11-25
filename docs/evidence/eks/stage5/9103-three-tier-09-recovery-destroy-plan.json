@@ -168,18 +168,58 @@
     {
       "status": "AWAITING_DESTROY_APPROVAL",
       "at": "2026-11-25T14:03:16.941Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:03:17.367Z"
+    },
+    {
+      "status": "DESTROYING",
+      "at": "2026-11-25T14:03:20.289Z"
+    },
+    {
+      "status": "DESTROYED",
+      "at": "2026-11-25T14:03:45.483Z"
+    },
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T14:03:45.694Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T14:03:45.896Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:05:15.244Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:05:15.462Z"
+    },
+    {
+      "status": "APPLYING",
+      "at": "2026-11-25T14:05:18.457Z"
+    },
+    {
+      "status": "NEEDS_OPERATOR_REVIEW",
+      "at": "2026-11-25T14:13:21.513Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:52:22.697Z"
     }
   ],
-  "updatedAt": "2026-11-25T14:03:16.941Z",
+  "updatedAt": "2026-11-25T14:52:22.697Z",
   "confirmation": {
     "userId": "cli:hammad",
     "architecture": "three-tier",
     "entrypoints": {},
-    "at": "2026-11-25T13:12:00.510Z"
+    "at": "2026-11-25T14:03:45.895Z"
   },
   "plan": {
     "kind": "apply",
-    "hash": "df49e9307d6fb72bdff18f44c291487a9d043c17c42e88023cb1bc3a39fe3e4b",
+    "hash": "53206ab6bebfed19412550b4f9ade8f20a048398537d4be4d45a8dd95ea69c24",
     "configurationHash": "d54f08f481365a2d61b1181dda1285fae06d6db8ced7e0cb458293c80f97570b",
     "expected": {
       "projectId": 9103,
@@ -295,23 +335,24 @@
         "projectId": 9103
       }
     ],
-    "createdAt": "2026-11-25T13:13:20.770Z",
-    "expiresAt": "2026-11-25T13:43:20.770Z",
+    "createdAt": "2026-11-25T14:05:15.244Z",
+    "expiresAt": "2026-11-25T14:35:15.244Z",
     "stateKey": "projects/9103/eks/terraform.tfstate"
   },
   "approval": {
     "kind": "apply",
-    "hash": "df49e9307d6fb72bdff18f44c291487a9d043c17c42e88023cb1bc3a39fe3e4b",
+    "hash": "53206ab6bebfed19412550b4f9ade8f20a048398537d4be4d45a8dd95ea69c24",
     "userId": "cli:hammad",
-    "at": "2026-11-25T13:14:59.661Z",
-    "expiresAt": "2026-11-25T13:29:59.661Z",
-    "consumedAt": "2026-11-25T13:15:02.314Z"
+    "at": "2026-11-25T14:05:15.461Z",
+    "expiresAt": "2026-11-25T14:20:15.461Z",
+    "consumedAt": "2026-11-25T14:05:18.457Z"
   },
   "blockers": [
     "apply outcome uncertain; inspect state projects/9103/eks/terraform.tfstate; no retry was attempted"
   ],
   "recovery": {
     "addresses": [
+      "module.database[0].aws_db_instance.this",
       "module.database[0].aws_db_subnet_group.this",
       "module.database[0].aws_security_group.this",
       "module.workload[\"backend\"].aws_cloudwatch_log_group.this",
@@ -325,13 +366,21 @@
       "module.workload[\"frontend\"].aws_iam_role_policy.irsa",
       "module.workload[\"frontend\"].aws_secretsmanager_secret.this"
     ],
-    "at": "2026-11-25T14:02:27.480Z"
+    "at": "2026-11-25T14:51:47.433Z"
   },
   "destroyPlan": {
     "kind": "destroy",
     "file": "destroy.tfplan",
-    "hash": "f4f354c6747b8dd06e300f1db134e099300b4af0852254eaf91bf7a38c54a3e3",
+    "hash": "9b5b694a2edd9558e05e37d3bb69d64216f62c08dadc1801461190d77408f93c",
     "summary": [
+      {
+        "address": "module.database[0].aws_db_instance.this",
+        "type": "aws_db_instance",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
       {
         "address": "module.database[0].aws_db_subnet_group.this",
         "type": "aws_db_subnet_group",
@@ -429,8 +478,8 @@
         "projectId": 9103
       }
     ],
-    "createdAt": "2026-11-25T14:03:16.938Z",
-    "expiresAt": "2026-11-25T14:33:16.938Z"
+    "createdAt": "2026-11-25T14:52:22.696Z",
+    "expiresAt": "2026-11-25T15:22:22.696Z"
   },
   "applyEnabled": true,
   "applyBlockers": [],

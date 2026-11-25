@@ -1,0 +1,26 @@
+# Module 11: app logs (Loki, collected by Alloy) and metrics (Prometheus) - ClusterIP, reached by port-forward (2026-11-25 19:39:07 PKT)
+## Loki: label values for namespace
+   ['cloudsentinel-p-9101', 'external-secrets', 'kyverno']
+## Loki query: {namespace="cloudsentinel-p-9101"} (last 30 min, 5 lines)
+   streams: 2
+   p9101-app-6965589576-rsg8g | WARNING:waitress.queue:Task queue depth is 1
+
+   p9101-app-6965589576-6v8nq | unable to retrieve container logs for containerd://b70c4dcf5cb56def0267e8a7d6bcbfb0bae67d32a371aaea583ed2c0a57097d1
+   p9101-app-6965589576-6v8nq | unable to retrieve container logs for containerd://b70c4dcf5cb56def0267e8a7d6bcbfb0bae67d32a371aaea583ed2c0a57097d1
+## Loki query: Kyverno admission denials, {namespace="kyverno"} |= "denied" (last 2 h)
+   matching kyverno log lines: 8
+## Prometheus: sum by (node) (rate(node_cpu_seconds_total{mode!="idle"}[5m]))
+   {} 0.151
+## Prometheus: sum by (node) (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024
+   {} 2933.164
+## Prometheus: sum by (pod) (rate(container_cpu_usage_seconds_total{namespace="cloudsentinel-p-9101",container!=""}[5m]))
+   {'pod': 'p9101-app-6965589576-jsf4s'} 0.0
+   {'pod': 'p9101-app-6965589576-8hprk'} 0.0
+## Prometheus: kube_deployment_status_replicas_available{namespace=~"cloudsentinel-p-.*"}
+   {'deployment': 'p9101-app', 'namespace': 'cloudsentinel-p-9101', 'pod': 'kps-kube-state-metrics-7464859bfd-5zqdz'} 2.0
+## Prometheus: kube_horizontalpodautoscaler_status_current_replicas{namespace="cloudsentinel-p-9101"}
+   {'horizontalpodautoscaler': 'p9101-app', 'namespace': 'cloudsentinel-p-9101', 'pod': 'kps-kube-state-metrics-7464859bfd-5zqdz'} 2.0
+## Prometheus: max_over_time(kube_horizontalpodautoscaler_status_current_replicas{namespace="cloudsentinel-p-9101"}[1h])
+   {'horizontalpodautoscaler': 'p9101-app', 'namespace': 'cloudsentinel-p-9101', 'pod': 'kps-kube-state-metrics-7464859bfd-5zqdz'} 4.0
+## Prometheus targets up
+   {('kps-grafana', 'up'): 1, ('kps-kube-prometheus-stack-alertmanager', 'up'): 2, ('apiserver', 'up'): 2, ('coredns', 'up'): 2, ('kubelet', 'up'): 6, ('kps-kube-prometheus-stack-operator', 'up'): 1, ('kps-kube-prometheus-stack-prometheus', 'up'): 2, ('kube-state-metrics', 'up'): 1, ('node-exporter', 'up'): 2}

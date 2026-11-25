@@ -188,14 +188,54 @@
     {
       "status": "CONFIRMED",
       "at": "2026-11-25T14:03:45.896Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:05:15.244Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:05:15.462Z"
+    },
+    {
+      "status": "APPLYING",
+      "at": "2026-11-25T14:05:18.457Z"
+    },
+    {
+      "status": "NEEDS_OPERATOR_REVIEW",
+      "at": "2026-11-25T14:13:21.513Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:52:22.697Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:52:22.892Z"
+    },
+    {
+      "status": "DESTROYING",
+      "at": "2026-11-25T14:52:24.687Z"
+    },
+    {
+      "status": "DESTROYED",
+      "at": "2026-11-25T14:54:31.392Z"
+    },
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T14:54:31.529Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T14:54:31.666Z"
     }
   ],
-  "updatedAt": "2026-11-25T14:03:45.896Z",
+  "updatedAt": "2026-11-25T14:54:31.666Z",
   "confirmation": {
     "userId": "cli:hammad",
     "architecture": "three-tier",
     "entrypoints": {},
-    "at": "2026-11-25T14:03:45.895Z"
+    "at": "2026-11-25T14:54:31.666Z"
   },
   "applyEnabled": true,
   "applyBlockers": [],
