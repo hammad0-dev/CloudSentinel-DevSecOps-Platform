@@ -1,0 +1,47 @@
+# Stage 4 cluster check 2026-11-25 17:59:29 PKT
+apply start 2026-11-25 17:46:48 PKT
+apply end 2026-11-25 17:59:12 PKT rc=0
+state backed up
+Apply complete! Resources: 82 added, 0 changed, 0 destroyed.
+
+{
+    "version": "1.36",
+    "status": "ACTIVE",
+    "platform": "eks.19",
+    "publicCidrs": 1,
+    "logging": [
+        "api",
+        "audit",
+        "authenticator"
+    ]
+}
+
+## add-ons
+vpc-cni	v1.22.4-eksbuild.14	ACTIVE
+kube-proxy	v1.36.0-eksbuild.65	ACTIVE
+coredns	v1.14.7-eksbuild.35	ACTIVE
+metrics-server	v0.9.1-eksbuild.2	ACTIVE
+
+## nodes
+NAME                                         STATUS  VERSION              INTERNAL-IP   OS-IMAGE  KERNEL-VERSION
+<node-a>  Ready   v1.36.5-eks-9adbfea  10.40.13.178  Amazon    Linux
+<node-b>   Ready   v1.36.5-eks-9adbfea  10.40.18.57   Amazon    Linux
+
+## pods -A
+NAMESPACE     NAME                              READY   STATUS    RESTARTS   AGE
+kube-system   aws-node-5s8ns                    2/2     Running   0          85s
+kube-system   aws-node-g5bf7                    2/2     Running   0          86s
+kube-system   coredns-59bb88bbff-qdqcc          1/1     Running   0          67s
+kube-system   coredns-59bb88bbff-wg665          1/1     Running   0          67s
+kube-system   kube-proxy-hdz8t                  1/1     Running   0          67s
+kube-system   kube-proxy-rxz2m                  1/1     Running   0          68s
+kube-system   metrics-server-6b67785ff5-hssf9   1/1     Running   0          66s
+kube-system   metrics-server-6b67785ff5-qhh45   1/1     Running   0          66s
+
+## node allocatable
+NAME                                          CPU     MEM         PODS   TYPE
+<node-a>   1930m   7276340Ki   29     <none>
+<node-b>    1930m   7276336Ki   29     <none>
+
+## SNS subscription (address not shown)
+email	arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts:<id>

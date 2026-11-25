@@ -1,0 +1,89 @@
+Release "external-secrets" does not exist. Installing it now.
+NAME: external-secrets
+LAST DEPLOYED: Wed Nov 25 18:00:24 2026
+NAMESPACE: external-secrets
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+external-secrets has been deployed successfully in namespace external-secrets!
+
+In order to begin using ExternalSecrets, you will need to set up a SecretStore
+or ClusterSecretStore resource (for example, by creating a 'vault' SecretStore).
+
+More information on the different types of SecretStores and how to configure them
+can be found in our Github: https://github.com/external-secrets/external-secrets
+clustersecretstore.external-secrets.io/cloudsentinel-aws created
+Release "kyverno" does not exist. Installing it now.
+NAME: kyverno
+LAST DEPLOYED: Wed Nov 25 18:01:32 2026
+NAMESPACE: kyverno
+STATUS: deployed
+REVISION: 1
+NOTES:
+Chart version: 3.10.0
+Kyverno version: v1.20.0
+
+Thank you for installing kyverno! Your release is named kyverno.
+
+The following components have been installed in your cluster:
+- CRDs
+- Admission controller
+- Reports controller
+- Cleanup controller
+- Background controller
+
+
+⚠️  WARNING: Setting the admission controller replica count below 2 means Kyverno is not running in high availability mode.
+
+
+⚠️  WARNING: PolicyExceptions are disabled by default. To enable them, set '--enablePolicyException' to true.
+⚠️  WARNING: The legacy kyverno.io policy types are deprecated and will be removed in a future release. Migrate to their policies.kyverno.io replacements:
+    - ClusterPolicy / Policy → ValidatingPolicy, MutatingPolicy, GeneratingPolicy, ImageValidatingPolicy (and their namespaced variants)
+    - ClusterCleanupPolicy / CleanupPolicy → DeletingPolicy / NamespacedDeletingPolicy
+    - PolicyException (kyverno.io) → PolicyException (policies.kyverno.io)
+    See https://kyverno.io/docs/guides/migration-to-cel/ for the migration guide.
+
+💡 Note: There is a trade-off when deciding which approach to take regarding Namespace exclusions. Please see the documentation at https://kyverno.io/docs/installation/#security-vs-operability to understand the risks.
+validatingpolicy.policies.kyverno.io/disallow-latest-tag created
+validatingpolicy.policies.kyverno.io/disallow-privilege-escalation created
+validatingpolicy.policies.kyverno.io/disallow-privileged created
+validatingpolicy.policies.kyverno.io/require-labels created
+validatingpolicy.policies.kyverno.io/require-resource-limits created
+validatingpolicy.policies.kyverno.io/require-run-as-non-root created
+validatingpolicy.policies.kyverno.io/restrict-image-registries created
+NAME                            AGE   READY
+disallow-latest-tag             2s    true
+disallow-privilege-escalation   2s    true
+disallow-privileged             2s    true
+require-labels                  2s    true
+require-resource-limits         2s    true
+require-run-as-non-root         1s    true
+restrict-image-registries       1s    true
+NAME                AGE    STATUS   CAPABILITIES   READY
+cloudsentinel-aws   115s   Valid    ReadWrite      True
+rc=0
+
+## helm releases
+NAME            	NAMESPACE       	REVISION	UPDATED                                	STATUS  	CHART                  	APP VERSION
+external-secrets	external-secrets	1       	2026-11-25 18:00:24.917398225 +0500 PKT	deployed	external-secrets-2.14.0	v2.14.0    
+kyverno         	kyverno         	1       	2026-11-25 18:01:32.68578985 +0500 PKT 	deployed	kyverno-3.10.0         	v1.20.0    
+
+## platform pods
+NAME                                             READY   STATUS    RESTARTS   AGE
+kyverno-admission-controller-777f447497-prxx6    1/1     Running   0          72s
+kyverno-background-controller-76b58f7bbf-bfsks   1/1     Running   0          72s
+kyverno-cleanup-controller-65497c54ff-5mg45      1/1     Running   0          72s
+kyverno-reports-controller-5959766b88-l6thp      1/1     Running   0          72s
+external-secrets   external-secrets-759d979b6-8lv8x                    1/1     Running   0          2m47s
+external-secrets   external-secrets-cert-controller-56c6d7984f-6rd57   1/1     Running   0          2m47s
+external-secrets   external-secrets-webhook-85b48984b9-dg965           1/1     Running   0          2m47s
+kyverno            kyverno-admission-controller-777f447497-prxx6       1/1     Running   0          74s
+kyverno            kyverno-background-controller-76b58f7bbf-bfsks      1/1     Running   0          74s
+kyverno            kyverno-cleanup-controller-65497c54ff-5mg45         1/1     Running   0          74s
+kyverno            kyverno-reports-controller-5959766b88-l6thp         1/1     Running   0          74s
+
+Ready=True store validated
+NAME                                          CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+<node-a>   43m          2%       560Mi           7%          
+<node-b>    69m          3%       560Mi           7%          

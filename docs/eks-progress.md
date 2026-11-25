@@ -174,6 +174,19 @@ Mistake: a `mkdir` on a UNC path failed and the seven new policy files were writ
 and were moved to `~/cs-iac/k8s/kyverno/eks-cel/`. `~/CloudSentinel` also has an untracked
 `terraform/environments/aws-demo/.terraform.lock.hcl` dated 2026-11-22 16:06, older than this session; left as is.
 
+## Stage 4 - shared cluster (BILLABLE from the apply start)
+
+- Plan with the real alert address: 82 to add, all create, all tagged; sha256
+  `b705182b3472c823bc1c9f23a7d64ea18c7977a4da4dcf9b552a378b08bd3d63`. Both dev policies attached to cloudsentinel-dev.
+- **BILLABLE since 2026-11-25 17:46:48 PKT** (apply start; end 17:59:12, 82 added, 12.4 min). State backed up to
+  `/mnt/d/ml-backup/eks-state/shared/`. Cluster ACTIVE, Kubernetes 1.36 (eks.19), 2 nodes Ready (kubelet
+  v1.36.5), system pods Running, add-ons on the pinned builds, SNS email subscription confirmed (has an ARN).
+  ESO 2.14.0 + ClusterSecretStore `cloudsentinel-aws` (Valid), Kyverno 1.20.0 + 7 CEL policies (READY).
+  Evidence: `docs/evidence/eks/stage4/{cluster-check,platform-install}.txt`. kube context `eks-cloudsentinel`
+  (current context left on minikube).
+- Before destroy: delete LoadBalancer Services, helm uninstall, delete policies before Kyverno (Stage 7). Destroy command (after Stage 7 step 1-2 cleanup):
+  `cd ~/cs-iac/terraform/environments/aws-demo && AWS_PROFILE=cloudsentinel-admin TF_VAR_alert_email=$(cat ~/.config/cloudsentinel/alert-email) terraform destroy -var-file=aws-demo.tfvars -var-file=local.tfvars`
+
 ## Decisions
 
 - decision: pin AWS provider 6.70.0, terraform-aws-modules/eks 21.29.0, terraform-aws-modules/vpc 6.7.2 because they
