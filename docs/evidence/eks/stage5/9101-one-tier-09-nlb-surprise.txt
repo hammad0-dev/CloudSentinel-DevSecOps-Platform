@@ -1,0 +1,10 @@
+# SURPRISE (2026-11-25 20:29:07 PKT): AWS created ONE load balancer after all
+Kubernetes' service controller kept retrying the 9101 LoadBalancer Service (no action of mine). At 2026-11-25 15:06:18 UTC
+an internet-facing NLB was created for it. The 9102 and 9103-frontend Services were still refused at 15:25-15:26 UTC
+with the same OperationNotPermitted ('This AWS account currently does not support creating load balancers').
+network	internet-facing	active	2026-11-25T15:06:18.342000+00:00
+$ curl http://<nlb-hostname>/health   (from this workstation, over the internet)
+{"status":"healthy"}
+  [HTTP 200]
+{"status":"ok"}
+  [HTTP 200]

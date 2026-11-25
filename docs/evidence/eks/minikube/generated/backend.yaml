@@ -1,0 +1,174 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: p9001-backend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-backend
+    owner: project-9001
+    managed-by: cloudsentinel
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::229032674007:role/cloudsentinel-p9001-backend-irsa
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p9001-backend-config
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-backend
+    owner: project-9001
+    managed-by: cloudsentinel
+data:
+  DB_HOST: "cloudsentinel-p9001-db.minikubetest1.ap-south-1.rds.amazonaws.com"
+  DB_PORT: "5432"
+  DB_NAME: "app"
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: p9001-backend-db
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-backend
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: cloudsentinel-aws
+  target:
+    name: p9001-backend-db
+    creationPolicy: Owner
+  data:
+    - secretKey: DB_USER
+      remoteRef:
+        key: arn:aws:secretsmanager:ap-south-1:229032674007:secret:rds!db-00000000-0000-4000-8000-000000009001-Mk9001
+        property: username
+    - secretKey: DB_PASSWORD
+      remoteRef:
+        key: arn:aws:secretsmanager:ap-south-1:229032674007:secret:rds!db-00000000-0000-4000-8000-000000009001-Mk9001
+        property: password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p9001-backend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-backend
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: p9001-backend
+  template:
+    metadata:
+      labels:
+        app: p9001-backend
+        owner: project-9001
+        managed-by: cloudsentinel
+    spec:
+      serviceAccountName: p9001-backend
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: p9001-backend
+          image: 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9001-backend:v1.0.0-mk
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: p9001-backend-config
+            - secretRef:
+                name: p9001-backend-db
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: p9001-backend-db
+              mountPath: /var/run/secrets/cloudsentinel/p9001-backend-db
+              readOnly: true
+          ports:
+            - containerPort: 3001
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: p9001-backend-db
+          secret:
+            secretName: p9001-backend-db
+            defaultMode: 0440
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p9001-backend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-backend
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  selector:
+    app: p9001-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3001
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: p9001-backend
+  namespace: cloudsentinel-p-9001
+  labels:
+    app: p9001-backend
+    owner: project-9001
+    managed-by: cloudsentinel
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: p9001-backend
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

@@ -163,11 +163,22 @@ function stackUid(stack) {
   return stack === "node" || stack === "python" ? 1000 : 10001;
 }
 
-function generateK8sManifests(projectName, imageTag, containerPort, stack = "unknown", namespace) {
+// options.target === "eks" (used by services/eksManifests.js): ECR image with an explicit non-latest tag,
+// IfNotPresent pulls, 2 replicas, the component's own IRSA service account, configuration from a ConfigMap and an
+// External Secrets-managed Secret (as env vars and as a read-only mounted file), and a configurable Service type.
+// Without options the Minikube output is unchanged.
+function generateK8sManifests(projectName, imageTag, containerPort, stack = "unknown", namespace, options = {}) {
   if (!/^cloudsentinel-p-[1-9]\d*$/.test(namespace || "")) throw new Error("A valid CloudSentinel project namespace is required");
+  const eks = options.target === "eks";
+  if (eks) {
+    const ecr = /^229032674007\.dkr\.ecr\.ap-south-1\.amazonaws\.com\/cloudsentinel\/p-[1-9]\d*-(app|frontend|backend):([A-Za-z0-9_][A-Za-z0-9._-]{0,127})$/.exec(imageTag || "");
+    if (!ecr || ecr[2] === "latest") throw new Error("EKS images must come from the project ECR repository with an explicit, non-latest tag");
+    if (!Number.isInteger(containerPort) || containerPort < 1024 || containerPort > 65535) throw new Error("EKS container ports must be 1024-65535");
+    if (!/^p[1-9]\d*-(app|frontend|backend)$/.test(options.serviceAccountName || "")) throw new Error("A component service account is required");
+  }
   const safeAppName = projectName.toLowerCase().replace(/[^a-z0-9-]/g, "-").slice(0, 50);
-  // UID matches the generated Dockerfile: 1000 for node/python, 10001 for java/static images.
-  const uid = stackUid(stack);
+  // UID matches the generated Dockerfile: 1000 for node/python, 10001 for java/static images (EKS images: 10001).
+  const uid = eks ? 10001 : stackUid(stack);
   const owner = `project-${namespace.slice("cloudsentinel-p-".length)}`;
   const nginxMounts = stack === "unknown" ? `
             - name: nginx-cache
@@ -179,6 +190,29 @@ function generateK8sManifests(projectName, imageTag, containerPort, stack = "unk
           emptyDir: {}
         - name: nginx-run
           emptyDir: {}` : "";
+  const secrets = eks ? (options.secrets || []) : [];
+  for (const s of secrets) if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(s)) throw new Error("Invalid secret name");
+  const envFrom = eks ? `
+          envFrom:
+            - configMapRef:
+                name: ${safeAppName}-config${secrets.map(s => `
+            - secretRef:
+                name: ${s}`).join("")}` : "";
+  const secretMounts = secrets.map(s => `
+            - name: ${s}
+              mountPath: /var/run/secrets/cloudsentinel/${s}
+              readOnly: true`).join("");
+  const secretVolumes = secrets.map(s => `
+        - name: ${s}
+          secret:
+            secretName: ${s}
+            defaultMode: 0440`).join("");
+  const serviceType = eks ? (options.serviceType || "ClusterIP") : "NodePort";
+  if (!["ClusterIP", "LoadBalancer", "NodePort"].includes(serviceType)) throw new Error("Invalid service type");
+  const serviceAnnotations = eks && serviceType === "LoadBalancer" ? `
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing` : "";
 
   const deployment = `apiVersion: apps/v1
 kind: Deployment
@@ -190,7 +224,7 @@ metadata:
     owner: ${owner}
     managed-by: cloudsentinel
 spec:
-  replicas: 1
+  replicas: ${eks ? 2 : 1}
   selector:
     matchLabels:
       app: ${safeAppName}
@@ -201,7 +235,7 @@ spec:
         owner: ${owner}
         managed-by: cloudsentinel
     spec:
-      serviceAccountName: ${SERVICE_ACCOUNT}
+      serviceAccountName: ${eks ? options.serviceAccountName : SERVICE_ACCOUNT}
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -213,9 +247,11 @@ spec:
       containers:
         - name: ${safeAppName}
           image: ${imageTag}
-          imagePullPolicy: Never
+          imagePullPolicy: ${eks ? "IfNotPresent" : "Never"}${envFrom}
           securityContext:
-            runAsNonRoot: true
+            runAsNonRoot: true${eks ? `
+            runAsUser: ${uid}
+            runAsGroup: ${uid}` : ""}
             privileged: false
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -224,7 +260,7 @@ spec:
                 - ALL
           volumeMounts:
             - name: tmp
-              mountPath: /tmp${nginxMounts}
+              mountPath: /tmp${nginxMounts}${secretMounts}
           ports:
             - containerPort: ${containerPort}
           resources:
@@ -243,7 +279,7 @@ spec:
             failureThreshold: 6
       volumes:
         - name: tmp
-          emptyDir: {}${nginxVolumes}
+          emptyDir: {}${nginxVolumes}${secretVolumes}
 `;
 
 
@@ -255,7 +291,7 @@ metadata:
   labels:
     app: ${safeAppName}
     owner: ${owner}
-    managed-by: cloudsentinel
+    managed-by: cloudsentinel${serviceAnnotations}
 spec:
   selector:
     app: ${safeAppName}
@@ -263,7 +299,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: ${containerPort}
-  type: NodePort
+  type: ${serviceType}
 `;
 
   return { deployment, service, safeAppName };

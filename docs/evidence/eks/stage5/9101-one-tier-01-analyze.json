@@ -1,0 +1,81 @@
+{
+  "projectId": 9101,
+  "status": "ANALYZED",
+  "commit": "b7714e7e36ce9e7a3ec05bdcd862cb2d8682b645a83c6bc8c47afa67843e5c55",
+  "classification": {
+    "analysis": {
+      "architecture": "one-tier",
+      "confidence": "medium",
+      "reason": "One application role detected, with no database dependency established in inspected files; this is not proof of absence.",
+      "confirmationRequired": true,
+      "languages": [
+        "Python"
+      ],
+      "frameworks": [
+        "flask"
+      ],
+      "databases": [],
+      "ports": [],
+      "components": [
+        {
+          "file": "requirements.txt",
+          "role": "backend",
+          "name": "flask",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        }
+      ],
+      "evidence": [
+        "requirements.txt: flask (backend; dependency, runtime not verified)",
+        "requirements.txt: Python dependency manifest; clients do not prove a deployed database"
+      ],
+      "warnings": [],
+      "confirmedRuntimeServices": [],
+      "supportedTemplate": "network-only",
+      "applicationDeploymentSupported": false,
+      "limitations": "Repository declarations only, not confirmed runtime services. Networking-only template; no application, compute or database deployment."
+    },
+    "detectedArchitecture": "one-tier",
+    "confirmationRequired": true,
+    "warnings": [],
+    "result": "CONTAINER",
+    "template": "eks-project",
+    "architecture": "one-tier",
+    "reason": "one-tier: app (python/flask)",
+    "components": [
+      {
+        "name": "app",
+        "dir": "",
+        "stack": "python",
+        "framework": "flask",
+        "role": "backend",
+        "entrypoint": {
+          "kind": "python",
+          "file": "app.py"
+        },
+        "port": 8080,
+        "portSource": "app.py listen call",
+        "secretKeys": [],
+        "dbEnv": [],
+        "usesDatabase": false,
+        "public": true,
+        "dockerfile": "generated"
+      }
+    ],
+    "database": null,
+    "needsConfirmation": []
+  },
+  "history": [
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T12:47:47.452Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T12:47:47.452Z",
+  "applyEnabled": false,
+  "applyBlockers": [
+    "INFRA_APPLY_ENABLED is not true"
+  ],
+  "account": "229032674007",
+  "region": "ap-south-1"
+}

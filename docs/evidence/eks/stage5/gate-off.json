@@ -1,0 +1,7 @@
+{
+  "projectId": 9101,
+  "enabled": false,
+  "reasons": [
+    "INFRA_APPLY_ENABLED is not true"
+  ]
+}

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>CloudSentinel three-tier fixture</title></head>
+<body>
+<h1>Items</h1>
+<ul id="items"></ul>
+<script>
+fetch('/api/items').then(r => r.json()).then(items => {
+  const ul = document.getElementById('items');
+  for (const i of items) { const li = document.createElement('li'); li.textContent = i.name; ul.appendChild(li); }
+}).catch(() => {});
+</script>
+</body>
+</html>

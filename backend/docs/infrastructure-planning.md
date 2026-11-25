@@ -5,7 +5,7 @@ controlled production runner is now available behind BOTH explicit server gates.
 # Registered-repository infrastructure preparation
 
 Implemented: authenticated owner-only GET /api/infrastructure/:projectId and
-POST /analyze, /plan, /approve. POST /apply always rejects. No webhook integration.
+POST /analyze, /plan, /approve. Network plans are never applied (see EKS section for /apply). No webhook integration.
 The existing Cloud selector scopes the workflow. Analyze reads only bounded
 GitHub manifests at an immutable commit using the registered repository URL and
 server-held token; no clones, package installation, repository Terraform or code
@@ -16,7 +16,10 @@ Production /plan currently PREPARES CONFIGURATION ONLY. It does not execute
 Terraform, validate provider authentication, scan IaC or produce a saved plan.
 Status stays ANALYZED, configuration PREPARED_NOT_PLANNED. The injected runner
 used by offline tests is NOT exposed through configuration or the browser.
-Real apply is disabled regardless of approval. No cloud operation was executed.
+Network-only plans are never applied, regardless of approval. Since the EKS work (Module 8),
+POST /apply applies an approved per-project EKS container-workload plan instead, behind
+all gates described in "EKS container workloads" below; while any gate is closed it
+answers 409 "Real apply is disabled: <reasons>".
 
 Server prerequisites: INFRA_STATE_BUCKET and INFRA_FLOW_LOG_BUCKET_ARN must identify
 approved existing protected buckets. INFRA_RESERVED_CIDRS is a server-controlled
@@ -73,6 +76,39 @@ returns unknown/low confidence even if a language or Dockerfile exists. Custom i
 reserved for ambiguous multi-service declarations. Every decision includes its
 reason and file-level evidence; all require user confirmation. Reanalyze historical
 records explicitly; existing records are not silently rewritten.
+
+## EKS container workloads (Module 8)
+
+Routes (owner only): GET /api/infrastructure/:id/workload, POST .../workload/{analyze,confirm,plan,approve,apply,
+destroy-plan,destroy}; POST /:id/apply is an alias of workload/apply. CLI: `node scripts/infra-cli.js`
+(same engine; `--dir <checkout> --project-id <n>` or `--project <n> --user <id>`).
+
+Flow: analyze (bounded read; languages, frameworks, databases, ports, entrypoints, env-var NAMES) -> confirm
+(architecture; uncertain entrypoints) -> plan: copy the fixed templates (terraform/templates/eks-project,
+modules/project-workload, modules/project-database), write only validated values to terraform.tfvars.json,
+`terraform fmt -check`, Trivy config with `--tf-vars` (any CRITICAL stops; the scan must have evaluated the
+workload module), `init -lockfile=readonly`, `validate`, `plan -out`, `show -json`, then the allowlist
+(services/eksWorkload.js inspectPlan: exact resource types and counts per architecture, create only, tags
+Project/ProjectId/Module/Environment/ManagedBy, no public RDS, RDS-managed password, no CIDR ingress to the
+database, IRSA trust limited to the component service account, inline policy limited to its own secret and log
+group, permissions boundary attached, provider pinned to 229032674007/ap-south-1) -> approve the exact plan
+SHA-256 (single use, 15 min, same user) -> apply. Custom/unknown, MongoDB/Redis/SQLite and multi-engine
+repositories return MANUAL_REVIEW; an uncertain entrypoint returns CONFIRM_ENTRYPOINT; HTML-only repositories go
+to the existing static-site engine (unchanged).
+
+Apply/destroy gates (all required): INFRA_APPLY_ENABLED=true; kill switch off (INFRA_KILL_SWITCH is not "on" and
+no file <INFRA_ARTIFACT_ROOT>/eks-workloads/KILL_SWITCH); project not 11/13/17; unconsumed, unexpired approval
+of this plan file's hash by the same user (consumed before Terraform runs, never retried); AWS identity
+229032674007 in ap-south-1 from `aws configure export-credentials --profile $INFRA_AWS_PROFILE` (default
+cloudsentinel-dev). A failed apply moves the project to NEEDS_OPERATOR_REVIEW. Destroy uses a `plan -destroy`
+that may delete exactly the applied addresses, with its own single-use approval.
+
+State: local file per project, <INFRA_ARTIFACT_ROOT>/eks-workloads/<id>/state/terraform.tfstate, copied to
+INFRA_STATE_BACKUP_DIR (default /mnt/d/ml-backup/eks-state/<id>/) after every apply/destroy. Audit:
+<...>/eks-workloads/<id>/audit.jsonl. Other settings: EKS_CLUSTER_NAME (default cloudsentinel-eks),
+INFRA_TF_PLUGIN_CACHE_DIR, INFRA_TRIVY_CACHE_DIR, INFRA_TERRAFORM_BIN/INFRA_AWS_BIN/INFRA_TRIVY_BIN.
+IAM for the dev profile: terraform/docs/policies/cloudsentinel-dev-container.json plus
+cloudsentinel-dev-container-guardrails.json (two managed policies; one would exceed the 6,144-character limit).
 
 CIDR checks POST /api/infrastructure/:id/cidr-check read local INFRA_RESERVED_CIDRS
 plus visible AWS VPC/route/peering inventory with bounded AWS CLI requests. Responses

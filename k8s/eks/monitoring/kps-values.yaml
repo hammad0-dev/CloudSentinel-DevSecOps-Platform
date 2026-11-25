@@ -1,0 +1,82 @@
+# Module 11 (EKS): reduced kube-prometheus-stack 93.1.2 (k8s/eks/versions.env). Grafana is ClusterIP only (open it
+# with kubectl port-forward); its admin login is the Secret grafana-admin created by monitoring-install.sh from
+# random bytes (never printed, never the chart default). No PVCs: the cluster has no EBS CSI driver.
+defaultRules:
+  create: false
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }
+
+prometheusOperator:
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 192Mi }
+kube-state-metrics:
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits: { memory: 128Mi }
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { memory: 64Mi }
+
+prometheus:
+  service: { type: ClusterIP }
+  prometheusSpec:
+    retention: 1d
+    scrapeInterval: 30s
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    resources:
+      requests: { cpu: 100m, memory: 384Mi }
+      limits: { memory: 1Gi }
+
+alertmanager:
+  service: { type: ClusterIP }
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 10m, memory: 32Mi }
+      limits: { memory: 64Mi }
+  config:
+    route:
+      receiver: "null"
+      group_by: [alertname, namespace]
+    receivers:
+      - name: "null"
+
+grafana:
+  enabled: true
+  service: { type: ClusterIP }
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  resources:
+    requests: { cpu: 50m, memory: 192Mi }
+    limits: { memory: 384Mi }
+  persistence: { enabled: false }
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+
+additionalPrometheusRulesMap:
+  cloudsentinel:
+    groups:
+      - name: cloudsentinel.rules
+        rules:
+          - alert: PodCrashLooping
+            expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff", namespace=~"cloudsentinel-p-.*|kyverno"}[5m]) >= 1
+            for: 5m
+            labels: { severity: critical }
+            annotations:
+              summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash-looping"
+          - alert: DeploymentUnavailable
+            expr: kube_deployment_status_replicas_unavailable{namespace=~"cloudsentinel-p-.*|kyverno"} > 0
+            for: 10m
+            labels: { severity: warning }
+            annotations:
+              summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"

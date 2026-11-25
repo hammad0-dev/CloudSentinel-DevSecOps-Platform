@@ -1,0 +1,14 @@
+{
+  "name": "cloudsentinel-test-three-tier-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Three-tier fixture: React UI served by a tiny Express server",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

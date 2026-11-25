@@ -1,0 +1,488 @@
+{
+  "projectId": 9103,
+  "status": "AWAITING_DESTROY_APPROVAL",
+  "commit": "6257052d62d4189936dbc17ceb41ff9d2dd1cb238cb2f252dd1178a8eb1b4075",
+  "classification": {
+    "analysis": {
+      "architecture": "three-tier",
+      "confidence": "medium",
+      "reason": "Frontend and backend components plus database evidence suggest three logical tiers; runtime topology is unverified.",
+      "confirmationRequired": true,
+      "languages": [
+        "JavaScript/TypeScript",
+        "HTML"
+      ],
+      "frameworks": [
+        "express",
+        "react",
+        "react-dom"
+      ],
+      "databases": [
+        "PostgreSQL"
+      ],
+      "ports": [],
+      "components": [
+        {
+          "file": "backend/package.json",
+          "role": "backend",
+          "name": "express",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "backend/package.json",
+          "role": "database-client",
+          "name": "pg",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/package.json",
+          "role": "backend",
+          "name": "express",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/package.json",
+          "role": "frontend",
+          "name": "react",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/package.json",
+          "role": "frontend",
+          "name": "react-dom",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "frontend/public/index.html",
+          "role": "frontend",
+          "name": "Static HTML",
+          "kind": "source",
+          "runtimeConfirmed": false
+        }
+      ],
+      "evidence": [
+        "backend/package.json: express (backend; dependency, runtime not verified)",
+        "backend/package.json: pg (database-client; dependency, runtime not verified)",
+        "frontend/package.json: express (backend; dependency, runtime not verified)",
+        "frontend/package.json: react (frontend; dependency, runtime not verified)",
+        "frontend/package.json: react-dom (frontend; dependency, runtime not verified)",
+        "frontend/public/index.html: Static HTML (frontend; source, runtime not verified)"
+      ],
+      "warnings": [],
+      "confirmedRuntimeServices": [],
+      "supportedTemplate": "network-only",
+      "applicationDeploymentSupported": false,
+      "limitations": "Repository declarations only, not confirmed runtime services. Networking-only template; no application, compute or database deployment."
+    },
+    "detectedArchitecture": "three-tier",
+    "confirmationRequired": true,
+    "warnings": [],
+    "result": "CONTAINER",
+    "template": "eks-project",
+    "architecture": "three-tier",
+    "reason": "three-tier: frontend (node/react), backend (node/express) + RDS postgres",
+    "components": [
+      {
+        "name": "frontend",
+        "dir": "frontend",
+        "stack": "node",
+        "framework": "react",
+        "role": "frontend",
+        "entrypoint": {
+          "kind": "npm-start",
+          "script": "node server.js"
+        },
+        "port": 3000,
+        "portSource": "frontend/server.js listen call",
+        "secretKeys": [],
+        "dbEnv": [],
+        "usesDatabase": false,
+        "public": true,
+        "dockerfile": "generated"
+      },
+      {
+        "name": "backend",
+        "dir": "backend",
+        "stack": "node",
+        "framework": "express",
+        "role": "backend",
+        "entrypoint": {
+          "kind": "npm-start",
+          "script": "node server.js"
+        },
+        "port": 3001,
+        "portSource": "backend/server.js listen call",
+        "secretKeys": [],
+        "dbEnv": [
+          "DB_HOST",
+          "DB_NAME",
+          "DB_PASSWORD",
+          "DB_PORT",
+          "DB_USER"
+        ],
+        "usesDatabase": true,
+        "public": false,
+        "dockerfile": "generated"
+      }
+    ],
+    "database": {
+      "engine": "postgres",
+      "name": "app"
+    },
+    "needsConfirmation": []
+  },
+  "history": [
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T12:47:48.167Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:06:38.398Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:12:00.511Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:13:20.771Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:14:59.662Z"
+    },
+    {
+      "status": "APPLYING",
+      "at": "2026-11-25T13:15:02.314Z"
+    },
+    {
+      "status": "NEEDS_OPERATOR_REVIEW",
+      "at": "2026-11-25T13:15:25.295Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:03:16.941Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:03:17.367Z"
+    },
+    {
+      "status": "DESTROYING",
+      "at": "2026-11-25T14:03:20.289Z"
+    },
+    {
+      "status": "DESTROYED",
+      "at": "2026-11-25T14:03:45.483Z"
+    },
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T14:03:45.694Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T14:03:45.896Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:05:15.244Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T14:05:15.462Z"
+    },
+    {
+      "status": "APPLYING",
+      "at": "2026-11-25T14:05:18.457Z"
+    },
+    {
+      "status": "NEEDS_OPERATOR_REVIEW",
+      "at": "2026-11-25T14:13:21.513Z"
+    },
+    {
+      "status": "AWAITING_DESTROY_APPROVAL",
+      "at": "2026-11-25T14:52:22.697Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T14:52:22.697Z",
+  "confirmation": {
+    "userId": "cli:hammad",
+    "architecture": "three-tier",
+    "entrypoints": {},
+    "at": "2026-11-25T14:03:45.895Z"
+  },
+  "plan": {
+    "kind": "apply",
+    "hash": "53206ab6bebfed19412550b4f9ade8f20a048398537d4be4d45a8dd95ea69c24",
+    "configurationHash": "d54f08f481365a2d61b1181dda1285fae06d6db8ced7e0cb458293c80f97570b",
+    "expected": {
+      "projectId": 9103,
+      "components": [
+        "frontend",
+        "backend"
+      ],
+      "database": "postgres"
+    },
+    "summary": [
+      {
+        "address": "module.database[0].aws_db_instance.this",
+        "type": "aws_db_instance",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.database[0].aws_db_subnet_group.this",
+        "type": "aws_db_subnet_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.database[0].aws_security_group.this",
+        "type": "aws_security_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_cloudwatch_log_group.this",
+        "type": "aws_cloudwatch_log_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_ecr_repository.this",
+        "type": "aws_ecr_repository",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_iam_role.irsa",
+        "type": "aws_iam_role",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_iam_role_policy.irsa",
+        "type": "aws_iam_role_policy",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_secretsmanager_secret.this",
+        "type": "aws_secretsmanager_secret",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_cloudwatch_log_group.this",
+        "type": "aws_cloudwatch_log_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_ecr_repository.this",
+        "type": "aws_ecr_repository",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_iam_role.irsa",
+        "type": "aws_iam_role",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_iam_role_policy.irsa",
+        "type": "aws_iam_role_policy",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_secretsmanager_secret.this",
+        "type": "aws_secretsmanager_secret",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9103
+      }
+    ],
+    "createdAt": "2026-11-25T14:05:15.244Z",
+    "expiresAt": "2026-11-25T14:35:15.244Z",
+    "stateKey": "projects/9103/eks/terraform.tfstate"
+  },
+  "approval": {
+    "kind": "apply",
+    "hash": "53206ab6bebfed19412550b4f9ade8f20a048398537d4be4d45a8dd95ea69c24",
+    "userId": "cli:hammad",
+    "at": "2026-11-25T14:05:15.461Z",
+    "expiresAt": "2026-11-25T14:20:15.461Z",
+    "consumedAt": "2026-11-25T14:05:18.457Z"
+  },
+  "blockers": [
+    "apply outcome uncertain; inspect state projects/9103/eks/terraform.tfstate; no retry was attempted"
+  ],
+  "recovery": {
+    "addresses": [
+      "module.database[0].aws_db_instance.this",
+      "module.database[0].aws_db_subnet_group.this",
+      "module.database[0].aws_security_group.this",
+      "module.workload[\"backend\"].aws_cloudwatch_log_group.this",
+      "module.workload[\"backend\"].aws_ecr_repository.this",
+      "module.workload[\"backend\"].aws_iam_role.irsa",
+      "module.workload[\"backend\"].aws_iam_role_policy.irsa",
+      "module.workload[\"backend\"].aws_secretsmanager_secret.this",
+      "module.workload[\"frontend\"].aws_cloudwatch_log_group.this",
+      "module.workload[\"frontend\"].aws_ecr_repository.this",
+      "module.workload[\"frontend\"].aws_iam_role.irsa",
+      "module.workload[\"frontend\"].aws_iam_role_policy.irsa",
+      "module.workload[\"frontend\"].aws_secretsmanager_secret.this"
+    ],
+    "at": "2026-11-25T14:51:47.433Z"
+  },
+  "destroyPlan": {
+    "kind": "destroy",
+    "file": "destroy.tfplan",
+    "hash": "9b5b694a2edd9558e05e37d3bb69d64216f62c08dadc1801461190d77408f93c",
+    "summary": [
+      {
+        "address": "module.database[0].aws_db_instance.this",
+        "type": "aws_db_instance",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.database[0].aws_db_subnet_group.this",
+        "type": "aws_db_subnet_group",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.database[0].aws_security_group.this",
+        "type": "aws_security_group",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_cloudwatch_log_group.this",
+        "type": "aws_cloudwatch_log_group",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_ecr_repository.this",
+        "type": "aws_ecr_repository",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_iam_role.irsa",
+        "type": "aws_iam_role",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_iam_role_policy.irsa",
+        "type": "aws_iam_role_policy",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"backend\"].aws_secretsmanager_secret.this",
+        "type": "aws_secretsmanager_secret",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_cloudwatch_log_group.this",
+        "type": "aws_cloudwatch_log_group",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_ecr_repository.this",
+        "type": "aws_ecr_repository",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_iam_role.irsa",
+        "type": "aws_iam_role",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_iam_role_policy.irsa",
+        "type": "aws_iam_role_policy",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      },
+      {
+        "address": "module.workload[\"frontend\"].aws_secretsmanager_secret.this",
+        "type": "aws_secretsmanager_secret",
+        "actions": [
+          "delete"
+        ],
+        "projectId": 9103
+      }
+    ],
+    "createdAt": "2026-11-25T14:52:22.696Z",
+    "expiresAt": "2026-11-25T15:22:22.696Z"
+  },
+  "applyEnabled": true,
+  "applyBlockers": [],
+  "account": "229032674007",
+  "region": "ap-south-1"
+}

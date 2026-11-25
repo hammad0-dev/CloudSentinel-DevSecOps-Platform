@@ -1,0 +1,30 @@
+# Module 10 (EKS): project pods may only run images from this account's ECR in ap-south-1.
+# Kept out of k8s/kyverno/policies/ on purpose: applied to Minikube it would block every locally built image.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+  annotations:
+    policies.kyverno.io/title: Trusted registry (project ECR only)
+    policies.kyverno.io/category: CloudSentinel Module 10
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: ecr-only
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: ["cloudsentinel-p-*"]
+      validate:
+        message: "Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry)."
+        pattern:
+          spec:
+            =(initContainers):
+              - image: "229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/*"
+            =(ephemeralContainers):
+              - image: "229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/*"
+            containers:
+              - image: "229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/*"

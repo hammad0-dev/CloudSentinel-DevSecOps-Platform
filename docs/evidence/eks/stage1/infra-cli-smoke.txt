@@ -1,0 +1,182 @@
+## infra-cli smoke (local --dir mode, artifact root is a throwaway temp dir)
+### python-clean (project 61): analyze
+{
+ "status": "ANALYZED",
+ "result": "CONTAINER",
+ "architecture": "one-tier",
+ "detected": "one-tier",
+ "languages": [
+  "Python"
+ ],
+ "frameworks": [
+  "flask"
+ ],
+ "databases": [],
+ "components": [
+  {
+   "name": "app",
+   "stack": "python",
+   "framework": "flask",
+   "port": 8080,
+   "portSource": "app.py listen call",
+   "public": true,
+   "dockerfile": "generated",
+   "secretKeys": [],
+   "dbEnv": []
+  }
+ ],
+ "database": null,
+ "warnings": [],
+ "applyEnabled": false,
+ "applyBlockers": [
+  "INFRA_APPLY_ENABLED is not true"
+ ]
+}
+### python-clean: confirm
+status: CONFIRMED
+### flask-postgres (project 62): analyze
+{
+ "status": "ANALYZED",
+ "result": "CONTAINER",
+ "architecture": "two-tier",
+ "detected": "two-tier",
+ "languages": [
+  "Python"
+ ],
+ "frameworks": [
+  "flask"
+ ],
+ "databases": [
+  "PostgreSQL"
+ ],
+ "components": [
+  {
+   "name": "app",
+   "stack": "python",
+   "framework": "flask",
+   "port": 8080,
+   "portSource": "app.py listen call",
+   "public": true,
+   "dockerfile": "generated",
+   "secretKeys": [
+    "APP_GREETING"
+   ],
+   "dbEnv": [
+    "DB_HOST",
+    "DB_NAME",
+    "DB_PASSWORD",
+    "DB_PORT",
+    "DB_USER"
+   ]
+  }
+ ],
+ "database": {
+  "engine": "postgres",
+  "name": "app"
+ },
+ "warnings": [],
+ "applyEnabled": false,
+ "applyBlockers": [
+  "INFRA_APPLY_ENABLED is not true"
+ ]
+}
+### flask-postgres: confirm
+status: CONFIRMED
+### three-tier (project 63): analyze
+{
+ "status": "ANALYZED",
+ "result": "CONTAINER",
+ "architecture": "three-tier",
+ "detected": "three-tier",
+ "languages": [
+  "JavaScript/TypeScript",
+  "HTML"
+ ],
+ "frameworks": [
+  "express",
+  "react",
+  "react-dom"
+ ],
+ "databases": [
+  "PostgreSQL"
+ ],
+ "components": [
+  {
+   "name": "frontend",
+   "stack": "node",
+   "framework": "react",
+   "port": 3000,
+   "portSource": "frontend/server.js listen call",
+   "public": true,
+   "dockerfile": "generated",
+   "secretKeys": [],
+   "dbEnv": []
+  },
+  {
+   "name": "backend",
+   "stack": "node",
+   "framework": "express",
+   "port": 3001,
+   "portSource": "backend/server.js listen call",
+   "public": false,
+   "dockerfile": "generated",
+   "secretKeys": [],
+   "dbEnv": [
+    "DB_HOST",
+    "DB_NAME",
+    "DB_PASSWORD",
+    "DB_PORT",
+    "DB_USER"
+   ]
+  }
+ ],
+ "database": {
+  "engine": "postgres",
+  "name": "app"
+ },
+ "warnings": [],
+ "applyEnabled": false,
+ "applyBlockers": [
+  "INFRA_APPLY_ENABLED is not true"
+ ]
+}
+### three-tier: confirm
+status: CONFIRMED
+### static-site (project 64): analyze
+{
+ "status": "ANALYZED",
+ "result": "STATIC_SITE",
+ "architecture": "static",
+ "detected": "one-tier",
+ "languages": [
+  "HTML"
+ ],
+ "frameworks": [],
+ "databases": [],
+ "components": [],
+ "database": null,
+ "warnings": [],
+ "applyEnabled": false,
+ "applyBlockers": [
+  "INFRA_APPLY_ENABLED is not true"
+ ]
+}
+### static-site: confirm
+status: STATIC_SITE
+### protected project 13
+infra-cli: Existing/protected project infrastructure is read-only
+### apply with gate closed (project 62)
+infra-cli: Real apply is disabled: INFRA_APPLY_ENABLED is not true
+### gate
+{
+  "projectId": 62,
+  "enabled": false,
+  "reasons": [
+    "INFRA_APPLY_ENABLED is not true"
+  ]
+}
+{
+  "projectId": 62,
+  "enabled": true,
+  "reasons": []
+}

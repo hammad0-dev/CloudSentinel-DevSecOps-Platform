@@ -1,0 +1,18 @@
+# RBAC on EKS (2026-11-25 18:50:27 PKT): roles from k8s/rbac/project-roles.sh in cloudsentinel-p-9101; kubectl auth can-i --as <service account>
+action                                         deployer   viewer    
+create deployments                             yes        no        
+update deployments                             yes        no        
+delete services                                yes        no        
+create configmaps                              yes        no        
+create horizontalpodautoscalers                yes        no        
+get pods                                       yes        yes       
+get pods/log                                   yes        no        
+create pods/exec                               no         no        
+get secrets                                    no         no        
+list secrets                                   no         no        
+create externalsecrets                         no         no        
+get externalsecrets (status)                   yes        yes       
+create rolebindings                            no         no        
+create validatingpolicies (cluster)            no         no        
+get pods in cloudsentinel-p-9102               no         no        
+get pods in kube-system                        no         no        

@@ -1,0 +1,59 @@
+# Capacity and access check before STOP 2 (2026-11-25 20:27:34 PKT)
+## Grafana (ClusterIP, port-forward only): /api/health -> {"database":"ok","version":"13.3.1","commit":"da3aa3ff574e7dbbf808c66b6daa744defed0441"}
+   unauthenticated /api/search -> HTTP 401
+   default chart password rejected -> HTTP 401
+## nodes
+NAME                                          CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+<node-a>   99m          5%       1108Mi          15%         
+<node-b>    111m         5%       1702Mi          23%         
+## pods per node / limit 29
+     18 ip-10-40-x-x.ap-south-1.compute.internal
+     17 ip-10-40-x-x.ap-south-1.compute.internal
+## memory by namespace (Mi)
+  monitoring                 967
+  kube-system                206
+  kyverno                    160
+  falco                      126
+  external-secrets           124
+  cloudsentinel-p-9103       122
+  cloudsentinel-p-9101        58
+  cloudsentinel-p-9102        56
+## helm releases
+NAME              NAMESPACE                                       
+alloy             monitoring        alloy-1.14.4                  v1.21.3
+external-secrets  external-secrets  external-secrets-2.14.0       v2.14.0
+falco             falco             falco-9.2.2                   0.45.2
+kps               monitoring        kube-prometheus-stack-93.1.2  v0.95.2
+kyverno           kyverno           kyverno-3.10.0                v1.20.0
+loki              monitoring        loki-7.5.0                    3.6.16
+## project workloads
+NAMESPACE              NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+cloudsentinel-p-9101   deployment.apps/p9101-app        2/2     2            2           126m
+cloudsentinel-p-9102   deployment.apps/p9102-app        2/2     2            2           22m
+cloudsentinel-p-9103   deployment.apps/p9103-backend    2/2     2            2           4m20s
+cloudsentinel-p-9103   deployment.apps/p9103-frontend   2/2     2            2           4m26s
+NAMESPACE              NAME                     TYPE           CLUSTER-IP      EXTERNAL-IP                                                  
+cloudsentinel-p-9101   service/p9101-app        LoadBalancer   172.20.237.57   <nlb-hostname>
+cloudsentinel-p-9102   service/p9102-app        LoadBalancer   172.20.34.5     <pending>                                                    
+cloudsentinel-p-9103   service/p9103-backend    ClusterIP      172.20.55.176   <none>                                                       
+cloudsentinel-p-9103   service/p9103-frontend   LoadBalancer   172.20.76.178   <pending>                                                    
+cloudsentinel-p-9101   p9101-app                            2/2     2            2           127m
+cloudsentinel-p-9102   p9102-app                            2/2     2            2           22m
+cloudsentinel-p-9103   p9103-backend                        2/2     2            2           4m22s
+cloudsentinel-p-9103   p9103-frontend                       2/2     2            2           4m28s
+## RDS
+cloudsentinel-p9102-db	db.t3.micro	available	False
+cloudsentinel-p9103-db	db.t3.micro	available	False
+## load balancers (expect none)
+1
+## running stack untouched
+  port 8002 pid 3491317
+  port 8001 pid 3491258
+  port 3000 pid 3491432
+## Minikube project pods untouched
+e2e-python-clean-655d84f56f-8m5v2   1/1   Running   0     3d4h
+  cloudsentinel-p-24 e2e-node-express-856654b7f5-m49zp Running
+  cloudsentinel-p-26 e2e-python-clean-655d84f56f-8m5v2 Running
+## kube current-context: minikube
+C:\             277G  246G   31G  89% /mnt/c
+D:\             200G   90G  110G  45% /mnt/d

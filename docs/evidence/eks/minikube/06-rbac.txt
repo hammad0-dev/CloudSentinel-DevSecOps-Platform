@@ -1,0 +1,41 @@
+[14:33:19] k8s/rbac/project-roles.sh cloudsentinel-p-9001 | kubectl apply -f -
+serviceaccount/cs-deployer created
+serviceaccount/cs-viewer created
+role.rbac.authorization.k8s.io/cloudsentinel-deployer created
+role.rbac.authorization.k8s.io/cloudsentinel-viewer created
+rolebinding.rbac.authorization.k8s.io/cloudsentinel-deployer created
+rolebinding.rbac.authorization.k8s.io/cloudsentinel-viewer created
+
+verb resource (namespace)              deployer   viewer    
+get secrets                            no         no        
+list secrets                           no         no        
+watch secrets                          no         no        
+create secrets                         no         no        
+create deployments                     yes        no        
+patch deployments                      yes        no        
+delete deployments                     yes        no        
+get deployments                        yes        yes       
+create services                        yes        no        
+get configmaps                         yes        yes       
+create configmaps                      yes        no        
+get pods                               yes        yes       
+get pods/log                           yes        yes       
+create pods/exec                       no         no        
+create pods                            no         no        
+delete pods                            no         no        
+create externalsecrets.external-secrets.io no         no        
+get externalsecrets.external-secrets.io yes        yes       
+create rolebindings                    no         no        
+create roles                           no         no        
+create horizontalpodautoscalers.autoscaling yes        no        
+get clustersecretstores.external-secrets.io no         no        
+get pods (cloudsentinel-p-24)          no         no        
+list deployments (cloudsentinel-p-26)  no         no        
+get secrets (cloudsentinel-p-24)       no         no        
+
+[14:39:59] subresource checks (kubectl auth can-i ... --subresource; the rows 'get pods/log' and 'create pods/exec' above read 'log'/'exec' as a pod NAME and are superseded by these)
+verb resource --subresource            deployer   viewer    
+get pods --subresource=log             yes        no        
+create pods --subresource=exec         no         no        
+create pods --subresource=portforward  no         no        
+create pods --subresource=attach       no         no        

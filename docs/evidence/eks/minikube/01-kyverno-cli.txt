@@ -1,0 +1,52 @@
+# kyverno CLI Version: 1.19.2 - policies: /mnt/d/cs-data/eks-work/minikube/policies-scoped.yaml (7 policies, scoped to cloudsentinel-p-9001)
+## generated manifests (expect: pass)
+(kyverno warns once per policy that kyverno.io/v1 ClusterPolicy is deprecated in favour of ValidatingPolicy; still supported in 1.19.2)
+Applying 27 policy rule(s) to 19 resource(s)...
+pass: 27, fail: 0, warn: 0, error: 0, skip: 0 
+exit=0
+
+## violation: v-root.yaml (expect: fail)
+Applying 27 policy rule(s) to 1 resource(s)...
+policy eks-test-disallow-latest-tag -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validate-image-tag validation error: Using the mutable image tag 'latest' is not allowed. rule validate-image-tag failed at path /spec/containers/0/image/
+policy eks-test-disallow-privileged -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - privileged-containers validation error: Privileged containers are not allowed. securityContext.privileged must be unset or false. rule privileged-containers failed at path /spec/containers/0/securityContext/privileged/
+policy eks-test-require-labels -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - check-app-owner-labels validation error: The labels 'app' and 'owner' are required. rule check-app-owner-labels failed at path /metadata/labels/owner/
+policy eks-test-require-resource-limits -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - validate-resource-limits validation error: CPU and memory limits are required for every container. rule validate-resource-limits failed at path /spec/containers/0/resources/
+policy eks-test-require-run-as-non-root -> resource cloudsentinel-p-9001/Pod/violation-root-pod failed:
+1 - run-as-non-root validation error: Running as root is not allowed. Set securityContext.runAsNonRoot to true on the Pod or every container. rule run-as-non-root[0] failed at path /spec/securityContext/ rule run-as-non-root[1] failed at path /spec/containers/0/securityContext/runAsNonRoot/
+2 - run-as-user-not-zero validation error: runAsUser 0 (root) is not allowed. rule run-as-user-not-zero failed at path /spec/containers/0/securityContext/runAsUser/
+
+## violation: v-latest.yaml (expect: fail)
+Applying 27 policy rule(s) to 1 resource(s)...
+policy eks-test-disallow-latest-tag -> resource cloudsentinel-p-9001/Pod/latest-tag-pod failed:
+1 - validate-image-tag validation error: Using the mutable image tag 'latest' is not allowed. rule validate-image-tag failed at path /spec/containers/0/image/
+pass: 8, fail: 1, warn: 0, error: 0, skip: 0 
+
+## violation: v-nolimits.yaml (expect: fail)
+Applying 27 policy rule(s) to 1 resource(s)...
+policy eks-test-require-resource-limits -> resource cloudsentinel-p-9001/Pod/no-limits-pod failed:
+1 - validate-resource-limits validation error: CPU and memory limits are required for every container. rule validate-resource-limits failed at path /spec/containers/0/resources/
+pass: 8, fail: 1, warn: 0, error: 0, skip: 0 
+
+## violation: v-privileged.yaml (expect: fail)
+Applying 27 policy rule(s) to 1 resource(s)...
+policy eks-test-disallow-privileged -> resource cloudsentinel-p-9001/Pod/privileged-pod failed:
+1 - privileged-containers validation error: Privileged containers are not allowed. securityContext.privileged must be unset or false. rule privileged-containers failed at path /spec/containers/0/securityContext/privileged/
+policy eks-test-disallow-privilege-escalation -> resource cloudsentinel-p-9001/Pod/privileged-pod failed:
+1 - privilege-escalation validation error: securityContext.allowPrivilegeEscalation must be false for every container. rule privilege-escalation failed at path /spec/containers/0/securityContext/allowPrivilegeEscalation/
+pass: 7, fail: 2, warn: 0, error: 0, skip: 0 
+
+## violation: v-registry.yaml (expect: fail)
+Applying 27 policy rule(s) to 1 resource(s)...
+policy eks-test-restrict-image-registries -> resource cloudsentinel-p-9001/Pod/untrusted-registry-pod failed:
+1 - ecr-only validation error: Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry). rule ecr-only failed at path /spec/containers/0/image/
+pass: 8, fail: 1, warn: 0, error: 0, skip: 0 
+
+## violation: v-escalation.yaml (expect: fail)
+Applying 27 policy rule(s) to 1 resource(s)...
+policy eks-test-disallow-privilege-escalation -> resource cloudsentinel-p-9001/Pod/escalation-pod failed:
+1 - privilege-escalation validation error: securityContext.allowPrivilegeEscalation must be false for every container. rule privilege-escalation failed at path /spec/containers/0/securityContext/allowPrivilegeEscalation/
+pass: 8, fail: 1, warn: 0, error: 0, skip: 0 

@@ -1,0 +1,50 @@
+# 9103 three-tier: artifacts, build, push, secret seed, deploy (2026-11-25 20:20:54 PKT)
+status: APPLIED
+database: {'engine': 'postgres', 'port': 5432, 'db_name': 'app'} address cloudsentinel-p9103-db.c...
+generated: {'component': 'frontend', 'dir': 'frontend', 'manifests': 'frontend.yaml', 'dockerfile': 'frontend.Dockerfile'}
+generated: {'component': 'backend', 'dir': 'backend', 'manifests': 'backend.yaml', 'dockerfile': 'backend.Dockerfile'}
+Login Succeeded
+## frontend: build (context test-fixtures/cloudsentinel-test-three-tier/frontend) and push
+ERROR: failed to build: resolve : lstat /mnt/d/cs-data/eks-work/build/9103/frontend: no such file or directory
+sha256:caba0d03620af1797e1a68fe0bd009c3b1baf274f724adf6c6d2d27b24ea551d
+229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9103-frontend:v1.0.0
+## backend: build (context test-fixtures/cloudsentinel-test-three-tier/backend) and push
+ERROR: failed to build: resolve : lstat /mnt/d/cs-data/eks-work/build/9103/backend: no such file or directory
+sha256:0890bbf508cda6cf5672700cd07d3c4d143cdc8480c7531ce5673b758533e19b
+229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9103-backend:v1.0.0
+## manifests
+backend.yaml
+frontend.yaml
+namespace/cloudsentinel-p-9103 created
+serviceaccount/p9103-frontend created
+configmap/p9103-frontend-config created
+deployment.apps/p9103-frontend created
+service/p9103-frontend created
+horizontalpodautoscaler.autoscaling/p9103-frontend created
+namespace/cloudsentinel-p-9103 unchanged
+serviceaccount/p9103-backend created
+configmap/p9103-backend-config created
+externalsecret.external-secrets.io/p9103-backend-db created
+deployment.apps/p9103-backend created
+service/p9103-backend created
+horizontalpodautoscaler.autoscaling/p9103-backend created
+externalsecret.external-secrets.io/p9103-backend-db condition met
+NAME               STORETYPE            STORE               REFRESH INTERVAL   STATUS         READY   LAST SYNC
+p9103-backend-db   ClusterSecretStore   cloudsentinel-aws   1m                 SecretSynced   True    5s
+Waiting for deployment "p9103-backend" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "p9103-backend" rollout to finish: 1 of 2 updated replicas are available...
+deployment "p9103-backend" successfully rolled out
+deployment "p9103-frontend" successfully rolled out
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS       IMAGES                                                                           
+deployment.apps/p9103-backend    2/2     2            2           14s   p9103-backend    229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9103-backend:v1.0.0
+deployment.apps/p9103-frontend   2/2     2            2           20s   p9103-frontend   229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9103-frontend:v1.0.
+
+NAME                     TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE   SELECTOR
+service/p9103-backend    ClusterIP      172.20.55.176   <none>        80/TCP         14s   app=p9103-backend
+service/p9103-frontend   LoadBalancer   172.20.76.178   <pending>     80:30810/TCP   18s   app=p9103-frontend
+
+NAME                                 READY   STATUS    RESTARTS   AGE   IP             NODE                                          NOMINATED NODE   READINESS GATES
+pod/p9103-backend-596c5b789f-cm58k   1/1     Running   0          14s   10.40.30.143   <node-b>    <none>           <none>
+pod/p9103-backend-596c5b789f-rggns   1/1     Running   0          14s   10.40.5.30     <node-a>   <none>           <none>
+pod/p9103-frontend-f4ccbd7f6-pg4mc   1/1     Running   0          20s   10.40.12.252   <node-a>   <none>           <none>
+pod/p9103-frontend-f4ccbd7f6-qczhh   1/1     Running   0          20s   10.40.20.77    <node-b>    <none>           <none>

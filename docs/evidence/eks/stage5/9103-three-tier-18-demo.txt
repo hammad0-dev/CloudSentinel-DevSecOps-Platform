@@ -1,0 +1,31 @@
+# 9103 three-tier: frontend -> backend -> RDS, and isolation of backend and database (2026-11-25 20:24:31 PKT)
+## Services (frontend public LoadBalancer stays Pending: Free plan has no load balancers; backend ClusterIP)
+NAME             TYPE           CLUSTER-IP      EXTERNAL   PORTS
+p9103-backend    ClusterIP      172.20.55.176   <none>     <none>
+p9103-frontend   LoadBalancer   172.20.76.178   <none>     30810
+
+## 1. Path frontend -> backend -> RDS (port-forward to the FRONTEND only)
+$ kubectl -n cloudsentinel-p-9103 port-forward svc/p9103-frontend 18104:80   (local demo access; no public load balancer on this account)
+$ curl http://127.0.0.1:18104/api/items
+[{"name":"first"},{"name":"second"}]  [HTTP 200]
+$ curl http://127.0.0.1:18104/  (static UI, first line)
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>CloudSentinel three-tier fixture</title></head>
+backend: the fixture does not log requests; the rows above can only come from the backend /items query on RDS (the frontend has no database access or credentials). Frontend Service NodePort 30810 exists (type LoadBalancer) but the nodes have no public IP.
+
+## 2. Backend is not reachable from outside the cluster
+  Service type ClusterIP, no external address, no NodePort: ''
+  nodes' public IPs: 10.40.x.x/public=none 10.40.x.x/public=none 
+  direct TCP from this workstation (outside the VPC) to a backend pod IP 10.40.x.x:3001: no connection (timeout/unreachable)
+
+## 3. Database is not reachable from outside the cluster
+False	sg-033f902d9cac4463c	True	cloudsentinel-p9103-db
+  DB security group ingress:
+    False	tcp	5432	5432	sg-0d8dd4fe3d6d24da4
+  node security group (allowed source): sg-0d8dd4fe3d6d24da4
+  endpoint resolves (public DNS) to: 10.40.x.x (private)
+  direct TCP from this workstation to the endpoint :5432: no connection (timeout/unreachable)
+
+## Limitation: inside the cluster there is no NetworkPolicy; any pod can reach the backend Service, and any pod on the
+## nodes can reach the database security group (it trusts the node security group, not individual pods).

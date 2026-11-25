@@ -1,0 +1,69 @@
+# 9102 two-tier: artifacts, build, push, secret seed, deploy (2026-11-25 20:04:10 PKT)
+status: APPLIED
+database: {'engine': 'postgres', 'port': 5432, 'db_name': 'app'} address cloudsentinel-p9102-db.c...
+generated: {'component': 'app', 'dir': '.', 'manifests': 'app.yaml', 'dockerfile': 'app.Dockerfile'}
+Login Succeeded
+## app: build (context test-fixtures/cloudsentinel-test-flask-postgres/) and push
+sha256:5842074eb66b706fa866e57c22b89eef3e36cb39ee2f1eb6f1c7d67355098822
+229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9102-app:v1.0.0
+## app: seed cloudsentinel/p-9102/app (--key APP_GREETING ) with random values (printed as hashes only)
+APP_GREETING sha256_12=0cc2b8fe3ad3
+put-secret-value failed: 
+aws: [ERROR]: An error occurred (ParamValidation): Error parsing parameter 'cli-input-json': Invalid JSON received.
+## manifests
+app.yaml
+namespace/cloudsentinel-p-9102 created
+serviceaccount/p9102-app created
+configmap/p9102-app-config created
+externalsecret.external-secrets.io/p9102-app-secrets created
+externalsecret.external-secrets.io/p9102-app-db created
+deployment.apps/p9102-app created
+service/p9102-app created
+horizontalpodautoscaler.autoscaling/p9102-app created
+externalsecret.external-secrets.io/p9102-app-db condition met
+error: timed out waiting for the condition on externalsecrets/p9102-app-secrets
+NAME                STORETYPE            STORE               REFRESH INTERVAL   STATUS              READY   LAST SYNC
+p9102-app-db        ClusterSecretStore   cloudsentinel-aws   1m                 SecretSynced        True    7s
+p9102-app-secrets   ClusterSecretStore   cloudsentinel-aws   1m                 SecretSyncedError   False   
+Waiting for deployment "p9102-app" rollout to finish: 0 of 2 updated replicas are available...
+error: timed out waiting for the condition
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                                                                          SELECTOR
+deployment.apps/p9102-app   0/2     2            0           6m10s   p9102-app    229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9102-app:v1.0.0   app=p910
+
+NAME                TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE     SELECTOR
+service/p9102-app   LoadBalancer   172.20.34.5   <pending>     80:32590/TCP   6m10s   app=p9102-app
+
+NAME                             READY   STATUS              RESTARTS   AGE     IP       NODE                                          NOMINATED NODE   READINESS GATES
+pod/p9102-app-74578d4574-lrmsg   0/1     ContainerCreating   0          6m10s   <none>   <node-b>    <none>           <none>
+pod/p9102-app-74578d4574-wx8cg   0/1     ContainerCreating   0          6m10s   <none>   <node-a>   <none>           <none>
+
+## FIX: rotate-secret.sh could not pass the value on stdin (AWS CLI v2 rejects file:///dev/stdin); now a private
+## 0600 file in $XDG_RUNTIME_DIR (/run/user/1000), removed on exit. Seed again (20:12:28):
+/mnt/c/Users/HF/AppData/Local/Temp/claude/2db08e82f745385f/cc740a3d-4f08-4fd3-83bd-12c073821e63/scratchpad/s5_seed2.sh: line 5: scripts/rotate-secret.sh: Permission denied
+error: timed out waiting for the condition on externalsecrets/p9102-app-secrets
+Waiting for deployment "p9102-app" rollout to finish: 0 of 2 updated replicas are available...
+error: deployment "p9102-app" exceeded its progress deadline
+NAME                STORETYPE            STORE               REFRESH INTERVAL   STATUS              READY   LAST SYNC
+p9102-app-db        ClusterSecretStore   cloudsentinel-aws   1m                 SecretSynced        True    3s
+p9102-app-secrets   ClusterSecretStore   cloudsentinel-aws   1m                 SecretSyncedError   False   
+NAME                        READY  STATUS             NODE
+p9102-app-74578d4574-lrmsg  0/1    ContainerCreating  <node-b>
+p9102-app-74578d4574-wx8cg  0/1    ContainerCreating  <node-a>
+
+## FIX: rotate-secret.sh could not pass the value on stdin (AWS CLI v2 rejects file:///dev/stdin); now a private
+## 0600 file in $XDG_RUNTIME_DIR (/run/user/1000), removed on exit. Seed again (20:15:45):
+APP_GREETING sha256_12=12ad65cbf2ad
+rotated: cloudsentinel/p-9102/app	<version-id>
+externalsecret.external-secrets.io/p9102-app-secrets condition met
+error: deployment "p9102-app" exceeded its progress deadline
+NAME                STORETYPE            STORE               REFRESH INTERVAL   STATUS         READY   LAST SYNC
+p9102-app-db        ClusterSecretStore   cloudsentinel-aws   1m                 SecretSynced   True    27s
+p9102-app-secrets   ClusterSecretStore   cloudsentinel-aws   1m                 SecretSynced   True    5s
+NAME                        READY  STATUS             NODE
+p9102-app-74578d4574-lrmsg  0/1    ContainerCreating  <node-b>
+p9102-app-74578d4574-wx8cg  0/1    ContainerCreating  <node-a>
+
+## after the secret sync (20:18:06): ready replicas 2/2
+NAME                        READY  STATUS   NODE
+p9102-app-74578d4574-lrmsg  1/1    Running  <node-b>
+p9102-app-74578d4574-wx8cg  1/1    Running  <node-a>

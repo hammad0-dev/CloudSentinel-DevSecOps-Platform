@@ -1,0 +1,16 @@
+[14:41:33] scripts/rotate-secret.sh --dry-run (AWS is not touched in Stage 2)
+APP_GREETING sha256_12=61c06437c6d1
+dry run: would call aws secretsmanager put-secret-value --secret-id cloudsentinel/p-9001/app --region ap-south-1 --profile cloudsentinel-dev (value on stdin)
+project 13 is protected
+(protected project refused: exit 2)
+
+[14:41:33] rotate the fake store value (same effect as put-secret-value on AWS)
+before: file=23ef3da51d22 env=23ef3da51d22
+Warning: store cloudsentinel-aws isn't currently maintained. Please plan and prepare accordingly.
+clustersecretstore.external-secrets.io/cloudsentinel-aws configured
+new value: APP_GREETING sha256_12=b45dbfcaac8d
+after 30s: file=b45dbfcaac8d env=23ef3da51d22 (file changed, env unchanged until restart)
+deployment generation before/after: 2 / 2 (no redeploy)
+pod: p9001-app-d885f5d85-x6z7g restarts 0
+NAME                REFRESH   STATUS         SYNCED
+p9001-app-secrets   1m        SecretSynced   2026-11-23T09:41:57Z

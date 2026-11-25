@@ -1,0 +1,61 @@
+# Module 11: CloudWatch Logs Insights with saved queries (2026-11-25 19:05:31 PKT); query definitions are Terraform-managed
+
+## saved query cloudsentinel/denied-api-calls (last 120 min) on /cloudsentinel/cloudtrail: Complete, 33 matched of 2807 scanned
+query: fields eventTime, userIdentity.arn, eventSource, eventName, errorCode, awsRegion, sourceIPAddress | filter errorCode like /UnauthorizedOperation|AccessDenied/ | sort eventTime desc | limit 50
+  eventTime=2026-11-25T14:04:38Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T14:02:25Z | userIdentity.arn=arn:aws:iam::229032674007:user/cloudsentinel-dev | eventSource=rds.amazonaws.com | eventName=DescribeDBInstances | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=<ip>
+  eventTime=2026-11-25T13:59:38Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:54:46Z | userIdentity.arn=arn:aws:iam::229032674007:user/cloudsentinel-dev | eventSource=s3.amazonaws.com | eventName=ListBuckets | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=<ip>
+  eventTime=2026-11-25T13:54:43Z | userIdentity.arn=arn:aws:iam::229032674007:user/cloudsentinel-dev | eventSource=ec2.amazonaws.com | eventName=DescribeInstances | errorCode=Client.UnauthorizedOperation | awsRegion=ap-south-1 | sourceIPAddress=<ip>
+  eventTime=2026-11-25T13:54:40Z | userIdentity.arn=arn:aws:iam::229032674007:user/cloudsentinel-dev | eventSource=iam.amazonaws.com | eventName=ListUsers | errorCode=AccessDenied | awsRegion=us-east-1 | sourceIPAddress=<ip>
+  eventTime=2026-11-25T13:54:09Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:48:27Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:43:07Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:42:58Z | userIdentity.arn=arn:aws:iam::229032674007:root | eventSource=sso.amazonaws.com | eventName=DescribeRegisteredRegions | errorCode=AccessDenied | awsRegion=us-east-1 | sourceIPAddress=<ip>
+  eventTime=2026-11-25T13:36:52Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:31:15Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:25:21Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:19:34Z | userIdentity.arn=arn:aws:sts::229032674007:assumed-role/cloudsentinel-cloudtrail-to-logs/CLOUDWATCH_LOGS_DELIVERY_SESSION | eventSource=kms.amazonaws.com | eventName=GenerateDataKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=cloudtrail.amazonaw
+  eventTime=2026-11-25T13:15:25Z | userIdentity.arn=arn:aws:iam::229032674007:user/cloudsentinel-dev | eventSource=kms.amazonaws.com | eventName=DescribeKey | errorCode=AccessDenied | awsRegion=ap-south-1 | sourceIPAddress=rds.amazonaws.com
+
+## saved query cloudsentinel/eks-audit-secrets-and-exec (last 120 min) on /aws/eks/cloudsentinel-eks/cluster: Complete, 1370 matched of 74063 scanned
+query: fields @timestamp, user.username, verb, objectRef.namespace, objectRef.resource, objectRef.subresource, objectRef.name, responseStatus.code | filter @logStream like /kube-apiserver-audit/ | filter objectRef.resource = "secrets" or objectRef.subresource = "exec" | sort @timestamp desc | limit 50
+  @timestamp=2026-11-25 14:05:37.851 | user.username=system:serviceaccount:monitoring:loki | verb=watch | objectRef.namespace=monitoring | objectRef.resource=secrets | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:31.074 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-ca | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:31.074 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-pair | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:21.291 | user.username=system:apiserver | verb=watch | objectRef.resource=secrets | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:21.037 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-ca | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:21.037 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-pair | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:20.789 | user.username=system:apiserver | verb=watch | objectRef.resource=secrets | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:20.036 | user.username=system:serviceaccount:monitoring:kps-kube-prometheus-stack-operator | verb=watch | objectRef.resource=secrets | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:18.776 | user.username=system:serviceaccount:monitoring:kps-kube-prometheus-stack-operator | verb=watch | objectRef.resource=secrets | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:11.256 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-ca | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:11.256 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-pair | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:01.225 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-pair | responseStatus.code=200
+  @timestamp=2026-11-25 14:05:01.222 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-ca | responseStatus.code=200
+  @timestamp=2026-11-25 14:04:51.195 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-ca | responseStatus.code=200
+  @timestamp=2026-11-25 14:04:51.195 | user.username=system:serviceaccount:kyverno:kyverno-admission-controller | verb=get | objectRef.namespace=kyverno | objectRef.resource=secrets | objectRef.name=kyverno-svc.kyverno.svc.kyverno-tls-pair | responseStatus.code=200
+
+## saved query cloudsentinel/vpc-flow-rejects (last 120 min) on /cloudsentinel/vpc-flow-logs/vpc-0218e9d694382b44c: Complete, 30 matched of 1237 scanned
+query: fields @timestamp, srcAddr, dstAddr, dstPort, protocol, action | filter action = "REJECT" | stats count(*) as rejects by srcAddr, dstAddr, dstPort | sort rejects desc | limit 25
+  srcAddr=<ip> | dstAddr=<ip> | dstPort=30791 | rejects=5
+  srcAddr=<ip> | dstAddr=<ip> | dstPort=5270 | rejects=5
+  srcAddr=<ip> | dstAddr=<ip> | dstPort=13325 | rejects=5
+  srcAddr=<ip> | dstAddr=<ip> | dstPort=22532 | rejects=5
+  srcAddr=<ip> | dstAddr=<ip> | dstPort=24939 | rejects=5
+  srcAddr=<ip> | dstAddr=<ip> | dstPort=34751 | rejects=5
+
+## alarm cloudsentinel-unauthorized-api-calls: state and history
+ALARM	2026-11-25T18:57:50.973000+05:00	Threshold Crossed: 1 datapoint [4.0 (25/11/26 13:52:00)] was greater than or equal to the threshold (1.0).
+2026-11-25T18:57:51.017000+05:00	Successfully executed action arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts
+2026-11-25T18:51:51.032000+05:00	Successfully executed action arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts
+2026-11-25T18:40:51.036000+05:00	Successfully executed action arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts
+2026-11-25T18:33:51.036000+05:00	Successfully executed action arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts
+2026-11-25T17:59:51.028000+05:00	Successfully executed action arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts
+2026-11-25T17:52:51.031000+05:00	Successfully executed action arn:aws:sns:ap-south-1:229032674007:cloudsentinel-security-alerts
+2026-11-25T18:57:50.973000+05:00	Alarm updated from OK to ALARM
+2026-11-25T18:56:50.974000+05:00	Alarm updated from ALARM to OK
+2026-11-25T18:51:50.973000+05:00	Alarm updated from OK to ALARM
+2026-11-25T18:49:50.973000+05:00	Alarm updated from ALARM to OK
+2026-11-25T18:40:50.973000+05:00	Alarm updated from OK to ALARM
+2026-11-25T18:38:50.973000+05:00	Alarm updated from ALARM to OK

@@ -1,0 +1,91 @@
+[14:33:10] Kyverno alone: Pod Security temporarily set to privileged on cloudsentinel-p-9001 so the built-in PSA does not answer first
+
+## kubectl apply v-root.yaml (expect: denied by Kyverno)
+Error from server: error when creating "/mnt/d/cs-data/eks-work/minikube/v-root.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/cloudsentinel-p-9001/violation-root-pod was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: Using the mutable image tag ''latest'' is not allowed. rule validate-image-tag failed at path /spec/containers/0/image/'
+disallow-privileged:
+  privileged-containers: 'validation error: Privileged containers are not allowed. securityContext.privileged must be unset or false. rule privileged-containers failed at path /spec/containers/0/securityContext/privileged/'
+eks-test-disallow-latest-tag:
+  validate-image-tag: 'validation error: Using the mutable image tag ''latest'' is not allowed. rule validate-image-tag failed at path /spec/containers/0/image/'
+eks-test-disallow-privilege-escalation:
+  privilege-escalation: 'validation error: securityContext.allowPrivilegeEscalation must be false for every container. rule privilege-escalation failed at path /spec/containers/0/securityContext/allowPrivilegeEscalation/'
+eks-test-disallow-privileged:
+  privileged-containers: 'validation error: Privileged containers are not allowed. securityContext.privileged must be unset or false. rule privileged-containers failed at path /spec/containers/0/securityContext/privileged/'
+eks-test-require-labels:
+  check-app-owner-labels: 'validation error: The labels ''app'' and ''owner'' are required. rule check-app-owner-labels failed at path /metadata/labels/owner/'
+eks-test-require-resource-limits:
+  validate-resource-limits: 'validation error: CPU and memory limits are required for every container. rule validate-resource-limits failed at path /spec/containers/0/resources/limits/'
+eks-test-require-run-as-non-root:
+  run-as-non-root: 'validation error: Running as root is not allowed. Set securityContext.runAsNonRoot to true on the Pod or every container. rule run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule run-as-non-root[1] failed at path /spec/containers/0/securityContext/runAsNonRoot/'
+  run-as-user-not-zero: 'validation error: runAsUser 0 (root) is not allowed. rule run-as-user-not-zero failed at path /spec/containers/0/securityContext/runAsUser/'
+eks-test-restrict-image-registries:
+  ecr-only: 'validation error: Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry). rule ecr-only failed at path /spec/containers/0/image/'
+require-labels:
+  check-app-owner-labels: 'validation error: The labels ''app'' and ''owner'' are required. rule check-app-owner-labels failed at path /metadata/labels/owner/'
+require-resource-limits:
+  validate-resource-limits: 'validation error: CPU and memory limits are required for every container. rule validate-resource-limits failed at path /spec/containers/0/resources/limits/'
+require-run-as-non-root:
+  run-as-non-root: 'validation error: Running as root is not allowed. Set securityContext.runAsNonRoot to true on the Pod or every container. rule run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule run-as-non-root[1] failed at path /spec/containers/0/securityContext/runAsNonRoot/'
+  run-as-user-not-zero: 'validation error: runAsUser 0 (root) is not allowed. rule run-as-user-not-zero failed at path /spec/containers/0/securityContext/runAsUser/'
+
+## kubectl apply v-latest.yaml (expect: denied by Kyverno)
+Error from server: error when creating "/mnt/d/cs-data/eks-work/minikube/v-latest.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/cloudsentinel-p-9001/latest-tag-pod was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: Using the mutable image tag ''latest'' is not allowed. rule validate-image-tag failed at path /spec/containers/0/image/'
+eks-test-disallow-latest-tag:
+  validate-image-tag: 'validation error: Using the mutable image tag ''latest'' is not allowed. rule validate-image-tag failed at path /spec/containers/0/image/'
+
+## kubectl apply v-nolimits.yaml (expect: denied by Kyverno)
+Error from server: error when creating "/mnt/d/cs-data/eks-work/minikube/v-nolimits.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/cloudsentinel-p-9001/no-limits-pod was blocked due to the following policies 
+
+eks-test-require-resource-limits:
+  validate-resource-limits: 'validation error: CPU and memory limits are required for every container. rule validate-resource-limits failed at path /spec/containers/0/resources/limits/'
+require-resource-limits:
+  validate-resource-limits: 'validation error: CPU and memory limits are required for every container. rule validate-resource-limits failed at path /spec/containers/0/resources/limits/'
+
+## kubectl apply v-privileged.yaml (expect: denied by Kyverno)
+Error from server: error when creating "/mnt/d/cs-data/eks-work/minikube/v-privileged.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/cloudsentinel-p-9001/privileged-pod was blocked due to the following policies 
+
+disallow-privileged:
+  privileged-containers: 'validation error: Privileged containers are not allowed. securityContext.privileged must be unset or false. rule privileged-containers failed at path /spec/containers/0/securityContext/privileged/'
+eks-test-disallow-privilege-escalation:
+  privilege-escalation: 'validation error: securityContext.allowPrivilegeEscalation must be false for every container. rule privilege-escalation failed at path /spec/containers/0/securityContext/allowPrivilegeEscalation/'
+eks-test-disallow-privileged:
+  privileged-containers: 'validation error: Privileged containers are not allowed. securityContext.privileged must be unset or false. rule privileged-containers failed at path /spec/containers/0/securityContext/privileged/'
+
+## kubectl apply v-registry.yaml (expect: denied by Kyverno)
+Error from server: error when creating "/mnt/d/cs-data/eks-work/minikube/v-registry.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/cloudsentinel-p-9001/untrusted-registry-pod was blocked due to the following policies 
+
+eks-test-restrict-image-registries:
+  ecr-only: 'validation error: Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry). rule ecr-only failed at path /spec/containers/0/image/'
+
+## kubectl apply v-escalation.yaml (expect: denied by Kyverno)
+Error from server: error when creating "/mnt/d/cs-data/eks-work/minikube/v-escalation.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/cloudsentinel-p-9001/escalation-pod was blocked due to the following policies 
+
+eks-test-disallow-privilege-escalation:
+  privilege-escalation: 'validation error: securityContext.allowPrivilegeEscalation must be false for every container. rule privilege-escalation failed at path /spec/containers/0/securityContext/allowPrivilegeEscalation/'
+
+[14:33:18] Pod Security restricted restored; second layer for a root pod:
+Error from server (Forbidden): error when creating "/mnt/d/cs-data/eks-work/minikube/v-root-psa.yaml": pods "violation-root-pod-psa" is forbidden: violates PodSecurity "restricted:latest": privileged (container "root" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container "root" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities
+
+[14:33:19] Kyverno policy reports for cloudsentinel-p-9001
+NAME                                   KIND         NAME                         PASS   FAIL   WARN   ERROR   SKIP   AGE
+22904938-df2a-44dc-b47c-40e3221ad7d1   ReplicaSet   p9001-app-5f895cfc66         16     0      0      0       0      7m34s
+60d7a6c1-adc4-4020-b5d6-75d46a29378f   Pod          p9001-app-5f895cfc66-l8mpt   16     0      0      0       0      8m57s
+a290466b-62eb-48a5-a962-f1860458a4be   Deployment   p9001-app                    16     0      0      0       0      9m4s
+cbce2f35-9d73-4011-8d1f-a857ba406b2c   Pod          p9001-app-5f895cfc66-q78tk   16     0      0      0       0      9m2s

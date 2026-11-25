@@ -1,0 +1,37 @@
+# Stage 5 static site (project 9104, test-fixtures/cloudsentinel-test-static-site): plan + allowlist only, NOT applied
+# classification: STATIC_SITE
+# Module terraform/modules/static-site/main.tf, unchanged (sha256 3fa83a790bd6c63c...).
+# The production path plans from a pipeline outbox event with eligibility evidence in the backend database and an
+# S3 state backend; this run plans the same module with a local backend and profile cloudsentinel-dev, then runs
+# the engine's own inspectPlan allowlist on the result.
+init ok
+Success! The configuration is valid.
+
+Error: No valid credential sources found
+Error: failed to refresh cached credentials, no EC2 IMDS role found,
+plan sha256 349cbc0dd1e801ac50cf71ff118557cbef48f676e9cfb44a17dcde94764a53a4
+/home/hammad/cs-iac/backend/services/staticDeploymentEngine.js:6
+function inspectPlan(plan,projectId){const changes=plan.resource_changes;if(!Array.isArray(changes)||changes.length!==7||new Set(changes.map(r=>r.type)).size!==7)throw Error('UNSAFE_PLAN_SCOPE');for(const r of changes){if(!TYPES.has(r.type)||r.mode!=='managed'||JSON.stringify(r.change?.actions)!=='["create"]')throw Error('UNSAFE_PLAN_ACTION');const tags=r.change.after?.tags_all;if(tags&&(tags.ProjectId!==String(projectId)||tags.Module!=='8-static'||tags.Environment!=='development'||tags.ManagedBy!=='Terraform'))throw Error('PLAN_TAG_MISMATCH');}const after=type=>changes.find(r=>r.type===type).change.after;const access=after('aws_s3_bucket_public_access_block');if(['block_public_acls','block_public_policy','ignore_public_acls','restrict_public_buckets'].some(k=>access[k]!==true))throw Error('PUBLIC_S3_PLAN_REJECTED');const distribution=after('aws_cloudfront_distribution');if(distribution.default_root_object!=='index.html'||distribution.price_class!=='PriceClass_100'||distribution.default_cache_behavior?.[0]?.viewer_protocol_policy!=='redirect-to-https')throw Error('UNSAFE_CLOUDFRONT_PLAN');return changes.map(r=>({address:r.address,type:r.type,actions:r.change.actions}));}
+                                                                                                                                                                  ^
+
+Error: UNSAFE_PLAN_SCOPE
+    at inspectPlan (/home/hammad/cs-iac/backend/services/staticDeploymentEngine.js:6:169)
+    at [eval]:4:9
+    at runScriptInThisContext (node:internal/vm:143:10)
+    at node:internal/process/execution:100:14
+    at [eval]-wrapper:6:24
+    at runScript (node:internal/process/execution:83:62)
+    at evalScript (node:internal/process/execution:114:10)
+    at node:internal/main/eval_string:30:3
+
+Node.js v18.20.8
+
+## retry 2026-11-25 20:25:59 PKT: the static module pins aws provider 5.100.0, which cannot read 'aws login' profiles
+## (known issue, module NOT changed). This plan-only run gives that one terraform process exported short-lived
+## credentials of cloudsentinel-dev in its environment (never printed); the EKS engine uses the refreshable profile.
+Plan: 7 to add, 0 to change, 0 to destroy.
+plan sha256 1e0efae1ee784813edbf2f72d338b5a363f66f3c128373ba1911f95a75fb2605
+resources: aws_cloudfront_distribution:create, aws_cloudfront_origin_access_control:create, aws_s3_bucket:create, aws_s3_bucket_ownership_controls:create, aws_s3_bucket_policy:create, aws_s3_bucket_public_access_block:create, aws_s3_bucket_server_side_encryption_configuration:create
+inspectPlan (static allowlist): ACCEPTED
+negative test (plan + an extra aws_iam_user): REJECTED - UNSAFE_PLAN_SCOPE
+NOT applied (static stays plan-only, as decided).

@@ -1,0 +1,201 @@
+{
+  "projectId": 9102,
+  "status": "AWAITING_APPROVAL",
+  "commit": "f2657710de4540fe1939005a031dfc440b831bb409408ff89f3a5c8a43b0e6f3",
+  "classification": {
+    "analysis": {
+      "architecture": "two-tier",
+      "confidence": "medium",
+      "reason": "Backend plus database dependency/service suggests two logical tiers.",
+      "confirmationRequired": true,
+      "languages": [
+        "Python"
+      ],
+      "frameworks": [
+        "flask"
+      ],
+      "databases": [
+        "PostgreSQL"
+      ],
+      "ports": [],
+      "components": [
+        {
+          "file": "requirements.txt",
+          "role": "backend",
+          "name": "flask",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        },
+        {
+          "file": "requirements.txt",
+          "role": "database-client",
+          "name": "psycopg2-binary",
+          "kind": "dependency",
+          "runtimeConfirmed": false
+        }
+      ],
+      "evidence": [
+        "requirements.txt: flask (backend; dependency, runtime not verified)",
+        "requirements.txt: psycopg2-binary (database-client; dependency, runtime not verified)",
+        "requirements.txt: Python dependency manifest; clients do not prove a deployed database"
+      ],
+      "warnings": [],
+      "confirmedRuntimeServices": [],
+      "supportedTemplate": "network-only",
+      "applicationDeploymentSupported": false,
+      "limitations": "Repository declarations only, not confirmed runtime services. Networking-only template; no application, compute or database deployment."
+    },
+    "detectedArchitecture": "two-tier",
+    "confirmationRequired": true,
+    "warnings": [],
+    "result": "CONTAINER",
+    "template": "eks-project",
+    "architecture": "two-tier",
+    "reason": "two-tier: app (python/flask) + RDS postgres",
+    "components": [
+      {
+        "name": "app",
+        "dir": "",
+        "stack": "python",
+        "framework": "flask",
+        "role": "backend",
+        "entrypoint": {
+          "kind": "python",
+          "file": "app.py"
+        },
+        "port": 8080,
+        "portSource": "app.py listen call",
+        "secretKeys": [
+          "APP_GREETING"
+        ],
+        "dbEnv": [
+          "DB_HOST",
+          "DB_NAME",
+          "DB_PASSWORD",
+          "DB_PORT",
+          "DB_USER"
+        ],
+        "usesDatabase": true,
+        "public": true,
+        "dockerfile": "generated"
+      }
+    ],
+    "database": {
+      "engine": "postgres",
+      "name": "app"
+    },
+    "needsConfirmation": []
+  },
+  "history": [
+    {
+      "status": "ANALYZED",
+      "at": "2026-11-25T12:47:47.825Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:05:24.659Z"
+    },
+    {
+      "status": "CONFIRMED",
+      "at": "2026-11-25T13:10:43.088Z"
+    },
+    {
+      "status": "AWAITING_APPROVAL",
+      "at": "2026-11-25T13:12:00.313Z"
+    }
+  ],
+  "updatedAt": "2026-11-25T13:12:00.313Z",
+  "confirmation": {
+    "userId": "cli:hammad",
+    "architecture": "two-tier",
+    "entrypoints": {},
+    "at": "2026-11-25T13:10:43.087Z"
+  },
+  "plan": {
+    "kind": "apply",
+    "hash": "5cf2ad14502aaf4ca44e1bcab1f24e6152442e3a3c690558039abd263c0fad0a",
+    "configurationHash": "ec61d515392afba1208d9801540371c28406198680e41257542d4667b3ba9ddd",
+    "expected": {
+      "projectId": 9102,
+      "components": [
+        "app"
+      ],
+      "database": "postgres"
+    },
+    "summary": [
+      {
+        "address": "module.database[0].aws_db_instance.this",
+        "type": "aws_db_instance",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.database[0].aws_db_subnet_group.this",
+        "type": "aws_db_subnet_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.database[0].aws_security_group.this",
+        "type": "aws_security_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.workload[\"app\"].aws_cloudwatch_log_group.this",
+        "type": "aws_cloudwatch_log_group",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.workload[\"app\"].aws_ecr_repository.this",
+        "type": "aws_ecr_repository",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.workload[\"app\"].aws_iam_role.irsa",
+        "type": "aws_iam_role",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.workload[\"app\"].aws_iam_role_policy.irsa",
+        "type": "aws_iam_role_policy",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      },
+      {
+        "address": "module.workload[\"app\"].aws_secretsmanager_secret.this",
+        "type": "aws_secretsmanager_secret",
+        "actions": [
+          "create"
+        ],
+        "projectId": 9102
+      }
+    ],
+    "createdAt": "2026-11-25T13:12:00.312Z",
+    "expiresAt": "2026-11-25T13:42:00.312Z",
+    "stateKey": "projects/9102/eks/terraform.tfstate"
+  },
+  "applyEnabled": false,
+  "applyBlockers": [
+    "INFRA_APPLY_ENABLED is not true"
+  ],
+  "account": "229032674007",
+  "region": "ap-south-1"
+}

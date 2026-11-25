@@ -1,0 +1,60 @@
+# Kyverno 1.20 on EKS, Enforce (2026-11-25 18:52:36 PKT)
+NAME                            ACTIONS   READY
+disallow-latest-tag             [Deny]    true
+disallow-privilege-escalation   [Deny]    true
+disallow-privileged             [Deny]    true
+require-labels                  [Deny]    true
+require-resource-limits         [Deny]    true
+require-run-as-non-root         [Deny]    true
+restrict-image-registries       [Deny]    true
+
+## admitted: the generated one-tier Deployment (ECR image, non-root, limits, labels)
+p9101-app 2/2 ready, image 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/p-9101-app:v1.0.0
+
+## violation v-root (expect: denied)
+  Error from server (Forbidden): error when creating "STDIN": pods "violation-root-pod" is forbidden: violates PodSecurity "restricted:latest": privileged (container "root" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container "root" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "root" must set securityContext.c
+
+## violation v-latest (expect: denied)
+  Error from server: error when creating "STDIN": admission webhook "vpol.validate.kyverno.svc-fail-finegrained-disallow-latest-tag" denied the request: Policy disallow-latest-tag failed: Using the mutable image tag 'latest' is not allowed.
+
+## violation v-nolimits (expect: denied)
+  Error from server: error when creating "STDIN": admission webhook "vpol.validate.kyverno.svc-fail-finegrained-require-resource-limits" denied the request: Policy require-resource-limits failed: CPU and memory limits are required for every container.
+
+## violation v-privileged (expect: denied)
+  Error from server (Forbidden): error when creating "STDIN": pods "privileged-pod" is forbidden: violates PodSecurity "restricted:latest": privileged (container "c" must not set securityContext.privileged=true), allowPrivilegeEscalation != false (container "c" must set securityContext.allowPrivilegeEscalation=false)
+
+## violation v-registry (expect: denied)
+  Error from server: error when creating "STDIN": admission webhook "vpol.validate.kyverno.svc-fail-finegrained-restrict-image-registries" denied the request: Policy restrict-image-registries failed: Images must come from 229032674007.dkr.ecr.ap-south-1.amazonaws.com/cloudsentinel/ (trusted registry).
+
+## violation v-escalation (expect: denied)
+  Error from server (Forbidden): error when creating "STDIN": pods "escalation-pod" is forbidden: violates PodSecurity "restricted:latest": allowPrivilegeEscalation != false (container "c" must set securityContext.allowPrivilegeEscalation=false)
+
+## pods left by the attempts (expect: only the two app pods)
+p9101-app-6965589576-8hprk Running
+p9101-app-6965589576-jsf4s Running
+
+## same root pod in a non-project namespace is out of scope (server dry-run; nothing created)
+  pod/violation-root-pod created (server dry run)
+
+# Layered defence: in the generated namespaces Pod Security Admission (restricted) rejects root/privileged/escalation
+# before Kyverno is called. Same three pods in a temporary project namespace WITHOUT the PSA label, so Kyverno decides:
+namespace cloudsentinel-p-9199 created (no pod-security label)
+
+## v-root in cloudsentinel-p-9199 (expect: denied by Kyverno)
+  Error from server: error when creating "STDIN": admission webhook "vpol.validate.kyverno.svc-fail-finegrained-require-labels" denied the request: Policy require-labels failed: The labels 'app' and 'owner' are required.
+
+## v-privileged in cloudsentinel-p-9199 (expect: denied by Kyverno)
+  Error from server: error when creating "STDIN": admission webhook "vpol.validate.kyverno.svc-fail-finegrained-disallow-privilege-escalation" denied the request: Policy disallow-privilege-escalation failed: securityContext.allowPrivilegeEscalation must be false for every container.
+
+## v-escalation in cloudsentinel-p-9199 (expect: denied by Kyverno)
+  Error from server: error when creating "STDIN": admission webhook "vpol.validate.kyverno.svc-fail-finegrained-disallow-privilege-escalation" denied the request: Policy disallow-privilege-escalation failed: securityContext.allowPrivilegeEscalation must be false for every container.
+
+## pods in cloudsentinel-p-9199 (expect: none)
+No resources found in cloudsentinel-p-9199 namespace.
+namespace cloudsentinel-p-9199 deleted
+
+## policy reports (background scan) for the project namespaces
+NS                     KIND         NAME                         PASS   FAIL
+cloudsentinel-p-9101   Deployment   p9101-app                    7      0
+cloudsentinel-p-9101   Pod          p9101-app-6965589576-8hprk   7      0
+cloudsentinel-p-9101   Pod          p9101-app-6965589576-jsf4s   7      0

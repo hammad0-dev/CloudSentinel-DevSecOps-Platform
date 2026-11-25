@@ -1,0 +1,25 @@
+# node --test test/eks-workload.test.js (2026-11-23 14:04:34 PKT)
+ok 1 - one-tier: python-clean is one app component, no database, entrypoint and port detected
+ok 2 - two-tier: Flask + PostgreSQL gets RDS postgres; DB settings are not project secrets
+ok 3 - three-tier: separate frontend (public) and backend (private) deployments plus RDS
+ok 4 - static: HTML-only repository goes to the existing static-site engine, nothing generated here
+ok 5 - custom/unknown architectures and unsupported databases return manual review, never a guess
+ok 6 - uncertain entrypoint returns CONFIRM_ENTRYPOINT; a confirmed file must exist in the component
+ok 7 - tfvars accept only validated values: protected projects, names, ports, env names
+ok 8 - generate copies only the fixed templates and writes values only to terraform.tfvars.json
+ok 9 - generated Dockerfiles are pinned, non-root and never use latest
+ok 10 - EKS manifests satisfy the Kyverno policies and use IRSA, ECR, ESO and an HPA
+ok 11 - three-tier backend Service is private; frontend gets BACKEND_URL; Minikube output unchanged
+ok 12 - allowlist accepts exactly the generated resources (one-, two- and three-tier)
+ok 13 - allowlist rejects public RDS, open database access, extra types, missing tags, wrong account and admin IAM
+ok 14 - destroy plans may delete only the applied addresses
+ok 15 - apply is refused unless INFRA_APPLY_ENABLED=true and the kill switch is off
+ok 16 - full lifecycle: plan hash approval is single use, apply backs up state, destroy is scoped
+ok 17 - a Trivy run that did not evaluate the modules refuses the plan
+ok 18 - a tampered plan file after approval is rejected before apply
+ok 19 - expired AWS login is reported with the aws login command and nothing runs
+ok 20 - env-var and port detection read names only
+# tests 20
+# pass 20
+# fail 0
+# skipped 0

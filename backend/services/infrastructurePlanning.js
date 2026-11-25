@@ -5,7 +5,9 @@ const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
 const fail=(message,code=400)=>Object.assign(new Error(message),{safe:true,status:code});
 const statuses=['NOT_CONFIGURED','ANALYZED','PLANNING','PLANNED','AWAITING_APPROVAL','APPLYING','APPLIED','FAILED','VERIFICATION_PENDING'];
 const {analyze}=require('./repositoryArchitecture');
-async function repositoryFiles(project){
+// withCode (EKS workload analysis only): also return all blob paths and up to 30 small .py/.js/.env.example files
+// (at most two directories deep), used for entrypoint, port and environment-variable-name detection.
+async function repositoryFiles(project,{withCode=false}={}){
  const m=/^https:\/\/github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/.exec(project.repo_url||'');if(!m)throw fail('Only registered GitHub repositories are supported');
  const base=`https://api.github.com/repos/${m[1]}/${m[2]}`,headers={Accept:'application/vnd.github+json',...(project.github_token?{Authorization:`Bearer ${project.github_token}`}:{})};
  const get=async url=>(await axios.get(url,{headers,timeout:8000,maxContentLength:512*1024,maxRedirects:0})).data;
@@ -14,7 +16,11 @@ async function repositoryFiles(project){
  const files={};const candidates=tree.tree.filter(f=>f.type==='blob'&&/(^|\/)(package.json|requirements[^/]*\.txt|pyproject.toml|Pipfile|setup.cfg|pom.xml|build.gradle[^/]*|go.mod|Dockerfile[^/]*|(?:docker-)?compose[^/]*\.ya?ml|[^/]+\.html?)$/.test(f.path));
  if(candidates.length>20)throw fail('Repository needs manual analysis: too many manifests');
  for(const file of candidates){if(file.size>65536)throw fail('Repository manifest exceeds analysis bound');const data=await get(`${base}/git/blobs/${file.sha}`);if(data.encoding!=='base64')throw fail('Unsupported repository encoding');files[file.path]=Buffer.from(data.content,'base64').toString('utf8');}
- return {commit:commit.sha,files};
+ if(!withCode)return {commit:commit.sha,files};
+ const {CODE,SKIP_DIR}=require('./eksWorkload');const blobs=tree.tree.filter(f=>f.type==='blob'&&!SKIP_DIR.test(f.path));if(blobs.length>2000)throw fail('Repository too large for bounded analysis');
+ const code={},sources=blobs.filter(f=>CODE.test(f.path)&&f.path.split('/').length<=3&&f.size<=65536);if(sources.length>30)throw fail('Repository needs manual analysis: too many source files');
+ for(const file of sources){const data=await get(`${base}/git/blobs/${file.sha}`);if(data.encoding!=='base64')throw fail('Unsupported repository encoding');code[file.path]=Buffer.from(data.content,'base64').toString('utf8');}
+ return {commit:commit.sha,files,code,paths:blobs.map(f=>f.path).sort()};
 }
 function variables(projectId,input){
  const keys=['environment','availabilityZone','cidr','architecture','networkPolicyMode'];if(!input||Object.keys(input).some(k=>!keys.includes(k)))throw fail('Unsupported planning variable');
@@ -70,4 +76,4 @@ class Planner{
 function verifyResources(summary,id){const types=new Set(['aws_vpc','aws_subnet','aws_internet_gateway','aws_route_table','aws_route','aws_route_table_association','aws_security_group','aws_default_security_group','aws_flow_log']);if(!Array.isArray(summary)||!summary.length||summary.some(r=>!types.has(r.type)||r.actions?.length!==1||r.actions[0]!=='create'||r.projectId!==id))throw fail('Unexpected or destructive plan resources',409);}
 async function ownedProject(pool,userId,id){if(!/^[1-9]\d*$/.test(String(id))||!Number.isSafeInteger(+id))throw fail('Invalid project');const {rows}=await pool.query('SELECT id, user_id, repo_url, github_token FROM projects WHERE id=$1 AND user_id=$2',[+id,userId]);if(!rows.length)throw fail('Project not found',404);return rows[0];}
 function publicRecord(data){const {artifact,...safe}=data;return {...safe,applyEnabled:false,costNotice:'Network only; Flow Logs delivery and S3 storage/requests may incur charges. No Free Tier guarantee.'}}
-module.exports={Planner,analyze,variables,collision,verifyResources,publicRecord,statuses,ownedProject};
+module.exports={Planner,analyze,variables,collision,verifyResources,publicRecord,statuses,ownedProject,repositoryFiles};

@@ -1,0 +1,23 @@
+# STOP: Free plan refuses load balancers (2026-11-25 18:32:01 PKT)
+NAME        TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+p9101-app   LoadBalancer   172.20.237.57   <pending>     80:32343/TCP   11m
+Error syncing load balancer: failed to ensure load balancer: error creating load balancer: "operation error Elastic Load Balancing v2: CreateLoadBalancer, https response error StatusCode: 400, RequestID: <id>, OperationNotPermitted: This AWS account currently does not support creating load balancers. For more information, please contact AWS Support."
+
+## load balancers in ap-south-1 (expect none)
+## RDS instances (expect none)
+## per-project resources that exist (Terraform state)
+9101 ['workload/aws_cloudwatch_log_group', 'workload/aws_ecr_repository', 'workload/aws_iam_role', 'workload/aws_iam_role_policy', 'workload/aws_secretsmanager_secret']
+9102 ['database/aws_db_subnet_group', 'database/aws_security_group', 'workload/aws_cloudwatch_log_group', 'workload/aws_ecr_repository', 'workload/aws_iam_role', 'workload/aws_iam_role_policy', 'workload/aws_secretsmanager_secret']
+9103 ['database/aws_db_subnet_group', 'database/aws_security_group', 'workload/aws_cloudwatch_log_group', 'workload/aws_ecr_repository', 'workload/aws_iam_role', 'workload/aws_iam_role_policy', 'workload/aws_secretsmanager_secret', 'workload/aws_cloudwatch_log_group', 'workload/aws_ecr_repository', 'workload/aws_iam_role', 'workload/aws_iam_role_policy', 'workload/aws_secretsmanager_secret']
+## state backups
+/mnt/d/ml-backup/eks-state/9101/:
+terraform.tfstate.apply.2026-11-25T13-14-18-282Z
+
+/mnt/d/ml-backup/eks-state/9102/:
+terraform.tfstate.apply-failed.2026-11-25T13-14-59-304Z
+
+/mnt/d/ml-backup/eks-state/9103/:
+terraform.tfstate.apply-failed.2026-11-25T13-15-25-289Z
+
+/mnt/d/ml-backup/eks-state/shared/:
+terraform.tfstate.2026-11-25-1759

@@ -1,0 +1,34 @@
+[14:42:14] minikube addons enable metrics-server (was disabled; disabled again at cleanup)
+  - Using image registry.k8s.io/metrics-server/metrics-server:v0.9.0
+* The 'metrics-server' addon is enabled
+NAME       CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+minikube   6942m        86%      4825Mi          24%         
+
+[14:43:47] HPA before load
+NAME        REFERENCE              TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+p9001-app   Deployment/p9001-app   cpu: 1%/70%   2         4         2          20m
+[14:43:48] load generator: 4 busybox pods in namespace cs-eks-load (outside the policy scope) hitting the app Service
+deployment.apps/load created
+t+11s targets=cpu: min=1%/70% max=2 replicas=4
+t+22s targets=cpu: min=1%/70% max=2 replicas=4
+t+33s targets=cpu: min=1%/70% max=2 replicas=4
+t+44s targets=cpu: min=1%/70% max=2 replicas=4
+t+55s targets=cpu: min=1%/70% max=2 replicas=4
+t+66s targets=cpu: min=129%/70% max=2 replicas=4
+t+77s targets=cpu: min=129%/70% max=2 replicas=4
+NAME                        READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GAT
+p9001-app-d885f5d85-8qzmj   1/1     Running   0          19s     10.244.0.58   minikube   <none>           <none>
+p9001-app-d885f5d85-b649c   1/1     Running   0          4m40s   10.244.0.50   minikube   <none>           <none>
+p9001-app-d885f5d85-vqz7h   1/1     Running   0          19s     10.244.0.57   minikube   <none>           <none>
+p9001-app-d885f5d85-x6z7g   1/1     Running   0          4m28s   10.244.0.51   minikube   <none>           <none>
+Events:
+  Type     Reason                        Age                   From                       Message
+  ----     ------                        ----                  ----                       -------
+  Warning  FailedComputeMetricsReplicas  18m (x12 over 21m)    horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+  Warning  FailedGetResourceMetric       6m35s (x61 over 21m)  horizontal-pod-autoscaler  failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+  Warning  FailedGetResourceMetric       95s (x5 over 2m35s)   horizontal-pod-autoscaler  failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server is currently unable to handle the request (get pods.metrics.k8s.io)
+  Normal   SuccessfulRescale             20s                   horizontal-pod-autoscaler  New size: 4; reason: cpu resource utilization (percentage of request) above target
+NAME                        CPU(cores)   MEMORY(bytes)   
+p9001-app-d885f5d85-b649c   126m         29Mi            
+p9001-app-d885f5d85-x6z7g   133m         29Mi            
+[14:45:07] stop load
