@@ -1,0 +1,33 @@
+{
+ "apiRoute": "GET /api/projects/27/pipelines",
+ "execution": {
+  "id": 110,
+  "status": "STAGE_FAILED",
+  "stages_completed": "SAST",
+  "failure_reason": "CRITICAL security vulnerability found in SAST stage. Pipeline stopped.",
+  "promote_result": null
+ },
+ "isLatestOnPage": true,
+ "uiNodes": [
+  {
+   "name": "SAST",
+   "status": "Failed"
+  },
+  {
+   "name": "Dependency",
+   "status": "Skipped"
+  },
+  {
+   "name": "IaC",
+   "status": "Skipped"
+  },
+  {
+   "name": "Deploy",
+   "status": "Skipped"
+  },
+  {
+   "name": "DAST",
+   "status": "Skipped"
+  }
+ ]
+}

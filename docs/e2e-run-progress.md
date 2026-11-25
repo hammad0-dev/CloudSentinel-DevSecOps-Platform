@@ -11,3 +11,4 @@ settings changed here.
 | Step | Status | Time (PKT) | Notes |
 |---|---|---|---|
 | Setup | done | 01:47 | worktree, env flags checked (names only), ML services healthy (/health 200, model trained), Minikube running, metrics API not installed (resource use sampled with `docker stats` on the Minikube container) |
+| Run 1 demo-forms | done (as expected) | 01:48 | execution 110 STAGE_FAILED at SAST in 19 s: 6 findings (2 CRITICAL, 4 HIGH), engine ml; no rows for later stages; CI/CD API view: SAST Failed, Dependency/IaC/Deploy/DAST Skipped |
