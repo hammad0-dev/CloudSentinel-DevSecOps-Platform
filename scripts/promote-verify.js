@@ -32,6 +32,12 @@ function args(argv) {
   const engine = new WorkloadInfrastructure({ source: () => W.localSource(dir) });
   const record = await engine.get(id);
   if (record.status !== 'APPLIED') throw new Error(`project ${id} infrastructure is ${record.status}; this check only runs the already-applied path`);
+  // Same rule as the pipeline's image stage (services/imageVulnerabilityScan.js): any CRITICAL OS-package
+  // vulnerability, fixed or not, blocks. The operator assertion cannot override it.
+  if (!/^sha256:[a-f0-9]{64}$/.test(o['image-id'] || '')) throw new Error('--image-id sha256:<64 hex> is required');
+  const scan = await P.exec(process.env.IMAGE_TRIVY_CMD || 'trivy', ['image', '--quiet', '--scanners', 'vuln', '--vuln-type', 'os', '--severity', 'CRITICAL', '--exit-code', '1', '--format', 'json',
+    ...(process.env.INFRA_TRIVY_CACHE_DIR ? ['--cache-dir', process.env.INFRA_TRIVY_CACHE_DIR] : []), o['image-id']], { env: process.env, timeout: 600000 });
+  if (scan.code !== 0) throw new Error(scan.code === 1 ? 'image fails the image security gate (CRITICAL OS-package vulnerability); not promoted' : 'image scan unavailable; not promoted');
   const config = P.targetConfig();
   const required = P.requiredStages({});
   const result = await P.promote({
