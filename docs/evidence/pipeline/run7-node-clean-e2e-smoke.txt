@@ -1,0 +1,17 @@
+e2e-node-clean: project 28, triggering pipeline
+  execution 118: TRIGGERED []
+  execution 118: RUNNING []
+  execution 118: RUNNING [SAST]
+  execution 118: RUNNING [SAST, Dependency, IaC]
+  execution 118: COMPLETED [SAST, Dependency, IaC, Deploy, DAST]
+
+== e2e-node-clean (project 28, execution 118) COMPLETED in 102s
+SAST       COMPLETED         32s  C0 H0 M0 L0 total=0
+Dependency COMPLETED          8s  C0 H0 M0 L0 pkgs=65
+IaC        COMPLETED          7s  C0 H0 M0 L0 total=0
+Image      COMPLETED          3s  C0 H0 M7 L4 total=11
+Deploy     SUCCESS            -s  
+DAST       COMPLETED          0s  H0 M0 L0 I0 total=0
+Gate: PASSED
+Staging URL: http://192.168.49.2:30792
+  DAST  coverage {"forms":0,"pages":1,"stopped":null,"requests":3,"points_found":0,"points_probed":0,"stored_xss_fields_written":0} seeds=[] openapi=-

@@ -1,0 +1,19 @@
+# Run 7b: same clean Node project (28) through a temporary second backend on :3200 (same master code and DB as the stack) with ML_DAST_SEED_PATHS=/api/items?limit=2, so DAST probes the one parameter. Stack on :3000 untouched.
+e2e-node-clean: project 28, triggering pipeline
+  execution 119: TRIGGERED []
+  execution 119: RUNNING []
+  execution 119: RUNNING [SAST, Dependency]
+  execution 119: RUNNING [SAST, Dependency, IaC]
+  execution 119: COMPLETED [SAST, Dependency, IaC, Deploy, DAST]
+
+== e2e-node-clean (project 28, execution 119) COMPLETED in 69s
+SAST       COMPLETED         13s  C0 H0 M0 L0 total=0
+Dependency COMPLETED          5s  C0 H0 M0 L0 pkgs=65
+IaC        COMPLETED          7s  C0 H0 M0 L0 total=0
+Image      COMPLETED          2s  C0 H0 M7 L4 total=11
+Deploy     SUCCESS            -s  
+DAST       COMPLETED          4s  H0 M0 L0 I0 total=0
+Gate: PASSED
+Staging URL: http://192.168.49.2:30792
+  DAST  coverage {"forms":0,"pages":2,"stopped":null,"requests":79,"points_found":1,"points_probed":1,"stored_xss_fields_written":0} seeds=["/api/items?limit=2"] openapi=-
+e2e rc=0

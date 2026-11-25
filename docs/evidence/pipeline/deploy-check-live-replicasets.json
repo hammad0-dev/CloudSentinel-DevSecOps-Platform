@@ -1,0 +1,64 @@
+{
+ "deploymentRevision": "50",
+ "replicaSets": [
+  {
+   "hash": "59fdfb665b",
+   "revision": "43",
+   "replicas": 0
+  },
+  {
+   "hash": "6448d868c",
+   "revision": "41",
+   "replicas": 0
+  },
+  {
+   "hash": "66f75d7b9d",
+   "revision": "50",
+   "replicas": 1
+  },
+  {
+   "hash": "6956465c4",
+   "revision": "46",
+   "replicas": 0
+  },
+  {
+   "hash": "769946db96",
+   "revision": "48",
+   "replicas": 0
+  },
+  {
+   "hash": "7777dc798",
+   "revision": "42",
+   "replicas": 0
+  },
+  {
+   "hash": "79c7d4b49c",
+   "revision": "45",
+   "replicas": 0
+  },
+  {
+   "hash": "7c648994b7",
+   "revision": "49",
+   "replicas": 0
+  },
+  {
+   "hash": "85c8b4d467",
+   "revision": "40",
+   "replicas": 0
+  },
+  {
+   "hash": "956bb89b9",
+   "revision": "47",
+   "replicas": 0
+  },
+  {
+   "hash": "c8c969c7d",
+   "revision": "44",
+   "replicas": 0
+  }
+ ],
+ "chosenHash": "66f75d7b9d",
+ "expectedImage": "cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61",
+ "selectedPod": "e2e-python-clean-66f75d7b9d-gmt2t",
+ "podImage": "cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61"
+}
