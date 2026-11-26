@@ -7,6 +7,7 @@ const { spawn } = require("child_process");
 const pool = require("../db");
 const auth = require("../middleware/auth");
 const { resolvePipelineExecutionId } = require("../services/pipelineExecutionContext");
+const secretScan = require("../services/secretScan");
 
 const router = express.Router();
 
@@ -174,18 +175,34 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     );
 
     const provenance=await require('../services/stageProvenance').prepare(pool,{projectId,executionId:pipelineExecutionId,userId:req.user.id},cloneTarget);
-    const trivyResult = await spawnWithTimeout(
-      "trivy config (iac)",
-      TRIVY_CMD,
-      ["config", "--format", "json", "--include-non-failures", "--exit-code", "1", cloneTarget],
-      {
-        cwd: cloneTarget,
-        env: { ...process.env, TRIVY_NO_PROGRESS: "true" },
-        stdio: ["ignore", "pipe", "pipe"],
-        shell: process.platform === "win32",
-      },
-      IAC_TRIVY_TIMEOUT_MS
-    );
+    // Trivy runs from a neutral directory with an empty ignore file, so the scanned repository's own
+    // trivy.yaml / .trivyignore cannot suppress its findings.
+    const trivyOptions = (cwd) => ({
+      cwd,
+      env: { ...process.env, TRIVY_NO_PROGRESS: "true" },
+      stdio: ["ignore", "pipe", "pipe"],
+      shell: process.platform === "win32",
+    });
+    const neutral = secretScan.neutralDir(cloneRoot);
+    let trivyResult;
+    try {
+      trivyResult = await spawnWithTimeout(
+        "trivy config (iac)",
+        TRIVY_CMD,
+        ["config", "--format", "json", "--include-non-failures", "--exit-code", "1", "--ignorefile", path.join(neutral, "empty.trivyignore"), cloneTarget],
+        trivyOptions(neutral),
+        IAC_TRIVY_TIMEOUT_MS
+      );
+    } finally {
+      fs.rmSync(neutral, { recursive: true, force: true });
+    }
+    // SEC-4 / Module 9 FE-2: committed secrets block like a CRITICAL (services/secretScan.js). IAC_SECRET_SCAN=off disables.
+    const secretFindings = secretScan.enabled()
+      ? await secretScan.scan({
+          cloneRoot, target: cloneTarget, timeoutMs: IAC_TRIVY_TIMEOUT_MS,
+          run: (args, cwd, timeoutMs) => spawnWithTimeout("trivy secret scan (iac)", TRIVY_CMD, args, trivyOptions(cwd), timeoutMs),
+        })
+      : (console.warn("[iac-scan] IAC_SECRET_SCAN=off: committed-secret scan skipped"), []);
 
     const trivyRaw = typeof trivyResult === "object" ? trivyResult.stdout : trivyResult;
     const trivyData = parseTrivyJson((trivyRaw || "").trim());
@@ -195,8 +212,8 @@ router.post("/scan/:projectId", auth, async (req, res) => {
     }
 
     const configurationEvidence = require("../services/governance/configuration").captureConfiguration(trivyData);
-    const findings = extractIacFindings(trivyData);
-    const summary  = summarize(findings);
+    const findings = [...extractIacFindings(trivyData), ...secretFindings];
+    const summary  = { ...summarize(findings), secrets: secretFindings.length };
 
     await pool.query("DELETE FROM iac_findings WHERE project_id = $1 AND scan_id = $2", [projectId, scanId]);
 

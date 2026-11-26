@@ -36,6 +36,8 @@ function normalize(source,row,scan) {
  } else if(source==='IAC') {
   identity=row.misconfig_id||row.misconfig_type||'unknown';title=row.misconfig_type||identity;description=row.description;
   location=`${row.config_file||''}${row.start_line?`:${row.start_line}`:''}`;remediation=row.resolution;classification='MISCONFIGURATION';
+  // Committed secrets from the IaC stage's Trivy secret scan (services/secretScan.js) are vulnerabilities, CWE-798.
+  if(/^secret:/.test(String(row.misconfig_id||''))){classification='VULNERABILITY';references=['CWE-798'];}
  } else {
   identity=row.plugin_id||row.attack_type||row.alert||'unknown';title=row.alert;description=row.alert;
   location=`${row.method||'GET'} ${safeEndpoint(row.endpoint)} ${row.param||''}`.trim();remediation=row.solution;
