@@ -177,7 +177,7 @@ SRS 1.7.9. Purpose: "Securely manage sensitive credentials used by applications 
 | Req | What implements it | Implementation | Evidence | Status |
 |---|---|---|---|---|
 | FE-1 | Application secrets in AWS Secrets Manager and database credentials in the RDS-managed master secret; manifests hold references only | `terraform/modules/project-workload/main.tf`, `terraform/modules/project-database/main.tf`, `backend/services/eksManifests.js` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 1) | met |
-| FE-2 | Hard-coded secret detection: ml-sast rule-based CWE-798 detector in the SAST stage; Trivy secret scan run by hand | `services-ml/ml-sast/sastml/secrets.py`, `backend/services/ml/mlSastScan.js` | `docs/evidence/eks/stage6/05-planted-key-and-secret-scan.txt` | partly met: ml-sast reports a hard-coded key as HIGH, and the gate blocks on CRITICAL only, so a secret alone does not stop the pipeline. The Trivy secret scan is not a pipeline stage (the dependency and image scans use `vuln`/`license` only) |
+| FE-2 | Committed-secret detection that blocks the pipeline: Trivy secret scan (`trivy fs --scanners secret`) in the IaC stage, every match stored as a CRITICAL finding (value never stored); ml-sast rule-based CWE-798 detector in the SAST stage (HIGH, and the SAST gate blocks HIGH vulnerabilities) | `backend/services/secretScan.js`, `backend/routes/iac.js`, `services-ml/ml-sast/sastml/secrets.py`, `backend/services/sastClassification.js` | `backend/test/security-gates.test.js`; `docs/module-verification.md` (live IaC scan of project 24: `secret:github-pat` at `app.js:8`, CRITICAL); `docs/evidence/eks/stage6/05-planted-key-and-secret-scan.txt` | met. Correction: PR #28 said a HIGH secret from ml-sast does not block; it does, because ML SAST findings are `VULNERABILITY` and the SAST gate blocks HIGH vulnerabilities |
 | FE-3 | Runtime retrieval by External Secrets Operator through a ClusterSecretStore and its IRSA role; each component's own IRSA role is limited to its own secret | `k8s/eks/cluster-secret-store.yaml`, `k8s/eks/platform-install.sh`, `terraform/environments/aws-demo/security.tf` (ESO role), `terraform/modules/project-workload/main.tf` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 2), `docs/evidence/eks/stage5/9102-two-tier-18-demo.txt` (`/db` connects to RDS) | partly met: ESO uses one shared role for `cloudsentinel/*` and `rds!db-*`, so projects are not isolated from each other's secrets at the ESO layer. RBAC denies Secrets and ExternalSecret creation to project roles (`docs/evidence/eks/stage6/02-rbac.txt`) |
 | FE-4 | Rotation script plus the ESO refresh (`refreshInterval: 1m`) | `scripts/rotate-secret.sh` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 3), `docs/evidence/eks/minikube/04-rotation.txt` | partly met: manual script only, no schedule or policy; the mounted file updates without a redeploy, environment variables only on pod restart |
 | FE-5 | Secrets injected as environment variables (`envFrom`) and mounted files; values never in the manifest or logs | `backend/services/eksManifests.js` (ExternalSecret, Deployment) | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (pod `envFrom` and mounts), `docs/evidence/eks/minikube/03b-external-secrets-in-pod.txt` | met |
@@ -211,14 +211,16 @@ SRS 1.7.11. Purpose: "Monitor cloud infrastructure and applications for suspicio
 
 ### Screen-level requirements (SRS section 2.2)
 
-These requirements are about what the web UI shows and does. The FE rows above are mostly met in the cluster and in
-AWS, but **the UI screens read only the local Minikube cluster and the local backend**:
+These requirements are about what the web UI shows and does. **The UI screens read only the local Minikube cluster
+and the local backend**:
 
 - `backend/services/kubernetesInventory.js` accepts only the `minikube` kube context, and the Kubernetes panels show
   "AWS EKS: Not configured" as fixed text.
 - `backend/services/kubernetesPolicy.js` reads Kyverno `clusterpolicies`, so the EKS CEL `ValidatingPolicy` objects
   would not appear.
 - CloudWatch alarms and Loki on EKS are not connected to the Monitoring screen.
+
+Updated by `fix/srs-gaps` (2026-11-27): FR-16.2, FR-17.6 and FR-20.x changed status; see `docs/module-verification.md`.
 
 The statement is followed by the SRS business rule in quotes.
 
@@ -231,7 +233,7 @@ snapshot and the infrastructure workflow. The cluster view is on `/kubernetes` (
 | FR | SRS statement and business rule | Implementation | Evidence / tests | Status |
 |---|---|---|---|---|
 | FR-16.1 | The system shall display an overview of Kubernetes clusters. "Cluster data must be fetched in real time from connected environments." | `KubernetesPanel` in `frontend/src/pages/KubernetesSecurity.jsx`; `backend/services/kubernetesInventory.js`, `backend/routes/kubernetes.js` (`GET /projects/:projectId/inventory`) | `backend/test/kubernetes-inventory.test.js` | partly met: a live, read-only snapshot of the Minikube cluster for one project (context, namespaces, pod counts); EKS is not shown; no overview of several clusters |
-| FR-16.2 | The system shall display resource usage such as CPU and memory for each cluster. "Metrics must reflect current resource utilization accurately." | none in the UI | CPU and memory were measured outside the UI only (`docs/evidence/eks/stage6/13-capacity-and-access.txt`, `docs/evidence/eks/stage6/09-logs-and-metrics.txt`) | not met |
+| FR-16.2 | The system shall display resource usage such as CPU and memory for each cluster. "Metrics must reflect current resource utilization accurately." | `UsagePanel` in `frontend/src/pages/KubernetesSecurity.jsx`; `backend/services/kubernetesUsage.js`, `GET /api/kubernetes/projects/:projectId/usage` (metrics.k8s.io) | `backend/test/kubernetes-usage-compliance.test.js`; `docs/module-verification.md` (live: Minikube node CPU/memory and the project pods) | met for the connected Minikube cluster (metrics-server enabled with `minikube addons enable metrics-server`); without metrics-server the panel says "Not available on this cluster"; EKS is not connected to the UI |
 | FR-16.3 | The system shall display health status of each cluster. "Cluster status must indicate whether it is healthy, warning, or critical." | `KubernetesPanel` (pods running/ready, replicas ready) | `backend/test/kubernetes-inventory.test.js` | partly met: counts only, no healthy/warning/critical status; Minikube only |
 | FR-16.4 | The system shall display a list of active deployments and services. "Each deployment must include replica count, availability, and status." | `KubernetesPanel` "Deployment health" (desired, ready, available) and "Pod inventory" tables | `backend/test/kubernetes-inventory.test.js` | partly met: deployments with replica counts and availability are listed; Services are not; Minikube only |
 | FR-16.5 | The system shall allow users to view logs for each deployment. "Logs must be accessible on demand for troubleshooting." | log search on the Monitoring screen (`frontend/src/pages/MonitoringAlerts.jsx`, `GET /api/monitoring/logs` in `backend/routes/monitoring.js`, `backend/services/lokiQuery.js`) | `backend/test/monitoring.test.js` ("buildLogQL builds…", "queryLogs calls Loki query_range (mocked)…") | partly met: on-demand search by source and text, not from a deployment row and not per deployment; local Loki and backend logs only |
@@ -248,7 +250,7 @@ snapshot and the infrastructure workflow. The cluster view is on `/kubernetes` (
 | FR-17.3 | The system shall display detected policy violations. "Violations must include severity and affected resource details." | `PolicyPanel` (failing resources and messages from PolicyReports, recent blocked admissions) | `backend/test/kubernetes-policy.test.js` | partly met: the resource and the message are shown, the severity is not |
 | FR-17.4 | The system shall assign severity levels to policy violations. "Severity must follow predefined categories such as critical, high, medium, and low." | "Security observations" table in `KubernetesPanel` (severity per workload check) | `backend/test/kubernetes-inventory.test.js` | partly met: the workload checks have a severity; Kyverno policy violations have none |
 | FR-17.5 | The system shall allow users to view and apply remediation actions for violations. "Remediation actions must be applicable to the identified issue." | "Recommendation" column in the security observations | `backend/test/kubernetes-inventory.test.js` | partly met: remediation text can be viewed; nothing can be applied from the UI |
-| FR-17.6 | The system shall display an overall compliance score for Kubernetes security. "The compliance score must be calculated based on policy adherence." | none (the screen says "No compliance percentage is calculated"; `RbacPanel` shows a yes/no least-privilege flag, not a score) | - | not met |
+| FR-17.6 | The system shall display an overall compliance score for Kubernetes security. "The compliance score must be calculated based on policy adherence." | `ComplianceScore` in `frontend/src/pages/KubernetesSecurity.jsx`; `complianceScore` in `backend/services/kubernetesPolicy.js` (pass / (pass + fail + warn + error) of the namespace's Kyverno PolicyReport results) | `backend/test/kubernetes-usage-compliance.test.js`; `docs/module-verification.md` (live: projects 24 and 26, 100 %) | met on Minikube; Kyverno missing or no reports -> "not available"; the EKS ValidatingPolicies are still not read |
 
 #### FR-19: Monitoring and Alerts screen (mockup M19)
 
@@ -266,32 +268,35 @@ snapshot and the infrastructure workflow. The cluster view is on `/kubernetes` (
 
 #### FR-20: Secrets Management screen (mockup M20)
 
-**`frontend/src/pages/SecretsManagement.jsx` is a static mockup.** It makes no API call. Every number and row is
-hard-coded sample data ("GitHub Token", "DB Password", "AWS Access Key"), and the "Rotate" and "Mark Safe" buttons
-have no handlers. No screen requirement is met through the UI. Where the behaviour exists outside the UI, the row
-says where.
+`frontend/src/pages/SecretsManagement.jsx` now shows real data (rewritten in `fix/srs-gaps`; before that it was a static mockup with hard-coded
+rows and dead buttons). The backend (`backend/services/secretsInventory.js`, `backend/routes/secrets.js`) lists Kubernetes
+secret metadata from the project's owned namespaces with a kubectl go-template that prints one "." per data key, so
+values and key names never reach the backend. Policies are stored in `secret_policies` (migration 025). There is no
+rotate button: nothing on this stack rotates a secret from the UI, and the rotation card shows the real status. On the
+verification stack the e2e project namespaces contain no Secrets, so the policy and expiry path is verified by unit
+tests and the listing by a read-only run of the same kubectl template on another namespace (`docs/module-verification.md`).
 
 | FR | SRS statement and business rule | Implementation | Evidence / tests | Status |
 |---|---|---|---|---|
-| FR-20.1 | The system shall allow secure storage of sensitive credentials such as API keys and tokens. "All secrets must be encrypted at rest and in transit." | per-project secrets created in AWS Secrets Manager by `terraform/modules/project-workload/main.tf` (encrypted at rest, TLS in transit); database credentials in the RDS-managed master secret (KMS) | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` | partly met: storage is secure, but users cannot store a secret through CloudSentinel (no UI or API); values are written with `scripts/rotate-secret.sh` or the AWS CLI |
-| FR-20.2 | The system shall display a list of stored secrets with relevant metadata. "Sensitive values must be masked and not displayed in plain text." | none (the table in `SecretsManagement.jsx` is hard-coded) | - | not met |
-| FR-20.3 | The system shall allow rotation of secrets. "Secrets must be rotated based on defined rotation policies." | `scripts/rotate-secret.sh` plus the ESO refresh, outside the UI; the UI "Rotate" button does nothing | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` | partly met (outside the UI only): manual rotation works; there is no rotation from the UI and no policy-driven rotation |
-| FR-20.4 | The system shall track expiration and rotation status of secrets. "The system must notify users before secrets expire." | none | - | not met |
-| FR-20.5 | The system shall restrict access to secrets based on user roles. "Only authorized users must be allowed to view or modify secrets." | enforced in AWS and Kubernetes, not in the UI: per-component IRSA roles limited to their own secret, dev IAM policy, Kubernetes RBAC denies Secrets to the deployer and viewer roles (`k8s/rbac/project-roles.sh`) | `docs/evidence/eks/stage6/02-rbac.txt` | partly met (outside the UI only): no CloudSentinel user roles govern secrets, the UI has no secret access control, and ESO uses one shared role for all projects |
-| FR-20.6 | The system shall allow users to define rotation policies for secrets. "Policies must enforce periodic updates for different secret types." | none | - | not met |
+| FR-20.1 | The system shall allow secure storage of sensitive credentials such as API keys and tokens. "All secrets must be encrypted at rest and in transit." | per-project secrets in AWS Secrets Manager (`terraform/modules/project-workload/main.tf`), RDS-managed master secret (KMS) | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` | partly met: storage is secure, but users cannot store a secret through CloudSentinel (no UI or API) |
+| FR-20.2 | The system shall display a list of stored secrets with relevant metadata. "Sensitive values must be masked and not displayed in plain text." | `frontend/src/pages/SecretsManagement.jsx`, `GET /api/secrets/projects/:projectId` (`backend/services/secretsInventory.js`): name, type, source, keys count, last change, age; value always masked | `backend/test/secrets-management.test.js`; `docs/module-verification.md` | met (Kubernetes Secrets of the project namespaces on the configured context; values are never read) |
+| FR-20.3 | The system shall allow rotation of secrets. "Secrets must be rotated based on defined rotation policies." | `scripts/rotate-secret.sh` (outside the UI); the screen shows the real rotation status instead of a button | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` | partly met: manual script against AWS Secrets Manager only; this Minikube stack has no ESO, so nothing here can be rotated from the UI; policies flag overdue rotation but do not rotate |
+| FR-20.4 | The system shall track expiration and rotation status of secrets. "The system must notify users before secrets expire." | expiry date and rotation status per secret (`secret_policies`, migration 025); in-app alert `secret_expiring` on the Monitoring screen within `SECRETS_EXPIRY_WARN_DAYS` (default 14) or after expiry (`startExpiryNotifier`) | `backend/test/secrets-management.test.js` | implemented, not verified live: no Secret exists in the e2e project namespaces, so no policy could be set on this stack; the notification is in-app only (no email) |
+| FR-20.5 | The system shall restrict access to secrets based on user roles. "Only authorized users must be allowed to view or modify secrets." | role check in `backend/services/secretsInventory.js` (`access`): project owner or `SECRETS_ADMIN_EMAILS` admin may view and set policies, anyone else gets 404; AWS IAM/IRSA and Kubernetes RBAC outside the UI | `backend/test/secrets-management.test.js`; `docs/module-verification.md` (live: a project of another user returns 404) | met with two roles only (owner, platform admin); CloudSentinel has no team roles; ESO still uses one shared role |
+| FR-20.6 | The system shall allow users to define rotation policies for secrets. "Policies must enforce periodic updates for different secret types." | rotation period in days per secret (Set/Edit policy on the screen, `PUT /api/secrets/projects/:projectId/policies`) | `backend/test/secrets-management.test.js` | partly met: a period can be defined per secret and overdue rotation is shown, but nothing enforces the update and there are no per-type policies; not verified live (no Secret in the project namespaces) |
 
 ### Summary
 
 | Group | Met | Partly met | Not met |
 |---|---|---|---|
 | Module 8 FE-1 to FE-5 | FE-2 | FE-1, FE-3, FE-4, FE-5 (each has a met part; see the rows) | - |
-| Module 9 FE-1 to FE-5 | FE-1, FE-5 | FE-2, FE-3, FE-4 | - |
+| Module 9 FE-1 to FE-5 | FE-1, FE-2, FE-5 | FE-3, FE-4 | - |
 | Module 10 FE-1 to FE-5 | FE-1 to FE-5 | - | - |
 | Module 11 FE-1 to FE-5 | FE-1, FE-3, FE-4, FE-5 | FE-2 | - |
-| FR-16 (Cloud Deployment screen) | - | FR-16.1, 16.3, 16.4, 16.5, 16.6 | FR-16.2 |
-| FR-17 (Kubernetes Security screen) | FR-17.2 | FR-17.1, 17.3, 17.4, 17.5 | FR-17.6 |
+| FR-16 (Cloud Deployment screen) | FR-16.2 (Minikube) | FR-16.1, 16.3, 16.4, 16.5, 16.6 | - |
+| FR-17 (Kubernetes Security screen) | FR-17.2, 17.6 | FR-17.1, 17.3, 17.4, 17.5 | - |
 | FR-19 (Monitoring and Alerts screen) | FR-19.1, 19.2, 19.3, 19.5 | FR-19.4, 19.6 | - |
-| FR-20 (Secrets Management screen) | - | FR-20.1, 20.3, 20.5 (outside the UI only) | FR-20.2, 20.4, 20.6 |
+| FR-20 (Secrets Management screen) | FR-20.2, 20.5 | FR-20.1, 20.3, 20.6; FR-20.4 implemented, not verified live | - |
 
 ## 4. Measured numbers
 
