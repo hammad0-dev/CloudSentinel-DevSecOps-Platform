@@ -1,0 +1,4 @@
+time,cpu_pct,mem_usage,mem_pct,pids,pods_running_all_ns
+01:52:41,23.78%,4.478GiB / 6GiB,74.63%,787,24
+01:52:46,23.33%,4.46GiB / 6GiB,74.33%,787,24
+01:52:50,32.28%,4.458GiB / 6GiB,74.31%,787,24

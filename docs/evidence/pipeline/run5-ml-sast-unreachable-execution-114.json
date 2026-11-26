@@ -1,0 +1,83 @@
+{
+ "execution": {
+  "id": 114,
+  "project_id": 26,
+  "status": "ERROR",
+  "triggered_by": "webhook",
+  "stages_completed": null,
+  "failure_reason": "Stage SAST failed after 2 attempts: ML SAST service at http://127.0.0.1:8999 is unreachable (ECONNREFUSED). Start the service; the stage does not fall back to another engine.",
+  "started_at": "2026-11-25T20:57:06.393Z",
+  "completed_at": "2026-11-25T20:58:10.800Z",
+  "promote_result": null,
+  "totalSeconds": 64.4
+ },
+ "stages": [
+  {
+   "stage": "SAST",
+   "status": "FAILED",
+   "start": "2026-11-25T20:58:08.965Z",
+   "end": "2026-11-25T20:58:10.775Z",
+   "seconds": 1.8
+  },
+  {
+   "stage": "Dependency",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "IaC",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "Deploy (build+image scan+apply+rollout)",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "  of which image scan",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "DAST",
+   "status": "NOT_RUN",
+   "seconds": null
+  }
+ ],
+ "sast": [
+  {
+   "id": 147,
+   "status": "FAILED",
+   "total_issues": 0,
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "started_at": "2026-11-25T20:57:06.530Z",
+   "completed_at": "2026-11-25T20:57:08.899Z",
+   "scan_engine": "ml",
+   "tool_provenance": null
+  },
+  {
+   "id": 148,
+   "status": "FAILED",
+   "total_issues": 0,
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "started_at": "2026-11-25T20:58:08.965Z",
+   "completed_at": "2026-11-25T20:58:10.775Z",
+   "scan_engine": "ml",
+   "tool_provenance": null
+  }
+ ],
+ "sastFindings": [],
+ "dependency": [],
+ "iac": [],
+ "image": [],
+ "deployment": [],
+ "dast": [],
+ "dastFindings": []
+}

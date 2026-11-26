@@ -1,0 +1,26 @@
+389:{"ts":"2026-11-25T21:00:18.315Z","level":"info","source":"backend","event":"pipeline_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117}}
+391:{"ts":"2026-11-25T21:00:18.317Z","level":"info","source":"backend","event":"pipeline_stage_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"SAST"}}
+395:{"ts":"2026-11-25T21:00:23.798Z","level":"info","source":"backend","event":"pipeline_stage_finished","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"SAST","durationMs":5481}}
+396:{"ts":"2026-11-25T21:00:23.802Z","level":"info","source":"backend","event":"pipeline_stage_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"Dependency"}}
+398:{"ts":"2026-11-25T21:00:26.990Z","level":"info","source":"backend","event":"pipeline_stage_finished","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"Dependency","durationMs":3188}}
+399:{"ts":"2026-11-25T21:00:26.992Z","level":"info","source":"backend","event":"pipeline_stage_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"IaC"}}
+401:{"ts":"2026-11-25T21:00:29.069Z","level":"info","source":"backend","event":"pipeline_stage_finished","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"IaC","durationMs":2077}}
+403:{"ts":"2026-11-25T21:00:29.073Z","level":"info","source":"backend","event":"pipeline_stage_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"Deploy"}}
+410:[deploy] Building Docker image: cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1
+411:[deploy] docker build: docker build -t cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1 .
+412:[deploy] docker image inspect: docker image inspect --format={{.Id}} cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1
+414:[deploy] trivy image scan: /snap/bin/trivy image --format json --scanners vuln --vuln-type os --quiet cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1
+418:[deploy] minikube image load: minikube image load cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1
+430:[deploy] Deployment failed for project 26: Running pod does not reference expected image cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1
+431:[orchestrator] Deploy attempt 1 failed for project 26: Running pod does not reference expected image cloudsentinel-p26:run-117-attempt-1-mwwly6kf-ee27983cbbe1
+432:[orchestrator] Retrying Deploy in 60s...
+442:[deploy] Building Docker image: cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61
+443:[deploy] docker build: docker build -t cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61 .
+444:[deploy] docker image inspect: docker image inspect --format={{.Id}} cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61
+446:[deploy] trivy image scan: /snap/bin/trivy image --format json --scanners vuln --vuln-type os --quiet cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61
+448:[deploy] minikube image load: minikube image load cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61
+464:{"ts":"2026-11-25T21:02:26.632Z","level":"info","source":"backend","event":"pipeline_stage_finished","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"Deploy","durationMs":117560}}
+465:{"ts":"2026-11-25T21:02:26.632Z","level":"info","source":"backend","event":"deployment_result","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"status":"SUCCESS","url":"http://192.168.49.2:32707"}}
+467:{"ts":"2026-11-25T21:02:26.635Z","level":"info","source":"backend","event":"pipeline_stage_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"DAST"}}
+469:{"ts":"2026-11-25T21:02:26.771Z","level":"info","source":"backend","event":"pipeline_stage_finished","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"stage":"DAST","durationMs":135}}
+470:{"ts":"2026-11-25T21:02:26.784Z","level":"info","source":"backend","event":"pipeline_finished","projectId":26,"userId":5,"ip":null,"detail":{"executionId":117,"status":"COMPLETED","reason":null,"durationMs":128469}}

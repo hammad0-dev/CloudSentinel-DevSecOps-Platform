@@ -1,0 +1,158 @@
+{
+ "execution": {
+  "id": 110,
+  "project_id": 27,
+  "status": "STAGE_FAILED",
+  "triggered_by": "webhook",
+  "stages_completed": "SAST",
+  "failure_reason": "CRITICAL security vulnerability found in SAST stage. Pipeline stopped.",
+  "started_at": "2026-11-25T20:48:19.469Z",
+  "completed_at": "2026-11-25T20:48:38.533Z",
+  "promote_result": null,
+  "totalSeconds": 19.1
+ },
+ "stages": [
+  {
+   "stage": "SAST",
+   "status": "COMPLETED",
+   "start": "2026-11-25T20:48:19.491Z",
+   "end": "2026-11-25T20:48:38.485Z",
+   "seconds": 19
+  },
+  {
+   "stage": "Dependency",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "IaC",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "Deploy (build+image scan+apply+rollout)",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "  of which image scan",
+   "status": "NOT_RUN",
+   "seconds": null
+  },
+  {
+   "stage": "DAST",
+   "status": "NOT_RUN",
+   "seconds": null
+  }
+ ],
+ "sast": [
+  {
+   "id": 143,
+   "status": "COMPLETED",
+   "total_issues": 6,
+   "critical": 2,
+   "high": 4,
+   "medium": 0,
+   "low": 0,
+   "started_at": "2026-11-25T20:48:19.491Z",
+   "completed_at": "2026-11-25T20:48:38.485Z",
+   "scan_engine": "ml",
+   "tool_provenance": {
+    "tool": "ml-sast-v3-ensemble 3.0.0 sha256:f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+    "files": 1,
+    "model": {
+     "name": "ml-sast-v3-ensemble",
+     "sha256": "f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+     "status": "trained",
+     "metrics": {
+      "development": {
+       "R2": {
+        "ci95": [
+         0.4634638881167124,
+         0.6638272455672704
+        ],
+        "recall": 0.75,
+        "macro_f1": 0.5707284854382113,
+        "precision": 0.5753424657534246
+       },
+       "v2": {
+        "ci95": [
+         0.5492275798916452,
+         0.7371064115933221
+        ],
+        "recall": 0.875,
+        "macro_f1": 0.6420931356894471,
+        "precision": 0.5212765957446809
+       }
+      }
+     },
+     "version": "3.0.0",
+     "trainedOn": {
+      "data": "data/processed_v3 train+val",
+      "rows": 9313
+     }
+    },
+    "engine": "ml",
+    "service": "http://127.0.0.1:8001",
+    "inputSha256": "d2cf22b4ad651fa9b87ea2924f2fc46f3f1c41b7454c299f2016a95ee50b3f5e",
+    "skippedFiles": 0
+   }
+  }
+ ],
+ "sastFindings": [
+  {
+   "severity": "CRITICAL",
+   "rule": "ml:python.sql-injection:CWE-89",
+   "file_path": "app.py",
+   "line_number": 50,
+   "issue_type": "VULNERABILITY",
+   "message": "SQL injection: query built from untrusted input suspected in function 'init_db' (model confidence 0.70; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: sql_exec)."
+  },
+  {
+   "severity": "HIGH",
+   "rule": "ml:python.xss:CWE-79",
+   "file_path": "app.py",
+   "line_number": 73,
+   "issue_type": "VULNERABILITY",
+   "message": "Cross-site scripting: untrusted input reaches HTML output suspected in function 'product_table' (model confidence 0.71; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: xss_sink, html_concat, fstring_or_template, format_call)."
+  },
+  {
+   "severity": "HIGH",
+   "rule": "ml:python.xss:CWE-79",
+   "file_path": "app.py",
+   "line_number": 84,
+   "issue_type": "VULNERABILITY",
+   "message": "Cross-site scripting: untrusted input reaches HTML output suspected in function 'index' (model confidence 0.73; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: html_concat, format_call, string_plus, route_decorator)."
+  },
+  {
+   "severity": "CRITICAL",
+   "rule": "ml:python.sql-injection:CWE-89",
+   "file_path": "app.py",
+   "line_number": 92,
+   "issue_type": "VULNERABILITY",
+   "message": "SQL injection: query built from untrusted input suspected in function 'search' (model confidence 0.80; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: src_py, sql_exec, sql_concat, format_call)."
+  },
+  {
+   "severity": "HIGH",
+   "rule": "ml:python.xss:CWE-79",
+   "file_path": "app.py",
+   "line_number": 110,
+   "issue_type": "VULNERABILITY",
+   "message": "Cross-site scripting: untrusted input reaches HTML output suspected in function 'feedback' (model confidence 0.81; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: src_py, cmd_safe, html_concat, format_call)."
+  },
+  {
+   "severity": "HIGH",
+   "rule": "ml:python.xss:CWE-79",
+   "file_path": "app.py",
+   "line_number": 119,
+   "issue_type": "VULNERABILITY",
+   "message": "Cross-site scripting: untrusted input reaches HTML output suspected in function 'feedback_safe' (model confidence 0.64; flagged by 3 of 3 models: rf, lgbm, codebert_xgb; signals: src_py, cmd_safe, xss_sink, html_concat)."
+  }
+ ],
+ "dependency": [],
+ "iac": [],
+ "image": [],
+ "deployment": [],
+ "dast": [],
+ "dastFindings": []
+}

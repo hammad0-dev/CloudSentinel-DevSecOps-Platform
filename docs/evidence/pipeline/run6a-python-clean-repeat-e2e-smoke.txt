@@ -1,0 +1,17 @@
+e2e-python-clean: project 26, triggering pipeline
+  execution 115: TRIGGERED []
+  execution 115: RUNNING [SAST]
+  execution 115: RUNNING [SAST, Dependency, IaC]
+  execution 115: COMPLETED [SAST, Dependency, IaC, Deploy, DAST]
+
+== e2e-python-clean (project 26, execution 115) COMPLETED in 50s
+SAST       COMPLETED          9s  C0 H0 M0 L0 total=0
+Dependency COMPLETED          6s  C0 H0 M0 L1 pkgs=3
+IaC        COMPLETED          4s  C0 H0 M0 L0 total=0
+Image      COMPLETED          4s  C0 H54 M76 L77 total=225
+Deploy     SUCCESS            -s  
+DAST       COMPLETED          0s  H0 M0 L0 I1 total=1
+Gate: PASSED
+Staging URL: http://192.168.49.2:32707
+  DAST  coverage {"forms":0,"pages":1,"stopped":null,"requests":3,"points_found":0,"points_probed":0,"stored_xss_fields_written":0} seeds=[] openapi=-
+  DAST  INFORMATIONAL CWE-693 GET http://192.168.49.2:32707 param= (X-Content-Type-Options Header Missing)

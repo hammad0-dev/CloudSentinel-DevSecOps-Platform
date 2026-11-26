@@ -1,0 +1,8 @@
+{"ts":"2026-11-25T20:57:06.424Z","level":"info","source":"backend","event":"pipeline_stage_started","projectId":26,"userId":5,"ip":null,"detail":{"executionId":114,"stage":"SAST"}}
+[SAST project=26] git clone finished (shallow) (+2s)
+[SAST] Failed: ML SAST service at http://127.0.0.1:8999 is unreachable (ECONNREFUSED). Start the service; the stage does not fall back to another engine. Evidence: /tmp/cs-sast-failure-MYPxzL/failure.json
+{"ts":"2026-11-25T20:57:08.921Z","level":"error","source":"backend","event":"http_request","projectId":null,"userId":5,"ip":"::ffff:127.0.0.1","detail":{"method":"POST","path":"/api/sast/scan/26","status":500,"durationMs":2458}}
+[orchestrator] Stage SAST attempt 1 failed for project 26: ML SAST service at http://127.0.0.1:8999 is unreachable (ECONNREFUSED). Start the service; the stage does not fall back to another engine.
+[orchestrator] Retrying SAST in 60s...
+[SAST project=26] git clone finished (shallow) (+2s)
+[SAST] Failed: ML SAST service at http://127.0.0.1:8999 is unreachable (ECONNREFUSED). Start the service; the stage does not fall back to another engine. Evidence: /tmp/cs-sast-failure-L47DTa/failure.json

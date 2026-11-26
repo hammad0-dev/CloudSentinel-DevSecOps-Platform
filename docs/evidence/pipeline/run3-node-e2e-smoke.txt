@@ -1,0 +1,16 @@
+e2e-node-express: project 24, triggering pipeline
+  execution 112: TRIGGERED []
+  execution 112: STAGE_FAILED [SAST]
+
+== e2e-node-express (project 24, execution 112) STAGE_FAILED in 6s
+SAST       COMPLETED          6s  C1 H2 M0 L0 total=3
+Dependency NOT_RUN            -s  
+IaC        NOT_RUN            -s  
+Image      NOT_RUN            -s  
+Deploy     NOT_RUN            -s  
+DAST       NOT_RUN            -s  
+Gate: BLOCKED — CRITICAL security vulnerability found in SAST stage. Pipeline stopped.
+Staging URL: -
+  SAST  HIGH     VULNERABILITY ml:javascript.hardcoded-credentials.rule:CWE-798 app.js:7
+  SAST  CRITICAL VULNERABILITY ml:javascript.sql-injection:CWE-89 app.js:17
+  SAST  HIGH     VULNERABILITY ml:javascript.xss:CWE-79 app.js:26

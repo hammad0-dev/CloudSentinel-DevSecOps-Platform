@@ -1,0 +1,20 @@
+e2e-demo-forms: project 27, triggering pipeline
+  execution 110: TRIGGERED []
+  execution 110: RUNNING []
+  execution 110: STAGE_FAILED [SAST]
+
+== e2e-demo-forms (project 27, execution 110) STAGE_FAILED in 19s
+SAST       COMPLETED         19s  C2 H4 M0 L0 total=6
+Dependency NOT_RUN            -s  
+IaC        NOT_RUN            -s  
+Image      NOT_RUN            -s  
+Deploy     NOT_RUN            -s  
+DAST       NOT_RUN            -s  
+Gate: BLOCKED — CRITICAL security vulnerability found in SAST stage. Pipeline stopped.
+Staging URL: -
+  SAST  CRITICAL VULNERABILITY ml:python.sql-injection:CWE-89 app.py:50
+  SAST  HIGH     VULNERABILITY ml:python.xss:CWE-79 app.py:73
+  SAST  HIGH     VULNERABILITY ml:python.xss:CWE-79 app.py:84
+  SAST  CRITICAL VULNERABILITY ml:python.sql-injection:CWE-89 app.py:92
+  SAST  HIGH     VULNERABILITY ml:python.xss:CWE-79 app.py:110
+  SAST  HIGH     VULNERABILITY ml:python.xss:CWE-79 app.py:119

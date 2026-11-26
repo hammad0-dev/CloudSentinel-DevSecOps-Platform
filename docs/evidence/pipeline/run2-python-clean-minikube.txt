@@ -1,0 +1,36 @@
+# kubectl --context minikube, namespace cloudsentinel-p-26, 2026-11-26 01:52:25
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS         IMAGES                                                      SELECTOR
+deployment.apps/e2e-python-clean   1/1     1            1           6d2h   e2e-python-clean   cloudsentinel-p26:run-111-attempt-1-mwwlki34-34848e4984ac   app=e2e-python-clean
+
+NAME                                    READY   STATUS        RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+pod/e2e-python-clean-655d84f56f-8m5v2   1/1     Terminating   0          3d10h   10.244.0.44   minikube   <none>           <none>
+pod/e2e-python-clean-85c8b4d467-vlqnv   1/1     Running       0          41s     10.244.0.63   minikube   <none>           <none>
+
+NAME                       TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE    SELECTOR
+service/e2e-python-clean   NodePort   10.102.186.118   <none>        80:32707/TCP   6d2h   app=e2e-python-clean
+
+# image of the running pods
+e2e-python-clean-655d84f56f-8m5v2 cloudsentinel-p26:run-107-attempt-1-mwrpuutv-1f7b86d2244e Running restarts=0
+e2e-python-clean-85c8b4d467-vlqnv cloudsentinel-p26:run-111-attempt-1-mwwlki34-34848e4984ac Running restarts=0
+
+# requests/limits
+{"limits":{"cpu":"500m","memory":"512Mi"},"requests":{"cpu":"100m","memory":"128Mi"}}
+{"limits":{"cpu":"500m","memory":"512Mi"},"requests":{"cpu":"100m","memory":"128Mi"}}
+
+# node allocation
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests     Limits
+  --------           --------     ------
+  cpu                1890m (23%)  2400m (30%)
+  memory             1772Mi (8%)  4316Mi (21%)
+  ephemeral-storage  0 (0%)       0 (0%)
+  hugepages-1Gi      0 (0%)       0 (0%)
+  hugepages-2Mi      0 (0%)       0 (0%)
+Events:              <none>
+
+# HTTP check of the staging URL
+http://192.168.49.2:32707/ -> 200 0.001798s
+http://192.168.49.2:32707/health -> 200 0.001594s
+body of / (first 200 bytes): {"status":"ok"}
+

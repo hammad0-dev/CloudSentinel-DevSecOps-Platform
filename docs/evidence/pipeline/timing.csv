@@ -1,0 +1,57 @@
+run,app,execution,stage,status,seconds
+run1,demo-forms,110,SAST,COMPLETED,19
+run1,demo-forms,110,Dependency,NOT_RUN,
+run1,demo-forms,110,IaC,NOT_RUN,
+run1,demo-forms,110,Deploy (build+image scan+apply+rollout),NOT_RUN,
+run1,demo-forms,110,of which image scan,NOT_RUN,
+run1,demo-forms,110,DAST,NOT_RUN,
+run1,demo-forms,110,TOTAL,STAGE_FAILED,19.1
+run2,python-clean,111,SAST,COMPLETED,3.8
+run2,python-clean,111,Dependency,COMPLETED,2.4
+run2,python-clean,111,IaC,COMPLETED,3.2
+run2,python-clean,111,Deploy (build+image scan+apply+rollout),SUCCESS,125.4
+run2,python-clean,111,of which image scan,COMPLETED,64.3
+run2,python-clean,111,DAST,COMPLETED,0.1
+run2,python-clean,111,TOTAL,COMPLETED,135
+run3,node,112,SAST,COMPLETED,6.1
+run3,node,112,Dependency,NOT_RUN,
+run3,node,112,IaC,NOT_RUN,
+run3,node,112,Deploy (build+image scan+apply+rollout),NOT_RUN,
+run3,node,112,of which image scan,NOT_RUN,
+run3,node,112,DAST,NOT_RUN,
+run3,node,112,TOTAL,STAGE_FAILED,6.1
+run4,python-clean-promote,113,SAST,COMPLETED,7.4
+run4,python-clean-promote,113,Dependency,COMPLETED,7
+run4,python-clean-promote,113,IaC,COMPLETED,3.9
+run4,python-clean-promote,113,Deploy (build+image scan+apply+rollout),SUCCESS,49.1
+run4,python-clean-promote,113,of which image scan,COMPLETED,6.3
+run4,python-clean-promote,113,DAST,COMPLETED,0.1
+run4,python-clean-promote,113,TOTAL,COMPLETED,67.7
+run5,ml-sast-unreachable,114,SAST,FAILED,1.8
+run5,ml-sast-unreachable,114,Dependency,NOT_RUN,
+run5,ml-sast-unreachable,114,IaC,NOT_RUN,
+run5,ml-sast-unreachable,114,Deploy (build+image scan+apply+rollout),NOT_RUN,
+run5,ml-sast-unreachable,114,of which image scan,NOT_RUN,
+run5,ml-sast-unreachable,114,DAST,NOT_RUN,
+run5,ml-sast-unreachable,114,TOTAL,ERROR,64.4
+run6a,python-clean-repeat,115,SAST,COMPLETED,9
+run6a,python-clean-repeat,115,Dependency,COMPLETED,5.6
+run6a,python-clean-repeat,115,IaC,COMPLETED,4.4
+run6a,python-clean-repeat,115,Deploy (build+image scan+apply+rollout),SUCCESS,30.3
+run6a,python-clean-repeat,115,of which image scan,COMPLETED,4.1
+run6a,python-clean-repeat,115,DAST,COMPLETED,0.1
+run6a,python-clean-repeat,115,TOTAL,COMPLETED,49.6
+run6b,python-clean-repeat,116,SAST,COMPLETED,4.1
+run6b,python-clean-repeat,116,Dependency,COMPLETED,2.8
+run6b,python-clean-repeat,116,IaC,COMPLETED,2.1
+run6b,python-clean-repeat,116,Deploy (build+image scan+apply+rollout),SUCCESS,30.3
+run6b,python-clean-repeat,116,of which image scan,COMPLETED,3.1
+run6b,python-clean-repeat,116,DAST,COMPLETED,0.1
+run6b,python-clean-repeat,116,TOTAL,COMPLETED,39.5
+run6c,python-clean-repeat,117,SAST,COMPLETED,5.5
+run6c,python-clean-repeat,117,Dependency,COMPLETED,3.2
+run6c,python-clean-repeat,117,IaC,COMPLETED,2.1
+run6c,python-clean-repeat,117,Deploy (build+image scan+apply+rollout),SUCCESS,117.6
+run6c,python-clean-repeat,117,of which image scan,COMPLETED,3.7
+run6c,python-clean-repeat,117,DAST,COMPLETED,0.1
+run6c,python-clean-repeat,117,TOTAL,COMPLETED,128.5

@@ -1,0 +1,9 @@
+run,execution,app,status,sast_s,dependency_s,iac_s,deploy_s,image_scan_s,dast_s,total_s,deploy_attempts,note
+run1,110,demo-forms,STAGE_FAILED,19,,,,,,19.1,0,
+run2,111,python-clean,COMPLETED,3.8,2.4,3.2,125.4,64.3,0.1,135,1,Trivy DB download during the image scan
+run3,112,node,STAGE_FAILED,6.1,,,,,,6.1,0,
+run4,113,python-clean-promote,COMPLETED,7.4,7,3.9,49.1,6.3,0.1,67.7,1,"promote_target=eks, promote SKIPPED"
+run5,114,ml-sast-unreachable,ERROR,1.8,,,,,,64.4,0,ml-sast unreachable (temp backend :3200)
+run6a,115,python-clean-repeat,COMPLETED,9,5.6,4.4,30.3,4.1,0.1,49.6,1,
+run6b,116,python-clean-repeat,COMPLETED,4.1,2.8,2.1,30.3,3.1,0.1,39.5,1,
+run6c,117,python-clean-repeat,COMPLETED,5.5,3.2,2.1,117.6,3.7,0.1,128.5,2,"deploy attempt 1 failed (pod check race), 60 s retry"
