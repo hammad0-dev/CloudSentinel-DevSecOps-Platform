@@ -15,6 +15,7 @@ const RULE_TITLES = {
   pipeline_trigger_anomaly: "Unusual pipeline trigger rate",
   k8s_pod_restart_loop: "Pod restart loop",
   kyverno_denied_spike: "Kyverno policy-denied spike",
+  secret_expiring: "Secret expiring or expired",
 };
 const BORDER = { CRITICAL: "border-l-red-600", HIGH: "border-l-orange-500", MEDIUM: "border-l-yellow-500", LOW: "border-l-blue-500" };
 

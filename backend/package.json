@@ -16,6 +16,8 @@
     "test:monitoring": "node --test test/monitoring.test.js test/security-log.test.js",
     "test:ml": "node --test test/ml-engines.test.js",
     "migrate:engines": "node scripts/migrate-engines.js",
+    "migrate:secrets": "node scripts/migrate-secrets.js",
+    "test:secrets": "node --test test/secrets-management.test.js",
     "test:eks": "node --test test/eks-workload.test.js",
     "test:eks:terraform": "EKS_TF_TEST=1 node --test test/eks-terraform.test.js"
   },
