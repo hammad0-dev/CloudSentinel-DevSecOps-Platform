@@ -84,6 +84,16 @@ function blockedEvents(events,namespace,limit=20){
   .slice(0,limit);
 }
 
+// SRS FR-17.6: compliance score from Kyverno PolicyReport results for the namespace.
+// score = pass / (pass + fail + warn + error); skip is not evaluated. No results -> no score (never 100 by default).
+function complianceScore(results){
+ const t=(results||[]).reduce((s,r)=>{for(const k of RESULTS)s[k]+=Number(r[k]||0);return s;},{pass:0,fail:0,warn:0,error:0,skip:0});
+ const evaluated=t.pass+t.fail+t.warn+t.error;
+ return {...t,evaluated,score:evaluated?Math.round((1000*t.pass)/evaluated)/10:null,
+  basis:'Kyverno PolicyReport results in this namespace: pass / (pass + fail + warn + error); skip is not counted',
+  text:evaluated?null:'No policy report results for this namespace yet'};
+}
+
 function clusterPolicies(list){
  return (list?.items||[]).map(p=>({name:p.metadata?.name,action:p.spec?.validationFailureAction||p.spec?.rules?.[0]?.validate?.failureAction||'Audit',
   ready:(p.status?.conditions||[]).some(c=>c.type==='Ready'&&c.status==='True'),rules:(p.spec?.rules||[]).length}));
@@ -104,8 +114,9 @@ async function projectPolicies(pool,userId,id,run=kubectlJson){
    optional(['get','events','-A','--field-selector','reason=PolicyViolation']),
   ]);
   const merged={items:[...(reports.items||[]),...(clusterReports.items||[])]};
-  return {code:200,body:{...out,status:'observed',policies:clusterPolicies(policies),results:summarizePolicyReports(merged,ns.namespace),blocked:blockedEvents(events,ns.namespace)}};
+  const results=summarizePolicyReports(merged,ns.namespace);
+  return {code:200,body:{...out,status:'observed',policies:clusterPolicies(policies),results,compliance:complianceScore(results),blocked:blockedEvents(events,ns.namespace)}};
  }catch{return {code:200,body:{...out,status:'not_connected',reason:'Policy reports could not be read'}};}
 }
 
-module.exports={parseKyvernoDenial,denialSummary,serverDryRun,summarizePolicyReports,blockedEvents,clusterPolicies,projectPolicies};
+module.exports={parseKyvernoDenial,denialSummary,serverDryRun,summarizePolicyReports,blockedEvents,clusterPolicies,projectPolicies,complianceScore};
