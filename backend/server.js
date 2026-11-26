@@ -66,6 +66,7 @@ app.use("/api/static-deployments", require("./routes/staticDeployments"));
 app.use("/api/cloud", require("./routes/cloud"));
 app.use("/api/infrastructure", require("./routes/infrastructure"));
 app.use("/api/monitoring", require("./routes/monitoring"));
+app.use("/api/secrets", require("./routes/secrets"));
 
 const healthPayload = { ok: true, service: "CloudSentinel API" };
 
@@ -299,6 +300,12 @@ const boot = async () => {
       getEvents: () => recentEvents(),
       createAlert: (d) => require("./services/alertStore").createAlert(pool, d),
       onError: (e, stage) => logEvent({ level: "warn", event: "threat_detection_error", detail: { stage, error: String(e?.message || e).slice(0, 300) } }),
+    });
+    // FR-20.4: in-app alert before a secret's expiry date (secret_policies, migration 025); metadata only.
+    require("./services/secretsInventory").startExpiryNotifier({
+      pool,
+      createAlert: (d) => require("./services/alertStore").createAlert(pool, d),
+      onError: (e) => logEvent({ level: "warn", event: "secret_expiry_check_error", detail: { error: String(e?.message || e).slice(0, 300) } }),
     });
     require('./services/provenanceRecovery').start(pool,require('./services/orchestrator').runPipeline).catch(()=>console.error('[provenance-recovery] Startup unavailable; provenance dispatch blocked'));
   });

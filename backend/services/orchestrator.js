@@ -2,6 +2,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const pool = require("../db");
 const { deployProject } = require("./deployment");
+const vulnerabilityGate = require("./vulnerabilityGate");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const telemetry = require("./pipelineTelemetry");
@@ -94,9 +95,29 @@ async function checkCriticalFindings(projectId, executionId, stageName) {
     const security=require('./sastClassification').gate(row);
     return {evidenceFound:true,...security,evidenceConsistent:evidenceConsistent&&security.classificationVerified};
   }
-  const result = await pool.query(`SELECT critical FROM ${table} WHERE project_id = $1 AND pipeline_execution_id = $2 AND status = 'COMPLETED' ORDER BY id DESC LIMIT 1`, [projectId, executionId]);
+  const result = await pool.query(`SELECT critical, id FROM ${table} WHERE project_id = $1 AND pipeline_execution_id = $2 AND status = 'COMPLETED' ORDER BY id DESC LIMIT 1`, [projectId, executionId]);
   if (!result.rows.length) return { evidenceFound: false, hasCritical: true, evidenceConsistent: false };
-  return { evidenceFound: true, hasCritical: Number(result.rows[0].critical || 0) > 0, evidenceConsistent: true };
+  if (stageName === "Dependency") return dependencyGate(projectId, result.rows[0]);
+  // IaC: committed secrets (Trivy secret scan, routes/iac.js) are stored as CRITICAL findings with misconfig_id "secret:<rule>".
+  const secrets = await pool.query("SELECT COUNT(*)::int AS n FROM iac_findings WHERE project_id = $1 AND scan_id = $2 AND misconfig_id LIKE 'secret:%'", [projectId, result.rows[0].id]);
+  return { evidenceFound: true, hasCritical: Number(result.rows[0].critical || 0) > 0, evidenceConsistent: true, secrets: Number(secrets.rows[0]?.n || 0) };
+}
+
+// Dependency gate (SEC-4): evaluated from the persisted SBOM rows of this scan, so the decision matches the evidence.
+// DEPENDENCY_GATE_SEVERITIES / DEPENDENCY_GATE_UNFIXED_SEVERITIES; an invalid value throws (fails closed).
+async function dependencyGate(projectId, scan, db = pool) {
+  const gatePolicy = vulnerabilityGate.policy("DEPENDENCY");
+  const rows = await db.query(
+    "SELECT severity, fixed_version, cve_id FROM sbom_components WHERE project_id = $1 AND scan_id = $2",
+    [projectId, scan.id]
+  );
+  const gate = vulnerabilityGate.evaluate(rows.rows.filter(r => r.cve_id), gatePolicy);
+  // The stored CRITICAL count must agree with the rows (a CRITICAL always counts when it is in the unfixed list).
+  const storedCritical = Number(scan.critical || 0);
+  const rowCritical = rows.rows.filter(r => String(r.severity || "").toUpperCase() === "CRITICAL").length;
+  const evidenceConsistent = storedCritical === rowCritical;
+  return { evidenceFound: true, evidenceConsistent, hasCritical: gate.blocked, gate,
+    reason: gate.blocked ? `Dependency security gate: ${gate.reason} vulnerabilit${gate.total === 1 ? "y" : "ies"} (${vulnerabilityGate.describe(gatePolicy)}). Pipeline stopped.` : null };
 }
 async function runPipeline(executionId, projectId, userId, options = {}) {
   // No effects before the durable start fence. Started work is never replayed automatically.
@@ -129,7 +150,7 @@ async function runPipeline(executionId, projectId, userId, options = {}) {
       if (!gate.evidenceFound || !gate.evidenceConsistent || gate.hasCritical || gate.hasHigh || gate.requiresReview) {
         await pool.query(
           "UPDATE pipeline_executions SET status = 'STAGE_FAILED', failure_reason = $1, completed_at = NOW() WHERE id = $2",
-          [!gate.evidenceFound || !gate.evidenceConsistent ? `Missing or inconsistent completed ${stage.name} evidence for this execution. Pipeline stopped.` : gate.requiresReview ? 'SAST security review required: unreviewed hotspot or unclassified finding. Pipeline stopped.' : `${gate.hasCritical ? 'CRITICAL' : 'HIGH'} security vulnerability found in ${stage.name} stage. Pipeline stopped.`, executionId]
+          [!gate.evidenceFound || !gate.evidenceConsistent ? `Missing or inconsistent completed ${stage.name} evidence for this execution. Pipeline stopped.` : gate.requiresReview ? 'SAST security review required: unreviewed hotspot or unclassified finding. Pipeline stopped.' : gate.reason || (stage.name === 'IaC' && gate.secrets ? `Committed secret found in IaC stage (Trivy secret scan). Pipeline stopped.` : `${gate.hasCritical ? 'CRITICAL' : 'HIGH'} security vulnerability found in ${stage.name} stage. Pipeline stopped.`), executionId]
         );
         return;
       }
@@ -245,4 +266,4 @@ async function resumeActive(executionId,projectId,userId){
  return result;
 }
 
-module.exports = { runPipeline: telemetry.instrumentPipeline(runPipeline, pool), resumeActive, checkCriticalFindings };
+module.exports = { runPipeline: telemetry.instrumentPipeline(runPipeline, pool), resumeActive, checkCriticalFindings, dependencyGate };
