@@ -129,59 +129,169 @@ rollout or the health check fails (`docs/promote-stage.md`, decision table).
 
 ## 3. Requirements: implementation and evidence
 
-FE numbers for Modules 10 and 11 come from `docs/traceability.md`. The repository has no FE numbering for Modules 8
-and 9, so those rows use `FE-? (TBC)`, as in the rest of `docs/traceability.md`, until they are checked against the
-SRS. Status: **met**, or **partly met** with the reason.
+The FE requirements are copied word for word from the SRS: section 1.7.8 (Module 8), 1.7.9 (Module 9), 1.7.10
+(Module 10) and 1.7.11 (Module 11). The screen-level FR requirements come from the SRS mockup tables in section 2.2
+(M16, M17, M19 and M20). Status is **met**, **partly met** or **not met**, with the reason.
 
-### Module 8: cloud deployment
+### Module 8: Secure Cloud Provisioning & Kubernetes Deployment
 
-| Req | Requirement | Implementation | Evidence | Status |
+SRS 1.7.8. Purpose: "Deploy secure cloud infrastructure and containerized applications using Infrastructure-as-Code."
+
+| Req | SRS text |
+|---|---|
+| FE-1 | Provision cloud infrastructure using Terraform |
+| FE-2 | Configure secure networking environments (VPC, subnets) |
+| FE-3 | Deploy applications to Kubernetes clusters |
+| FE-4 | Support scalable container orchestration |
+| FE-5 | Maintain reproducible infrastructure deployments |
+
+| Req | What implements it | Implementation | Evidence | Status |
 |---|---|---|---|---|
-| FE-? (TBC) | Detect the application architecture from the repository | `backend/services/eksWorkload.js` (detect, classify) | `docs/evidence/eks/stage1/infra-cli-smoke.txt`; `docs/evidence/eks/stage5/9101-one-tier-01-analyze.json`, `9102-two-tier-01-analyze.json`, `9103-three-tier-01-analyze.json`, `9104-static-01-analyze.json` | partly met: declarations only (dependency manifests, files), not runtime; unsupported databases go to manual review |
-| FE-? (TBC) | Generate Terraform from fixed templates for one-, two- and three-tier applications | `terraform/templates/eks-project/`, `terraform/modules/project-workload/`, `terraform/modules/project-database/`, `backend/services/eksWorkload.js` (tfvars) | `docs/evidence/eks/stage1/terraform-trivy.txt` (4/4 folders pass fmt, init, validate, Trivy) | met |
-| FE-? (TBC) | Shared cloud environment (VPC, EKS, node group, logging) as code | `terraform/environments/aws-demo/`, `scripts/eks-shared-plan.sh` | `docs/evidence/eks/stage3/shared-plan-summary.txt`, `docs/evidence/eks/stage4/cluster-check.txt` | met |
-| FE-? (TBC) | Validate and plan before apply; reject anything outside the allowlist | `backend/services/eksWorkloadEngine.js`, `backend/services/eksWorkload.js` (`inspectPlan`) | `docs/evidence/eks/stage1/unit-tests.txt` (tests 12-14, 17); `docs/evidence/eks/stage5/9101-one-tier-03-plan.json`; `docs/evidence/eks/stage5/9104-static-plan-allowlist.txt` (negative test REJECTED) | met |
-| FE-? (TBC) | Human approval of the exact plan, single use; apply gate and kill switch | `backend/services/eksWorkloadEngine.js` (`applyGate`, approval TTL), `backend/routes/infrastructure.js` | `docs/evidence/eks/stage5/gate-off.json`, `gate-on.json`, `9101-one-tier-04-approve.json`, `9101-one-tier-05-apply.json` (approval `consumedAt`); `docs/evidence/eks/stage1/unit-tests.txt` (tests 15, 16, 18) | met |
-| FE-? (TBC) | Apply per-project infrastructure on AWS | same | `docs/evidence/eks/stage5/9101-one-tier-05-apply.json`, `9102-two-tier-16-apply.json`, `9103-three-tier-16-apply.json` | met (static site: plan only, see Limitations) |
-| FE-? (TBC) | Build a hardened image and deploy it with generated manifests | `backend/services/eksManifests.js`, `backend/services/deployment.js` (target=eks) | `docs/evidence/eks/stage5/9101-one-tier-07-deploy.txt`, `9102-two-tier-17-deploy.txt`, `9103-three-tier-17-deploy.txt` | met |
-| FE-? (TBC) | Publicly reachable application endpoint | generated `LoadBalancer` Service (NLB annotation) | `docs/evidence/eks/stage5/stop-load-balancer.txt`, `9101-one-tier-09-nlb-surprise.txt`; demos by port-forward: `9102-two-tier-18-demo.txt`, `9103-three-tier-18-demo.txt` | partly met: the Free plan refuses load balancers. One NLB was created for 9101 by controller retries; the others stayed Pending |
-| FE-? (TBC) | Scaling | HPA in the generated manifests; node group min 2 / max 3 in `terraform/environments/aws-demo/main.tf` | `docs/evidence/eks/stage6/07-hpa-load-test.txt` (2 -> 4 pods); `docs/evidence/eks/minikube/07-hpa-scaling.txt` | partly met: pod autoscaling shown; node autoscaling is configured as limits only (no autoscaler installed) and was not demonstrated |
-| FE-? (TBC) | Destroy everything that was created, with a leftover check | `backend/services/eksWorkloadEngine.js` (destroy-plan, destroy, recovery), shared `terraform destroy` | `docs/evidence/eks/stage7/destroy.txt`; `docs/evidence/eks/stage5/9103-three-tier-11-recovery-destroy.json` | met (engine re-plan bug open, see section 7) |
-| FE-? (TBC) | Cost estimate before creating anything | `docs/eks-cost-gate.md` | `docs/evidence/eks/stage3/shared-plan.txt` | met (estimate, not a bill) |
-| FE-? (TBC) | Promote the scanned staging image to EKS after all gates (manual or `auto_after_gates`) | `backend/services/promoteStage.js`, `backend/services/orchestrator.js`, `backend/migrations/024_promote_stage.sql`, `backend/routes/infrastructure.js` (promote-settings), `frontend/src/pages/CICDPipeline.jsx`, `frontend/src/utils/pipelineStages.js`, `scripts/promote-verify.js` | `docs/evidence/eks/promote/01-minikube-integration.txt`, `docs/evidence/eks/promote/02-live-9101-target-unavailable.txt`, `docs/evidence/pipeline/run4-python-clean-promote-execution-113.json` | partly met: on EKS only the "target unavailable" outcome was shown live; push, rollout and rollback were shown on Minikube; the first-time `auto_after_gates` apply is tested by unit tests only; migration 024 is not applied to the shared database |
+| FE-1 | Shared cloud environment (VPC, EKS, node group, logging) as code | `terraform/environments/aws-demo/`, `scripts/eks-shared-plan.sh` | `docs/evidence/eks/stage3/shared-plan-summary.txt`, `docs/evidence/eks/stage4/apply-times.txt`, `docs/evidence/eks/stage4/cluster-check.txt` | met |
+| FE-1 | Per-project Terraform generated from fixed templates for one-, two- and three-tier applications | `terraform/templates/eks-project/`, `terraform/modules/project-workload/`, `terraform/modules/project-database/`, `backend/services/eksWorkload.js` (tfvars) | `docs/evidence/eks/stage1/terraform-trivy.txt` (4/4 folders pass fmt, init, validate, Trivy) | met |
+| FE-1 | Architecture detection that selects the template | `backend/services/eksWorkload.js` (detect, classify) | `docs/evidence/eks/stage1/infra-cli-smoke.txt`; `docs/evidence/eks/stage5/9101-one-tier-01-analyze.json`, `9102-two-tier-01-analyze.json`, `9103-three-tier-01-analyze.json`, `9104-static-01-analyze.json` | partly met: declarations only (dependency manifests, files), not runtime; unsupported databases go to manual review |
+| FE-1 | Validate and plan before apply; reject anything outside the allowlist | `backend/services/eksWorkloadEngine.js`, `backend/services/eksWorkload.js` (`inspectPlan`) | `docs/evidence/eks/stage1/unit-tests.txt` (tests 12-14, 17); `docs/evidence/eks/stage5/9101-one-tier-03-plan.json`; `docs/evidence/eks/stage5/9104-static-plan-allowlist.txt` (negative test REJECTED) | met |
+| FE-1 | Human approval of the exact plan, single use; apply gate and kill switch | `backend/services/eksWorkloadEngine.js` (`applyGate`, approval TTL), `backend/routes/infrastructure.js` | `docs/evidence/eks/stage5/gate-off.json`, `gate-on.json`, `9101-one-tier-04-approve.json`, `9101-one-tier-05-apply.json` (approval `consumedAt`); `docs/evidence/eks/stage1/unit-tests.txt` (tests 15, 16, 18) | met |
+| FE-1 | Apply per-project infrastructure on AWS | same | `docs/evidence/eks/stage5/9101-one-tier-05-apply.json`, `9102-two-tier-16-apply.json`, `9103-three-tier-16-apply.json` | partly met: the static site was planned and allowlist-checked but not applied (old provider pin, see Limitations) |
+| FE-2 | VPC 10.40.0.0/16 with 2 private and 2 public subnets, one NAT gateway, flow logs; nodes in private subnets without public IPs; private RDS that accepts 5432 only from the node security group; API endpoint limited to one /32 plus private access | `terraform/environments/aws-demo/main.tf`, `terraform/modules/project-database/main.tf`, `backend/services/eksWorkload.js` (allowlist: no public RDS, no CIDR ingress to the database) | `docs/evidence/eks/stage3/shared-plan-summary.txt`, `docs/evidence/eks/stage4/cluster-check.txt` (`publicCidrs: 1`), `docs/evidence/eks/stage5/9103-three-tier-18-demo.txt` (backend and database unreachable from outside) | met for VPC and subnets. Inside the cluster there is no NetworkPolicy |
+| FE-3 | Build a hardened image and deploy it with generated manifests | `backend/services/eksManifests.js`, `backend/services/deployment.js` (target=eks) | `docs/evidence/eks/stage5/9101-one-tier-07-deploy.txt`, `9102-two-tier-17-deploy.txt`, `9103-three-tier-17-deploy.txt` | met |
+| FE-3 | Promote the scanned staging image to EKS after all gates (manual or `auto_after_gates`); the Promote node masks AWS identifiers | `backend/services/promoteStage.js`, `backend/services/orchestrator.js`, `backend/migrations/024_promote_stage.sql`, `backend/routes/infrastructure.js` (promote-settings), `frontend/src/pages/CICDPipeline.jsx`, `frontend/src/utils/pipelineStages.js`, `scripts/promote-verify.js` | `docs/evidence/eks/promote/01-minikube-integration.txt`, `docs/evidence/eks/promote/02-live-9101-target-unavailable.txt`, `docs/evidence/pipeline/run4-python-clean-promote-execution-113.json` | partly met: on EKS only the "target unavailable" outcome was shown live; push, rollout and rollback were shown on Minikube; the first-time `auto_after_gates` apply is tested by unit tests only; migration 024 is not applied to the shared database |
+| FE-3 | Publicly reachable application endpoint | generated `LoadBalancer` Service (NLB annotation) | `docs/evidence/eks/stage5/stop-load-balancer.txt`, `9101-one-tier-09-nlb-surprise.txt`; demos by port-forward: `9102-two-tier-18-demo.txt`, `9103-three-tier-18-demo.txt` | partly met: the Free plan refuses load balancers. One NLB was created for 9101 by controller retries; the others stayed Pending |
+| FE-4 | Pod and node scaling | HPA in the generated manifests; node group min 2 / max 3 in `terraform/environments/aws-demo/main.tf` | `docs/evidence/eks/stage6/07-hpa-load-test.txt` (2 -> 4 pods); `docs/evidence/eks/minikube/07-hpa-scaling.txt` | partly met: pod autoscaling shown; node autoscaling is configured as limits only (no autoscaler installed) and was not demonstrated |
+| FE-5 | Pinned versions and lock files (Terraform, AWS provider, registry modules, add-ons, Helm charts), fixed templates, saved plans with SHA-256, state backups | `terraform/templates/eks-project/.terraform.lock.hcl`, `terraform/environments/aws-demo/.terraform.lock.hcl`, `k8s/eks/versions.env`, `backend/services/eksWorkloadEngine.js` | `docs/evidence/eks/stage4/cluster-check.txt` (add-ons on the pinned builds), `docs/evidence/eks/stage6/13-capacity-and-access.txt` (chart versions) | met |
+| FE-5 | Destroy everything that was created, with a leftover check, so the environment can be rebuilt from code | `backend/services/eksWorkloadEngine.js` (destroy-plan, destroy, recovery), shared `terraform destroy` | `docs/evidence/eks/stage7/destroy.txt`; `docs/evidence/eks/stage5/9103-three-tier-11-recovery-destroy.json` | partly met: create and destroy were each done once; a rebuild after the destroy was not run. Engine re-plan bug open (section 7). Per-project state is a local file, not a shared backend |
+| (supports FE-1) | Cost estimate before creating anything | `docs/eks-cost-gate.md` | `docs/evidence/eks/stage3/shared-plan.txt` | met (estimate, not a bill) |
 
-### Module 9: secrets management
+### Module 9: Secrets & Credential Management
 
-| Req | Requirement | Implementation | Evidence | Status |
+SRS 1.7.9. Purpose: "Securely manage sensitive credentials used by applications and infrastructure."
+
+| Req | SRS text |
+|---|---|
+| FE-1 | Store sensitive credentials in secure secret storage |
+| FE-2 | Prevent hardcoded secrets in source code |
+| FE-3 | Retrieve secrets securely during application runtime |
+| FE-4 | Support credential rotation mechanisms |
+| FE-5 | Inject secrets securely into container environments |
+
+| Req | What implements it | Implementation | Evidence | Status |
 |---|---|---|---|---|
-| FE-? (TBC) | Store application and database secrets in a managed secret store, not in the repository or manifests | `terraform/modules/project-workload/main.tf` (Secrets Manager secret), `terraform/modules/project-database/main.tf` (RDS-managed master secret), `backend/services/eksManifests.js` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 1: manifest has references only) | met |
-| FE-? (TBC) | Retrieve secrets at runtime and inject them into pods | `k8s/eks/cluster-secret-store.yaml`, `k8s/eks/platform-install.sh` (ESO 2.14.0), ExternalSecrets from `backend/services/eksManifests.js` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 2), `docs/evidence/eks/stage5/9102-two-tier-18-demo.txt` (`/db` connects to RDS); `docs/evidence/eks/minikube/03b-external-secrets-in-pod.txt` | met |
-| FE-? (TBC) | Rotate secrets | `scripts/rotate-secret.sh`, ESO `refreshInterval: 1m` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 3), `docs/evidence/eks/minikube/04-rotation.txt` | partly met: rotation is a script plus the ESO refresh; the mounted file updates without a redeploy, environment variables only on pod restart; no automatic schedule |
-| FE-? (TBC) | Limit each workload to its own secrets | per-component IRSA role limited to its own secret and log group (`terraform/modules/project-workload/main.tf`); ESO role in `terraform/environments/aws-demo/security.tf`; RBAC denies Secrets and ExternalSecret creation (`k8s/rbac/project-roles.sh`) | `docs/evidence/eks/stage6/02-rbac.txt` | partly met: ESO uses one shared role for `cloudsentinel/*` and `rds!db-*`, so projects are not isolated from each other's secrets at the ESO layer |
-| FE-? (TBC) | Detect hard-coded secrets before deployment | ml-sast rule-based CWE-798 detector, Trivy secret scan | `docs/evidence/eks/stage6/05-planted-key-and-secret-scan.txt` | met (see section 7 for the evidence-script mistake in that file) |
+| FE-1 | Application secrets in AWS Secrets Manager and database credentials in the RDS-managed master secret; manifests hold references only | `terraform/modules/project-workload/main.tf`, `terraform/modules/project-database/main.tf`, `backend/services/eksManifests.js` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 1) | met |
+| FE-2 | Hard-coded secret detection: ml-sast rule-based CWE-798 detector in the SAST stage; Trivy secret scan run by hand | `services-ml/ml-sast/sastml/secrets.py`, `backend/services/ml/mlSastScan.js` | `docs/evidence/eks/stage6/05-planted-key-and-secret-scan.txt` | partly met: ml-sast reports a hard-coded key as HIGH, and the gate blocks on CRITICAL only, so a secret alone does not stop the pipeline. The Trivy secret scan is not a pipeline stage (the dependency and image scans use `vuln`/`license` only) |
+| FE-3 | Runtime retrieval by External Secrets Operator through a ClusterSecretStore and its IRSA role; each component's own IRSA role is limited to its own secret | `k8s/eks/cluster-secret-store.yaml`, `k8s/eks/platform-install.sh`, `terraform/environments/aws-demo/security.tf` (ESO role), `terraform/modules/project-workload/main.tf` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 2), `docs/evidence/eks/stage5/9102-two-tier-18-demo.txt` (`/db` connects to RDS) | partly met: ESO uses one shared role for `cloudsentinel/*` and `rds!db-*`, so projects are not isolated from each other's secrets at the ESO layer. RBAC denies Secrets and ExternalSecret creation to project roles (`docs/evidence/eks/stage6/02-rbac.txt`) |
+| FE-4 | Rotation script plus the ESO refresh (`refreshInterval: 1m`) | `scripts/rotate-secret.sh` | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (part 3), `docs/evidence/eks/minikube/04-rotation.txt` | partly met: manual script only, no schedule or policy; the mounted file updates without a redeploy, environment variables only on pod restart |
+| FE-5 | Secrets injected as environment variables (`envFrom`) and mounted files; values never in the manifest or logs | `backend/services/eksManifests.js` (ExternalSecret, Deployment) | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` (pod `envFrom` and mounts), `docs/evidence/eks/minikube/03b-external-secrets-in-pod.txt` | met |
 
-### Module 10: Kubernetes security
+### Module 10: Kubernetes Security Enforcement
 
-| Req | Requirement (from `docs/traceability.md`) | Implementation on EKS | Evidence | Status |
+SRS 1.7.10. Purpose: "Enforce security policies within the Kubernetes cluster to ensure secure deployments."
+
+| Req | SRS text | Implementation on EKS | Evidence | Status |
 |---|---|---|---|---|
-| FE-1 | Enforce policies with Kyverno (Enforce mode, project namespaces only) | Kyverno 1.20.0 with seven CEL `ValidatingPolicy` files in `k8s/kyverno/eks-cel/` (the five Minikube policies plus `restrict-image-registries` and `disallow-privilege-escalation`, first written in `k8s/kyverno/eks/`), installed by `k8s/eks/platform-install.sh` | `docs/evidence/eks/stage4/kyverno-1.20-cli.txt`, `docs/evidence/eks/stage6/03-kyverno-admission.txt` | met |
-| FE-2 | Prevent root containers | generated Dockerfiles (UID 10001, pinned base images) and manifests (`backend/services/eksWorkload.js`, `backend/services/eksManifests.js`); namespace Pod Security `restricted` | `docs/evidence/eks/stage6/03-kyverno-admission.txt` (root pod denied by Pod Security, and by Kyverno in a namespace without the label); `docs/evidence/eks/stage6/10-falco.txt` (`uid=10001`) | met |
-| FE-3 | RBAC: per-namespace least-privilege roles | `k8s/rbac/project-roles.sh` (deployer, viewer) | `docs/evidence/eks/stage6/02-rbac.txt`; `docs/evidence/eks/minikube/06-rbac.txt` | met |
-| FE-4 | Validate manifests against policies before apply | server-side dry run before `kubectl apply` in `backend/services/promoteStage.js` and `backend/services/deployment.js` | `docs/evidence/eks/promote/01-minikube-integration.txt` (`dry-run ADMITTED`); `docs/evidence/eks/minikube/02-admission.txt` | met |
-| FE-5 | Block violating deployments | Kyverno `Deny` actions; promote marks the stage `FAILED` on a dry-run denial | `docs/evidence/eks/stage6/03-kyverno-admission.txt` (six violating pods denied, only the two app pods left); `docs/evidence/eks/minikube/05-violations-rejected.txt` | met |
+| FE-1 | Enforce Kubernetes security policies using Kyverno | Kyverno 1.20.0 with seven CEL `ValidatingPolicy` files in `k8s/kyverno/eks-cel/` (the five Minikube policies plus `restrict-image-registries` and `disallow-privilege-escalation`, first written in `k8s/kyverno/eks/`), installed by `k8s/eks/platform-install.sh` | `docs/evidence/eks/stage4/kyverno-1.20-cli.txt`, `docs/evidence/eks/stage6/03-kyverno-admission.txt` | met |
+| FE-2 | Prevent containers running with root privileges | generated Dockerfiles (UID 10001, pinned base images) and manifests (`backend/services/eksWorkload.js`, `backend/services/eksManifests.js`); namespace Pod Security `restricted` | `docs/evidence/eks/stage6/03-kyverno-admission.txt` (root pod denied by Pod Security, and by Kyverno in a namespace without the label); `docs/evidence/eks/stage6/10-falco.txt` (`uid=10001`) | met |
+| FE-3 | Implement role-based access control (RBAC) for cluster resources | `k8s/rbac/project-roles.sh` (deployer, viewer) | `docs/evidence/eks/stage6/02-rbac.txt`; `docs/evidence/eks/minikube/06-rbac.txt` | met |
+| FE-4 | Validate deployment manifests against security policies | server-side dry run before `kubectl apply` in `backend/services/promoteStage.js` and `backend/services/deployment.js` | `docs/evidence/eks/promote/01-minikube-integration.txt` (`dry-run ADMITTED`); `docs/evidence/eks/minikube/02-admission.txt` | met |
+| FE-5 | Block deployments that violate defined policies | Kyverno `Deny` actions; promote marks the stage `FAILED` on a dry-run denial | `docs/evidence/eks/stage6/03-kyverno-admission.txt` (six violating pods denied, only the two app pods left); `docs/evidence/eks/minikube/05-violations-rejected.txt` | met |
 
 There is no NetworkPolicy inside the cluster: any pod can reach the three-tier backend Service
 (`docs/evidence/eks/stage5/9103-three-tier-18-demo.txt`). This is not one of the listed FEs, but it is a gap.
 
-### Module 11: monitoring and log aggregation
+### Module 11: Runtime Threat Detection & Monitoring
 
-| Req | Requirement (from `docs/traceability.md`) | Implementation on EKS | Evidence | Status |
+SRS 1.7.11. Purpose: "Monitor cloud infrastructure and applications for suspicious activities and security threats."
+
+| Req | SRS text | Implementation on EKS | Evidence | Status |
 |---|---|---|---|---|
-| FE-1 | Collect logs from infrastructure and applications | EKS control-plane logs (api, audit, authenticator), CloudTrail to CloudWatch, VPC flow logs (`terraform/environments/aws-demo/main.tf`, `security.tf`); pod logs collected by Alloy into Loki (`k8s/eks/monitoring/alloy-values.yaml`, `loki-values.yaml`) | `docs/evidence/eks/stage6/09-logs-and-metrics.txt`, `docs/evidence/eks/stage6/06-cloudwatch-logs-insights.txt` | met |
-| FE-2 | Detect suspicious API calls / abnormal activity | CloudTrail metric filter `cloudsentinel-unauthorized-api-calls` on `UnauthorizedOperation`/`AccessDenied` (`security.tf`); optional Falco 9.2.2 runtime rules | `docs/evidence/eks/stage6/04-alarm-trigger.txt`, `docs/evidence/eks/stage6/10-falco.txt` | partly met: GuardDuty is excluded (Free plan), so detection is one CloudTrail rule plus Falco and the backend rules from the Minikube work |
-| FE-3 | Real-time alerts | CloudWatch alarm to an SNS email topic (KMS-encrypted); Prometheus + Alertmanager (`k8s/eks/monitoring/kps-values.yaml`) | `docs/evidence/eks/stage6/11-incident-walkthrough.md` (alarm 14:14:50 UTC, SNS 14:14:51 UTC) | met |
-| FE-4 | Aggregate logs from multiple sources | Loki with labels per namespace (project, Kyverno, ESO); CloudWatch log groups for control plane, CloudTrail and flow logs | `docs/evidence/eks/stage6/09-logs-and-metrics.txt` | met |
-| FE-5 | Incident investigation and response | Terraform-managed saved Logs Insights queries (`cloudsentinel/denied-api-calls`, `cloudsentinel/eks-audit-secrets-and-exec`); walkthrough across CloudTrail, metric, alarm, SNS, engine audit, EKS audit and flow logs | `docs/evidence/eks/stage6/06-cloudwatch-logs-insights.txt`, `docs/evidence/eks/stage6/11-incident-walkthrough.md` | met |
+| FE-1 | Collect logs from cloud infrastructure and applications | EKS control-plane logs (api, audit, authenticator), CloudTrail to CloudWatch, VPC flow logs (`terraform/environments/aws-demo/main.tf`, `security.tf`); pod logs collected by Alloy into Loki (`k8s/eks/monitoring/alloy-values.yaml`, `loki-values.yaml`) | `docs/evidence/eks/stage6/09-logs-and-metrics.txt`, `docs/evidence/eks/stage6/06-cloudwatch-logs-insights.txt` | met |
+| FE-2 | Detect suspicious API calls and abnormal activities | CloudTrail metric filter `cloudsentinel-unauthorized-api-calls` on `UnauthorizedOperation`/`AccessDenied` (`security.tf`); optional Falco 9.2.2 runtime rules | `docs/evidence/eks/stage6/04-alarm-trigger.txt`, `docs/evidence/eks/stage6/10-falco.txt` | partly met: GuardDuty is excluded (Free plan), so detection is one CloudTrail rule plus Falco and the backend rules from the Minikube work |
+| FE-3 | Generate real-time security alerts | CloudWatch alarm to an SNS email topic (KMS-encrypted); Prometheus + Alertmanager (`k8s/eks/monitoring/kps-values.yaml`) | `docs/evidence/eks/stage6/11-incident-walkthrough.md` (alarm 14:14:50 UTC, SNS 14:14:51 UTC) | met |
+| FE-4 | Aggregate logs from multiple cloud services | CloudWatch log groups for the control plane, CloudTrail and flow logs; Loki with labels per namespace (project, Kyverno, ESO) | `docs/evidence/eks/stage6/09-logs-and-metrics.txt`, `docs/evidence/eks/stage6/06-cloudwatch-logs-insights.txt` | met |
+| FE-5 | Support incident investigation and response | Terraform-managed saved Logs Insights queries (`cloudsentinel/denied-api-calls`, `cloudsentinel/eks-audit-secrets-and-exec`); walkthrough across CloudTrail, metric, alarm, SNS, engine audit, EKS audit and flow logs | `docs/evidence/eks/stage6/06-cloudwatch-logs-insights.txt`, `docs/evidence/eks/stage6/11-incident-walkthrough.md` | met |
+
+### Screen-level requirements (SRS section 2.2)
+
+These requirements are about what the web UI shows and does. The FE rows above are mostly met in the cluster and in
+AWS, but **the UI screens read only the local Minikube cluster and the local backend**:
+
+- `backend/services/kubernetesInventory.js` accepts only the `minikube` kube context, and the Kubernetes panels show
+  "AWS EKS: Not configured" as fixed text.
+- `backend/services/kubernetesPolicy.js` reads Kyverno `clusterpolicies`, so the EKS CEL `ValidatingPolicy` objects
+  would not appear.
+- CloudWatch alarms and Loki on EKS are not connected to the Monitoring screen.
+
+The statement is followed by the SRS business rule in quotes.
+
+#### FR-16: Cloud Deployment screen (mockup M16)
+
+The route `/cloud` (`frontend/src/pages/CloudDeployment.jsx`, titled "Cloud Security Posture") shows the AWS network
+snapshot and the infrastructure workflow. The cluster view is on `/kubernetes` (`frontend/src/pages/KubernetesSecurity.jsx`,
+`KubernetesPanel`).
+
+| FR | SRS statement and business rule | Implementation | Evidence / tests | Status |
+|---|---|---|---|---|
+| FR-16.1 | The system shall display an overview of Kubernetes clusters. "Cluster data must be fetched in real time from connected environments." | `KubernetesPanel` in `frontend/src/pages/KubernetesSecurity.jsx`; `backend/services/kubernetesInventory.js`, `backend/routes/kubernetes.js` (`GET /projects/:projectId/inventory`) | `backend/test/kubernetes-inventory.test.js` | partly met: a live, read-only snapshot of the Minikube cluster for one project (context, namespaces, pod counts); EKS is not shown; no overview of several clusters |
+| FR-16.2 | The system shall display resource usage such as CPU and memory for each cluster. "Metrics must reflect current resource utilization accurately." | none in the UI | CPU and memory were measured outside the UI only (`docs/evidence/eks/stage6/13-capacity-and-access.txt`, `docs/evidence/eks/stage6/09-logs-and-metrics.txt`) | not met |
+| FR-16.3 | The system shall display health status of each cluster. "Cluster status must indicate whether it is healthy, warning, or critical." | `KubernetesPanel` (pods running/ready, replicas ready) | `backend/test/kubernetes-inventory.test.js` | partly met: counts only, no healthy/warning/critical status; Minikube only |
+| FR-16.4 | The system shall display a list of active deployments and services. "Each deployment must include replica count, availability, and status." | `KubernetesPanel` "Deployment health" (desired, ready, available) and "Pod inventory" tables | `backend/test/kubernetes-inventory.test.js` | partly met: deployments with replica counts and availability are listed; Services are not; Minikube only |
+| FR-16.5 | The system shall allow users to view logs for each deployment. "Logs must be accessible on demand for troubleshooting." | log search on the Monitoring screen (`frontend/src/pages/MonitoringAlerts.jsx`, `GET /api/monitoring/logs` in `backend/routes/monitoring.js`, `backend/services/lokiQuery.js`) | `backend/test/monitoring.test.js` ("buildLogQL builds…", "queryLogs calls Loki query_range (mocked)…") | partly met: on-demand search by source and text, not from a deployment row and not per deployment; local Loki and backend logs only |
+| FR-16.6 | The system shall allow users to perform deployment-related actions such as viewing details or managing services. "Actions must be restricted based on user permissions." | `frontend/src/components/InfrastructureWorkflow.jsx`, `frontend/src/components/WorkloadInfrastructure.jsx` (analyze, confirm, plan, approve, apply, destroy), owner-only routes in `backend/routes/infrastructure.js` | `backend/test/eks-workload.test.js` | partly met: infrastructure actions exist and are limited to the project owner; there are no actions on running deployments or Services (scale, restart, manage) |
+
+#### FR-17: Kubernetes Security screen (mockup M17)
+
+`frontend/src/pages/KubernetesSecurity.jsx` (`PolicyPanel`, `RbacPanel`, security observations).
+
+| FR | SRS statement and business rule | Implementation | Evidence / tests | Status |
+|---|---|---|---|---|
+| FR-17.1 | The system shall display a list of Kubernetes security policies. "Policies must be retrieved from the configured security framework." | `PolicyPanel`; `backend/services/kubernetesPolicy.js` (`projectPolicies`), `GET /api/kubernetes/projects/:projectId/policies` | `backend/test/kubernetes-policy.test.js` | partly met: Kyverno ClusterPolicies with mode and readiness are listed from Minikube; the EKS CEL ValidatingPolicies are not read |
+| FR-17.2 | The system shall enforce security policies on Kubernetes resources. "Non-compliant resources must be flagged automatically." | Kyverno Enforce (Minikube `k8s/kyverno/policies/`, EKS `k8s/kyverno/eks-cel/`); background PolicyReports | `docs/evidence/eks/stage6/03-kyverno-admission.txt`, `docs/evidence/eks/minikube/05-violations-rejected.txt` | met |
+| FR-17.3 | The system shall display detected policy violations. "Violations must include severity and affected resource details." | `PolicyPanel` (failing resources and messages from PolicyReports, recent blocked admissions) | `backend/test/kubernetes-policy.test.js` | partly met: the resource and the message are shown, the severity is not |
+| FR-17.4 | The system shall assign severity levels to policy violations. "Severity must follow predefined categories such as critical, high, medium, and low." | "Security observations" table in `KubernetesPanel` (severity per workload check) | `backend/test/kubernetes-inventory.test.js` | partly met: the workload checks have a severity; Kyverno policy violations have none |
+| FR-17.5 | The system shall allow users to view and apply remediation actions for violations. "Remediation actions must be applicable to the identified issue." | "Recommendation" column in the security observations | `backend/test/kubernetes-inventory.test.js` | partly met: remediation text can be viewed; nothing can be applied from the UI |
+| FR-17.6 | The system shall display an overall compliance score for Kubernetes security. "The compliance score must be calculated based on policy adherence." | none (the screen says "No compliance percentage is calculated"; `RbacPanel` shows a yes/no least-privilege flag, not a score) | - | not met |
+
+#### FR-19: Monitoring and Alerts screen (mockup M19)
+
+`frontend/src/pages/MonitoringAlerts.jsx`, backed by `backend/routes/monitoring.js`, `backend/services/alertStore.js`,
+`backend/services/threatDetection.js` and `backend/services/lokiQuery.js`.
+
+| FR | SRS statement and business rule | Implementation | Evidence / tests | Status |
+|---|---|---|---|---|
+| FR-19.1 | The system shall display a list of detected security alerts. "Alerts must be updated in real time based on system activity." | alert list fed by the SSE stream `GET /api/monitoring/stream` with a polling fallback | `backend/test/monitoring.test.js` ("createAlert inserts with dedupe/cooldown…", "monitoring routes: scoped logs, context, SSE") | met for alerts raised by the backend detectors; AWS-side alarms (CloudWatch/SNS on EKS) are not shown |
+| FR-19.2 | The system shall classify alerts by severity levels. "Critical alerts must be prominently highlighted." | severity badge, coloured border per severity, severity filter | `backend/test/monitoring.test.js` | met |
+| FR-19.3 | The system shall display detailed information for each alert. "Each alert must include description, timestamp, and affected component." | detail panel: rule title, summary, description, raised/resolved time, project; context from `GET /api/monitoring/alerts/:id/context` | `backend/test/monitoring.test.js` | met |
+| FR-19.4 | The system shall display live system logs. "Logs must be continuously updated without manual refresh." | log search (`GET /api/monitoring/logs`, Loki `query_range`) | `backend/test/monitoring.test.js` ("queryLogs calls Loki query_range (mocked)…") | partly met: logs are searched on demand; they are not streamed or refreshed automatically |
+| FR-19.5 | The system shall allow users to acknowledge or respond to alerts. "Acknowledged alerts must be marked accordingly." | Acknowledge and Resolve with a note (`PATCH /api/monitoring/alerts/:id`, OPEN -> ACKNOWLEDGED -> RESOLVED) | `backend/test/monitoring.test.js` ("OPEN -> ACKNOWLEDGED -> RESOLVED…", "transition rejects…") | met |
+| FR-19.6 | The system shall display system monitoring status and metrics. "Monitoring metrics must reflect current system state accurately." | the screen shows the stream status (live or polling) and alert counts; metrics are exported at `/metrics` (`backend/services/metrics.js`) for Prometheus | `docs/evidence/eks/stage6/09-logs-and-metrics.txt` (metrics in Prometheus, outside the UI) | partly met: no metrics on the screen; Prometheus and Grafana are reached by port-forward only |
+
+#### FR-20: Secrets Management screen (mockup M20)
+
+**`frontend/src/pages/SecretsManagement.jsx` is a static mockup.** It makes no API call. Every number and row is
+hard-coded sample data ("GitHub Token", "DB Password", "AWS Access Key"), and the "Rotate" and "Mark Safe" buttons
+have no handlers. No screen requirement is met through the UI. Where the behaviour exists outside the UI, the row
+says where.
+
+| FR | SRS statement and business rule | Implementation | Evidence / tests | Status |
+|---|---|---|---|---|
+| FR-20.1 | The system shall allow secure storage of sensitive credentials such as API keys and tokens. "All secrets must be encrypted at rest and in transit." | per-project secrets created in AWS Secrets Manager by `terraform/modules/project-workload/main.tf` (encrypted at rest, TLS in transit); database credentials in the RDS-managed master secret (KMS) | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` | partly met: storage is secure, but users cannot store a secret through CloudSentinel (no UI or API); values are written with `scripts/rotate-secret.sh` or the AWS CLI |
+| FR-20.2 | The system shall display a list of stored secrets with relevant metadata. "Sensitive values must be masked and not displayed in plain text." | none (the table in `SecretsManagement.jsx` is hard-coded) | - | not met |
+| FR-20.3 | The system shall allow rotation of secrets. "Secrets must be rotated based on defined rotation policies." | `scripts/rotate-secret.sh` plus the ESO refresh, outside the UI; the UI "Rotate" button does nothing | `docs/evidence/eks/stage6/12-secrets-runtime-and-rotation.txt` | partly met (outside the UI only): manual rotation works; there is no rotation from the UI and no policy-driven rotation |
+| FR-20.4 | The system shall track expiration and rotation status of secrets. "The system must notify users before secrets expire." | none | - | not met |
+| FR-20.5 | The system shall restrict access to secrets based on user roles. "Only authorized users must be allowed to view or modify secrets." | enforced in AWS and Kubernetes, not in the UI: per-component IRSA roles limited to their own secret, dev IAM policy, Kubernetes RBAC denies Secrets to the deployer and viewer roles (`k8s/rbac/project-roles.sh`) | `docs/evidence/eks/stage6/02-rbac.txt` | partly met (outside the UI only): no CloudSentinel user roles govern secrets, the UI has no secret access control, and ESO uses one shared role for all projects |
+| FR-20.6 | The system shall allow users to define rotation policies for secrets. "Policies must enforce periodic updates for different secret types." | none | - | not met |
+
+### Summary
+
+| Group | Met | Partly met | Not met |
+|---|---|---|---|
+| Module 8 FE-1 to FE-5 | FE-2 | FE-1, FE-3, FE-4, FE-5 (each has a met part; see the rows) | - |
+| Module 9 FE-1 to FE-5 | FE-1, FE-5 | FE-2, FE-3, FE-4 | - |
+| Module 10 FE-1 to FE-5 | FE-1 to FE-5 | - | - |
+| Module 11 FE-1 to FE-5 | FE-1, FE-3, FE-4, FE-5 | FE-2 | - |
+| FR-16 (Cloud Deployment screen) | - | FR-16.1, 16.3, 16.4, 16.5, 16.6 | FR-16.2 |
+| FR-17 (Kubernetes Security screen) | FR-17.2 | FR-17.1, 17.3, 17.4, 17.5 | FR-17.6 |
+| FR-19 (Monitoring and Alerts screen) | FR-19.1, 19.2, 19.3, 19.5 | FR-19.4, 19.6 | - |
+| FR-20 (Secrets Management screen) | - | FR-20.1, 20.3, 20.5 (outside the UI only) | FR-20.2, 20.4, 20.6 |
 
 ## 4. Measured numbers
 
