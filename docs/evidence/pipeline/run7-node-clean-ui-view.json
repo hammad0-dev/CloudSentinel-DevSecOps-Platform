@@ -1,0 +1,33 @@
+{
+ "apiRoute": "GET /api/projects/28/pipelines",
+ "execution": {
+  "id": 119,
+  "status": "COMPLETED",
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "failure_reason": null,
+  "promote_result": null
+ },
+ "isLatestOnPage": true,
+ "uiNodes": [
+  {
+   "name": "SAST",
+   "status": "Passed"
+  },
+  {
+   "name": "Dependency",
+   "status": "Passed"
+  },
+  {
+   "name": "IaC",
+   "status": "Passed"
+  },
+  {
+   "name": "Deploy",
+   "status": "Passed"
+  },
+  {
+   "name": "DAST",
+   "status": "Passed"
+  }
+ ]
+}

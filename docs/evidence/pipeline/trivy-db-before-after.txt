@@ -1,0 +1,26 @@
+# Trivy DB before/after, 2026-11-26 02:29:15 PKT, image cloudsentinel-p26:run-117-attempt-2-mwwm030u-0def23431d61 (python-clean, run 117), trivy Version: 0.52.2
+# Separate cache dir /home/hammad/snap/trivy/common/cs-trivy-measure-20261126b (the stack's cache was not touched).
+
+## BEFORE (current code: no warmer, no --skip-db-update)
+1. empty cache -> Trivy downloads the DB inside the scan: 53.2 s (rc=0)
+{'HIGH': 54, 'LOW': 77, 'MEDIUM': 76, 'UNKNOWN': 18}
+DownloadedAt 2026-11-25T21:30:05.495410687Z NextUpdate 2026-11-26T19:00:05.492170366Z
+2. DB past its NextUpdate and downloaded 2 h ago (the run-2 situation) -> Trivy re-downloads inside the scan: 57.1 s (rc=0)
+{'HIGH': 54, 'LOW': 77, 'MEDIUM': 76, 'UNKNOWN': 18}
+DownloadedAt 2026-11-25T21:31:06.674743168Z NextUpdate 2026-11-26T19:00:05.492170366Z
+3. DB current, normal scan (Trivy checks metadata, no download): 1.9 s (rc=0)
+{'HIGH': 54, 'LOW': 77, 'MEDIUM': 76, 'UNKNOWN': 18}
+
+## AFTER (warmer + --skip-db-update while the DB is < 48 h old)
+4. warmer run (background, at backend start / every 6 h) on a DB past its NextUpdate, downloaded 2 h ago: 40.9 s (rc=0)
+DownloadedAt 2026-11-25T21:31:50.45420938Z NextUpdate 2026-11-26T19:00:05.492170366Z
+5. warmer run again on a current DB (no-op cost): 1.6 s (rc=0)
+6.1 scan with --skip-db-update: 2.0 s (rc=0)
+{'HIGH': 54, 'LOW': 77, 'MEDIUM': 76, 'UNKNOWN': 18}
+6.2 scan with --skip-db-update: 1.7 s (rc=0)
+{'HIGH': 54, 'LOW': 77, 'MEDIUM': 76, 'UNKNOWN': 18}
+6.3 scan with --skip-db-update: 1.8 s (rc=0)
+{'HIGH': 54, 'LOW': 77, 'MEDIUM': 76, 'UNKNOWN': 18}
+
+7. decision made by services/trivyDb.js for this cache:
+{"status":{"fresh":true,"reason":"fresh","downloadedAt":"2026-11-25T21:31:50.45420938Z","ageHours":0.002097777777777778},"args":["--cache-dir","~/snap/trivy/common/cs-trivy-measure-20261126b","--skip-db-update"]}

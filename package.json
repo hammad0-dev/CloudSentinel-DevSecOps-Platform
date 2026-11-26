@@ -9,7 +9,9 @@
     "dev": "concurrently -k -n backend,frontend -c cyan,magenta \"npm run dev -w cloudsentinel-backend\" \"npm run dev -w cloudsentinel-frontend\"",
     "dev:backend": "npm run dev -w cloudsentinel-backend",
     "dev:frontend": "npm run dev -w cloudsentinel-frontend",
-    "build": "npm run build -w cloudsentinel-frontend"
+    "build": "npm run build -w cloudsentinel-frontend",
+    "test:backend": "node --test backend/test/*.test.js",
+    "test:frontend:unit": "node --test frontend/src/utils/*.test.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

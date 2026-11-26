@@ -1,0 +1,24 @@
+# kubectl --context minikube -n cloudsentinel-p-28, 2026-11-26 02:52:21 (after executions 118 and 119)
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS       IMAGES                                                      SELECTOR
+deployment.apps/e2e-node-clean   1/1     1            1           2m30s   e2e-node-clean   cloudsentinel-p28:run-119-attempt-1-mwwnrj4f-9268420f994b   app=e2e-node-clean
+
+NAME                                        DESIRED   CURRENT   READY   AGE     CONTAINERS       IMAGES                                                      SELECTOR
+replicaset.apps/e2e-node-clean-6777cc76dd   0         0         0       42s     e2e-node-clean   cloudsentinel-p28:run-119-attempt-1-mwwnrj4f-9268420f994b   app=e2e-node-clean,pod-template-hash=6777cc76dd
+replicaset.apps/e2e-node-clean-67fb8d7655   0         0         0       2m29s   e2e-node-clean   cloudsentinel-p28:run-118-attempt-1-mwwnoy1x-836af5da83a8   app=e2e-node-clean,pod-template-hash=67fb8d7655
+replicaset.apps/e2e-node-clean-78f497dc75   0         0         0       2m30s   e2e-node-clean   cloudsentinel-p28:run-118-attempt-1-mwwnoy1x-836af5da83a8   app=e2e-node-clean,pod-template-hash=78f497dc75
+replicaset.apps/e2e-node-clean-7c5d7f569c   1         1         1       40s     e2e-node-clean   cloudsentinel-p28:run-119-attempt-1-mwwnrj4f-9268420f994b   app=e2e-node-clean,pod-template-hash=7c5d7f569c
+
+NAME                                  READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+pod/e2e-node-clean-7c5d7f569c-9dk9r   1/1     Running   0          40s   10.244.0.77   minikube   <none>           <none>
+
+NAME                     TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE     SELECTOR
+service/e2e-node-clean   NodePort   10.111.191.172   <none>        80:30792/TCP   2m30s   app=e2e-node-clean
+
+e2e-node-clean-7c5d7f569c-9dk9r image=cloudsentinel-p28:run-119-attempt-1-mwwnrj4f-9268420f994b hash=7c5d7f569c runAsUser=1000 readOnlyRootFS=true restarts=0
+
+# HTTP checks of the staging URL
+/ -> {"status":"ok","service":"node-clean"} [200]
+/health -> {"status":"healthy"} [200]
+/api/items?limit=2 -> {"items":[{"id":1,"name":"alpha"},{"id":2,"name":"beta"}]} [200]
+/nope -> {"error":"not found"} [404]
+headers: X-Content-Type-Options: nosniff X-Frame-Options: DENY Content-Security-Policy: default-src 'none'; frame-ancestors 'none' 

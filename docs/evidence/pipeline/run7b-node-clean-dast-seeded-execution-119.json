@@ -1,0 +1,546 @@
+{
+ "execution": {
+  "id": 119,
+  "project_id": 28,
+  "status": "COMPLETED",
+  "triggered_by": "webhook",
+  "stages_completed": "SAST, Dependency, IaC, Deploy, DAST",
+  "failure_reason": null,
+  "started_at": "2026-11-25T21:50:52.246Z",
+  "completed_at": "2026-11-25T21:52:00.872Z",
+  "promote_result": null,
+  "totalSeconds": 68.6
+ },
+ "stages": [
+  {
+   "stage": "SAST",
+   "status": "COMPLETED",
+   "start": "2026-11-25T21:50:52.369Z",
+   "end": "2026-11-25T21:51:05.183Z",
+   "seconds": 12.8
+  },
+  {
+   "stage": "Dependency",
+   "status": "COMPLETED",
+   "start": "2026-11-25T21:51:05.273Z",
+   "end": "2026-11-25T21:51:10.490Z",
+   "seconds": 5.2
+  },
+  {
+   "stage": "IaC",
+   "status": "COMPLETED",
+   "start": "2026-11-25T21:51:10.552Z",
+   "end": "2026-11-25T21:51:17.385Z",
+   "seconds": 6.8
+  },
+  {
+   "stage": "Deploy (build+image scan+apply+rollout)",
+   "status": "SUCCESS",
+   "start": "2026-11-25T21:51:17.385Z",
+   "end": "2026-11-25T21:51:56.690Z",
+   "seconds": 39.3
+  },
+  {
+   "stage": "  of which image scan",
+   "status": "COMPLETED",
+   "start": "2026-11-25T21:51:22.342Z",
+   "end": "2026-11-25T21:51:24.167Z",
+   "seconds": 1.8
+  },
+  {
+   "stage": "DAST",
+   "status": "COMPLETED",
+   "start": "2026-11-25T21:51:56.747Z",
+   "end": "2026-11-25T21:52:00.852Z",
+   "seconds": 4.1
+  }
+ ],
+ "sast": [
+  {
+   "id": 153,
+   "status": "COMPLETED",
+   "total_issues": 0,
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "started_at": "2026-11-25T21:50:52.369Z",
+   "completed_at": "2026-11-25T21:51:05.183Z",
+   "scan_engine": "ml",
+   "tool_provenance": {
+    "tool": "ml-sast-v3-ensemble 3.0.0 sha256:f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+    "files": 1,
+    "model": {
+     "name": "ml-sast-v3-ensemble",
+     "sha256": "f28cc42baae8fcd8473c9603a0ac4a112bfede4c24969c8d03ed0f2ad30c954f",
+     "status": "trained",
+     "metrics": {
+      "development": {
+       "R2": {
+        "ci95": [
+         0.4634638881167124,
+         0.6638272455672704
+        ],
+        "recall": 0.75,
+        "macro_f1": 0.5707284854382113,
+        "precision": 0.5753424657534246
+       },
+       "v2": {
+        "ci95": [
+         0.5492275798916452,
+         0.7371064115933221
+        ],
+        "recall": 0.875,
+        "macro_f1": 0.6420931356894471,
+        "precision": 0.5212765957446809
+       }
+      }
+     },
+     "version": "3.0.0",
+     "trainedOn": {
+      "data": "data/processed_v3 train+val",
+      "rows": 9313
+     }
+    },
+    "engine": "ml",
+    "service": "http://127.0.0.1:8001",
+    "inputSha256": "83dce5c2f9f2f9cfe264d1c1d9145542e0ab5fdeb678c2b331c0c2cee0d22a6d",
+    "skippedFiles": 0
+   }
+  }
+ ],
+ "sastFindings": [],
+ "dependency": [
+  {
+   "id": 80,
+   "status": "COMPLETED",
+   "target_type": "fs",
+   "total_packages": 65,
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "unknown": 65,
+   "started_at": "2026-11-25T21:51:05.273Z",
+   "completed_at": "2026-11-25T21:51:10.490Z"
+  }
+ ],
+ "iac": [
+  {
+   "id": 77,
+   "status": "COMPLETED",
+   "total_findings": 0,
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "unknown": 0,
+   "started_at": "2026-11-25T21:51:10.552Z",
+   "completed_at": "2026-11-25T21:51:17.385Z"
+  }
+ ],
+ "image": [
+  {
+   "id": 46,
+   "deployment_attempt": 1,
+   "image_tag": "cloudsentinel-p28:run-119-attempt-1-mwwnrj4f-9268420f994b",
+   "status": "COMPLETED",
+   "total_vulnerabilities": 11,
+   "critical": 0,
+   "high": 0,
+   "medium": 7,
+   "low": 4,
+   "unknown": 0,
+   "failure_reason": null,
+   "started_at": "2026-11-25T21:51:22.342Z",
+   "completed_at": "2026-11-25T21:51:24.167Z"
+  }
+ ],
+ "deployment": [
+  {
+   "id": 61,
+   "status": "SUCCESS",
+   "deployed_at": "2026-11-25T21:51:56.690Z",
+   "staging_url": "http://192.168.49.2:30792",
+   "dockerfile_source": "existing",
+   "manifest_source": "generated",
+   "app_name": "e2e-node-clean",
+   "image_tag": "cloudsentinel-p28:run-119-attempt-1-mwwnrj4f-9268420f994b",
+   "failure_reason": null,
+   "deployment_attempt": 1,
+   "policy_validation": {
+    "engine": "kubectl apply --dry-run=server",
+    "output": "deployment.apps/e2e-node-clean configured (server dry run)\nservice/e2e-node-clean unchanged (server dry run)",
+    "passed": true,
+    "checkedAt": "2026-11-25T21:51:38.875Z",
+    "namespace": "cloudsentinel-p-28",
+    "violations": []
+   }
+  }
+ ],
+ "dast": [
+  {
+   "id": 50,
+   "target_url": "http://192.168.49.2:30792",
+   "status": "COMPLETED",
+   "total_findings": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "informational": 0,
+   "started_at": "2026-11-25T21:51:56.747Z",
+   "completed_at": "2026-11-25T21:52:00.852Z",
+   "scan_mode": "BASELINE",
+   "policy_name": "ml-dast-lr",
+   "policy_version": "4.0.0",
+   "failure_reason": null,
+   "scan_engine": "ml",
+   "tool_provenance": {
+    "tool": "ml-dast-lr 4.0.0 sha256:7a306aca5b07cf0360fe41e4bfbe517d56de24b669f89545d91a3461ee867322",
+    "model": {
+     "name": "ml-dast-lr",
+     "sha256": "7a306aca5b07cf0360fe41e4bfbe517d56de24b669f89545d91a3461ee867322",
+     "status": "trained",
+     "metrics": {
+      "leave_one_app_out": {
+       "own": {
+        "binary": {
+         "recall": 0.9166666666666666,
+         "precision": 0.8918918918918919
+        },
+        "macro_f1": 0.9193092219600095,
+        "per_class": {
+         "safe": {
+          "f1": 0.9489051094890512,
+          "fn": 4,
+          "fp": 3,
+          "tp": 65,
+          "recall": 0.9420289855072463,
+          "support": 69,
+          "precision": 0.9558823529411765
+         },
+         "CWE-79": {
+          "f1": 0.9142857142857143,
+          "fn": 0,
+          "fp": 3,
+          "tp": 16,
+          "recall": 1,
+          "support": 16,
+          "precision": 0.8421052631578947
+         },
+         "CWE-89": {
+          "f1": 0.8947368421052632,
+          "fn": 3,
+          "fp": 1,
+          "tp": 17,
+          "recall": 0.85,
+          "support": 20,
+          "precision": 0.9444444444444444
+         }
+        }
+       },
+       "real": {
+        "binary": {
+         "recall": 0.9242424242424242,
+         "precision": 0.9242424242424242
+        },
+        "macro_f1": 0.932995961194773,
+        "per_class": {
+         "safe": {
+          "f1": 0.9514563106796117,
+          "fn": 5,
+          "fp": 5,
+          "tp": 98,
+          "recall": 0.9514563106796117,
+          "support": 103,
+          "precision": 0.9514563106796117
+         },
+         "CWE-79": {
+          "f1": 0.955223880597015,
+          "fn": 0,
+          "fp": 3,
+          "tp": 32,
+          "recall": 1,
+          "support": 32,
+          "precision": 0.9142857142857143
+         },
+         "CWE-89": {
+          "f1": 0.8923076923076922,
+          "fn": 5,
+          "fp": 2,
+          "tp": 29,
+          "recall": 0.8529411764705882,
+          "support": 34,
+          "precision": 0.9354838709677419
+         }
+        }
+       },
+       "benchmark": {
+        "binary": {
+         "recall": 1,
+         "precision": 1
+        },
+        "macro_f1": 1,
+        "per_class": {
+         "safe": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 56,
+          "recall": 1,
+          "support": 56,
+          "precision": 1
+         },
+         "CWE-79": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 21,
+          "recall": 1,
+          "support": 21,
+          "precision": 1
+         },
+         "CWE-89": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 3,
+          "recall": 1,
+          "support": 3,
+          "precision": 1
+         }
+        }
+       },
+       "third-party": {
+        "binary": {
+         "recall": 0.9333333333333333,
+         "precision": 0.9655172413793104
+        },
+        "macro_f1": 0.9484702093397747,
+        "per_class": {
+         "safe": {
+          "f1": 0.9565217391304348,
+          "fn": 1,
+          "fp": 2,
+          "tp": 33,
+          "recall": 0.9705882352941176,
+          "support": 34,
+          "precision": 0.9428571428571428
+         },
+         "CWE-79": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 16,
+          "recall": 1,
+          "support": 16,
+          "precision": 1
+         },
+         "CWE-89": {
+          "f1": 0.888888888888889,
+          "fn": 2,
+          "fp": 1,
+          "tp": 12,
+          "recall": 0.8571428571428571,
+          "support": 14,
+          "precision": 0.9230769230769231
+         }
+        }
+       }
+      },
+      "leave_one_app_out_bootstrap": {
+       "own": {
+        "ci95": [
+         0.8544750695845492,
+         0.96953655605367
+        ],
+        "mean": 0.9164508107334587
+       },
+       "real": {
+        "ci95": [
+         0.8874916424145439,
+         0.9692494599119863
+        ],
+        "mean": 0.9334913844276852
+       },
+       "benchmark": {
+        "ci95": [
+         1,
+         1
+        ],
+        "mean": 1
+       },
+       "third-party": {
+        "ci95": [
+         0.8813846526264827,
+         1
+        ],
+        "mean": 0.9484849042759503
+       }
+      },
+      "final_heldout_dvpwa_single_run": {
+       "v4": {
+        "ci95": [
+         1,
+         1
+        ],
+        "macro_f1": 1,
+        "per_class": {
+         "CWE-79": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 1,
+          "recall": 1,
+          "support": 1,
+          "precision": 1
+         },
+         "CWE-89": {
+          "f1": 0,
+          "fn": 0,
+          "fp": 0,
+          "tp": 0,
+          "recall": 0,
+          "support": 0,
+          "precision": 0
+         }
+        },
+        "per_class_f1_ci95": {
+         "CWE-79": [
+          0,
+          1
+         ],
+         "CWE-89": [
+          0,
+          0
+         ]
+        }
+       },
+       "note": "uninformative: the unauthenticated crawl reached 8 of 17 labelled parameters (1 vulnerable)",
+       "n_clusters": 8,
+       "v2_same_records": {
+        "ci95": [
+         1,
+         1
+        ],
+        "macro_f1": 1,
+        "per_class": {
+         "CWE-79": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 1,
+          "recall": 1,
+          "support": 1,
+          "precision": 1
+         },
+         "CWE-89": {
+          "f1": 0,
+          "fn": 0,
+          "fp": 0,
+          "tp": 0,
+          "recall": 0,
+          "support": 0,
+          "precision": 0
+         }
+        },
+        "per_class_f1_ci95": {
+         "CWE-79": [
+          0,
+          1
+         ],
+         "CWE-89": [
+          0,
+          0
+         ]
+        }
+       },
+       "v3_same_records": {
+        "ci95": [
+         1,
+         1
+        ],
+        "macro_f1": 1,
+        "per_class": {
+         "CWE-79": {
+          "f1": 1,
+          "fn": 0,
+          "fp": 0,
+          "tp": 1,
+          "recall": 1,
+          "support": 1,
+          "precision": 1
+         },
+         "CWE-89": {
+          "f1": 0,
+          "fn": 0,
+          "fp": 0,
+          "tp": 0,
+          "recall": 0,
+          "support": 0,
+          "precision": 0
+         }
+        },
+        "per_class_f1_ci95": {
+         "CWE-79": [
+          0,
+          1
+         ],
+         "CWE-89": [
+          0,
+          0
+         ]
+        }
+       }
+      }
+     },
+     "version": "4.0.0",
+     "trainedOn": {
+      "apps": [
+       "benchmark",
+       "dsvw",
+       "juice-shop",
+       "labexpress",
+       "labfastapi",
+       "labflask",
+       "node-api-goat",
+       "nodegoat",
+       "vampi",
+       "vulnerable-node",
+       "vulpy"
+      ],
+      "rows": 13402,
+      "rows_by_label": {
+       "safe": 11120,
+       "CWE-79": 1024,
+       "CWE-89": 1258
+      },
+      "rows_by_origin": {
+       "own": 5250,
+       "benchmark": 4000,
+       "third-party": 4152
+      },
+      "inner_loao_macro_f1_real": 0.932995961194773
+     }
+    },
+    "engine": "ml",
+    "service": "http://127.0.0.1:8002",
+    "coverage": {
+     "forms": 0,
+     "pages": 2,
+     "stopped": null,
+     "requests": 79,
+     "points_found": 1,
+     "points_probed": 1,
+     "stored_xss_fields_written": 0
+    },
+    "maxPages": 50,
+    "seedPaths": [
+     "/api/items?limit=2"
+    ],
+    "maxRequests": 500
+   }
+  }
+ ],
+ "dastFindings": []
+}

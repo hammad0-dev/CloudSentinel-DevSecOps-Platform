@@ -20,11 +20,14 @@ function setup(overrides = {}) {
   const { deployProject: rawDeployProject } = require(deploymentPath);
   const deployProject = (projectId, userId, options = {}) => rawDeployProject(projectId, userId, { now:1700000000000, nonce:"abcdef123456", ...options });
   const podSpec = {automountServiceAccountToken:false,securityContext:{runAsNonRoot:true,runAsUser:10001,runAsGroup:10001,seccompProfile:{type:"RuntimeDefault"}},containers:[{name:"demo",image:"cloudsentinel-p4:manual-attempt-1-loyw3v28-abcdef123456",securityContext:{privileged:false,allowPrivilegeEscalation:false,readOnlyRootFilesystem:true,capabilities:{drop:["ALL"]}}}]};
-  const deploymentObject = {kind:"Deployment",metadata:{name:"demo",namespace:"cloudsentinel-p-4",generation:2},spec:{replicas:1,template:{spec:podSpec}},status:{observedGeneration:2,updatedReplicas:1,readyReplicas:1,availableReplicas:1,unavailableReplicas:0}};
+  const deploymentObject = {kind:"Deployment",metadata:{name:"demo",namespace:"cloudsentinel-p-4",generation:2,uid:"dep-uid-1",annotations:{"deployment.kubernetes.io/revision":"3"}},spec:{replicas:1,template:{spec:podSpec}},status:{observedGeneration:2,updatedReplicas:1,readyReplicas:1,availableReplicas:1,unavailableReplicas:0}};
   const healthy = JSON.stringify(deploymentObject);
   const service = JSON.stringify({metadata:{name:"demo",namespace:"cloudsentinel-p-4"},spec:{type:"NodePort",ports:[{nodePort:30123}]}});
   const namespaceObject = JSON.stringify({metadata:{name:"cloudsentinel-p-4",labels:{"app.kubernetes.io/managed-by":"cloudsentinel","cloudsentinel.io/project-id":"4"}}});
-  const baseRunCmd = async label => label === "git source commit" ? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" : label === "docker image inspect" ? "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" : label === "trivy image scan" ? JSON.stringify({Results:[]}) : label === "kubectl get deployed pods" ? JSON.stringify({items:[{spec:{containers:[{name:"demo",image:"cloudsentinel-p4:manual-attempt-1-loyw3v28-abcdef123456"}]},status:{phase:"Running",containerStatuses:[{name:"demo",ready:true,imageID:"docker://sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]}}]}) : label === "kubectl get namespace" ? namespaceObject : label === "kubectl security dry-run" ? JSON.stringify({kind:"List",items:[deploymentObject]}) : label === "kubectl get deployment" ? healthy : label === "kubectl get service" ? service : label === "minikube ip" ? "192.168.49.2" : "ok";
+  const REPLICASETS = JSON.stringify({items:[
+    {metadata:{name:"demo-oldhash5",labels:{app:"demo","pod-template-hash":"oldhash5"},annotations:{"deployment.kubernetes.io/revision":"2"},ownerReferences:[{kind:"Deployment",uid:"dep-uid-1"}]}},
+    {metadata:{name:"demo-newhash7",labels:{app:"demo","pod-template-hash":"newhash7"},annotations:{"deployment.kubernetes.io/revision":"3"},ownerReferences:[{kind:"Deployment",uid:"dep-uid-1"}]}}]});
+  const baseRunCmd = async label => label === "git source commit" ? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" : label === "docker image inspect" ? "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" : label === "trivy image scan" ? JSON.stringify({Results:[]}) : label === "kubectl get replicasets" ? REPLICASETS : label === "kubectl get deployed pods" ? JSON.stringify({items:[{metadata:{labels:{app:"demo","pod-template-hash":"newhash7"}},spec:{containers:[{name:"demo",image:"cloudsentinel-p4:manual-attempt-1-loyw3v28-abcdef123456"}]},status:{phase:"Running",containerStatuses:[{name:"demo",ready:true,imageID:"docker://sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]}}]}) : label === "kubectl get namespace" ? namespaceObject : label === "kubectl security dry-run" ? JSON.stringify({kind:"List",items:[deploymentObject]}) : label === "kubectl get deployment" ? healthy : label === "kubectl get service" ? service : label === "minikube ip" ? "192.168.49.2" : "ok";
   const runCmd = async (...args) => { if (overrides.runCmd) { const value = await overrides.runCmd(...args); if (value !== undefined) return value; } return baseRunCmd(...args); };
   return {deployProject,queries,runCmd,deploymentObject};
 }
@@ -209,4 +212,49 @@ test("generated HTML Dockerfile pins patched nginx Alpine while retaining non-ro
   assert.match(dockerfile, /EXPOSE 8080/);
   assert.match(dockerfile, /USER 10001:10001/);
   assert.match(dockerfile, /listen 8080/);
+});
+
+// Rolling update (observed in the e2e run, execution 117): the old ReplicaSet's pod is still Running and ready while
+// it terminates. Only pods of the deployment's current ReplicaSet may be checked.
+// loaded lazily: requiring deployment.js at file load would cache it with the real db before setup() mocks it
+const currentPodTemplateHash = (...a) => require(deploymentPath).currentPodTemplateHash(...a);
+const selectCurrentPod = (...a) => require(deploymentPath).selectCurrentPod(...a);
+const IMG = "cloudsentinel-p4:run-2-attempt-1-new";
+const pod = (hash, image, extra = {}) => ({ metadata: { labels: { app: "demo", "pod-template-hash": hash }, ...extra }, spec: { containers: [{ name: "demo", image }] }, status: { phase: "Running", containerStatuses: [{ name: "demo", ready: true, imageID: "docker://sha256:x" }] } });
+const dep = { metadata: { uid: "u1", annotations: { "deployment.kubernetes.io/revision": "8" } } };
+const rs = (hash, rev, uid = "u1") => ({ metadata: { labels: { "pod-template-hash": hash }, annotations: { "deployment.kubernetes.io/revision": rev }, ownerReferences: [{ kind: "Deployment", uid }] } });
+
+test("rolling update: the current ReplicaSet's hash is chosen, not the old one", () => {
+  assert.equal(currentPodTemplateHash(dep, { items: [rs("old111", "7"), rs("new222", "8"), rs("other3", "8", "someone-else")] }, "demo"), "new222");
+});
+
+test("rolling update: a terminating old pod listed first is never selected", () => {
+  const old = pod("old111", "cloudsentinel-p4:run-1-attempt-1-old", { deletionTimestamp: "2026-11-25T21:01:00Z" });
+  const fresh = pod("new222", IMG);
+  assert.equal(selectCurrentPod({ items: [old, fresh] }, "demo", "new222", IMG), fresh);
+  // same hash but being deleted: ignored, so with nothing else ready the check fails closed
+  assert.throws(() => selectCurrentPod({ items: [pod("new222", IMG, { deletionTimestamp: "x" })] }, "demo", "new222", IMG), /No ready pod/);
+});
+
+test("every ready current pod must run the expected image; no unique current ReplicaSet fails closed", () => {
+  assert.throws(() => selectCurrentPod({ items: [pod("new222", IMG), pod("new222", "cloudsentinel-p4:stale")] }, "demo", "new222", IMG), /does not reference expected image/);
+  assert.throws(() => currentPodTemplateHash(dep, { items: [rs("old111", "7")] }, "demo"), /no unique current ReplicaSet/);
+  assert.throws(() => currentPodTemplateHash({ metadata: { uid: "u1" } }, { items: [] }, "demo"), /no current revision/);
+});
+
+test("deploy selects pods by the current pod-template-hash during a rolling update", async () => {
+  const calls = [];
+  const c = setup({ runCmd: async (label, command, args) => {
+    calls.push({ label, args });
+    // a selector-ignoring API answer: old terminating pod first, new pod second
+    if (label === "kubectl get deployed pods") return JSON.stringify({ items: [
+      { metadata: { labels: { app: "demo", "pod-template-hash": "oldhash5" }, deletionTimestamp: "2026-11-25T21:01:00Z" }, spec: { containers: [{ name: "demo", image: "cloudsentinel-p4:old" }] }, status: { phase: "Running", containerStatuses: [{ name: "demo", ready: true, imageID: "docker://sha256:old" }] } },
+      { metadata: { labels: { app: "demo", "pod-template-hash": "newhash7" } }, spec: { containers: [{ name: "demo", image: "cloudsentinel-p4:manual-attempt-1-loyw3v28-abcdef123456" }] }, status: { phase: "Running", containerStatuses: [{ name: "demo", ready: true, imageID: "docker://sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }] } }] });
+    return undefined;
+  } });
+  const r = await c.deployProject(4, 9, { runCmd: c.runCmd });
+  assert.equal(r.stagingUrl, "http://192.168.49.2:30123");
+  const podsCall = calls.find(x => x.label === "kubectl get deployed pods");
+  assert.ok(podsCall.args.includes("app=demo,pod-template-hash=newhash7"), podsCall.args.join(" "));
+  assert.equal(history(c.queries, "SUCCESS").length, 1);
 });

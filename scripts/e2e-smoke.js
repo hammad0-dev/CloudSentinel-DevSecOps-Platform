@@ -9,11 +9,12 @@
 //   E2E_PYTHON_REPO           GitHub URL of the Python fixture repo
 //   E2E_NODE_REPO             GitHub URL of the Node fixture repo
 //   E2E_PYTHON_CLEAN_REPO     GitHub URL of the clean Python fixture repo
+//   E2E_NODE_CLEAN_REPO       GitHub URL of the clean Node fixture repo (test-fixtures/cloudsentinel-test-node-clean)
 //   E2E_DEMO_FORMS_REPO       GitHub URL of the DAST demo app (default: the public mirror of
 //                             demo/forms-app, https://github.com/hammad0-dev/cloudsentinel-demo-forms)
 //   E2E_GITHUB_TOKEN          optional, for private fixture repos
 //   E2E_TIMEOUT_MIN           per-app timeout in minutes (default 45)
-// Usage: node scripts/e2e-smoke.js [python|node|python-clean|demo-forms ...]
+// Usage: node scripts/e2e-smoke.js [python|node|python-clean|node-clean|demo-forms ...]
 "use strict";
 const path = require("path");
 const crypto = require("crypto");
@@ -29,6 +30,7 @@ const APPS = {
   python: { name: "e2e-python-flask", repo: process.env.E2E_PYTHON_REPO },
   node: { name: "e2e-node-express", repo: process.env.E2E_NODE_REPO },
   "python-clean": { name: "e2e-python-clean", repo: process.env.E2E_PYTHON_CLEAN_REPO },
+  "node-clean": { name: "e2e-node-clean", repo: process.env.E2E_NODE_CLEAN_REPO },
   "demo-forms": { name: "e2e-demo-forms", repo: process.env.E2E_DEMO_FORMS_REPO || "https://github.com/hammad0-dev/cloudsentinel-demo-forms" },
 };
 const DONE = ["COMPLETED", "STAGE_FAILED", "ERROR", "NOT_ADMITTED"];
@@ -45,7 +47,7 @@ async function login() {
 }
 
 async function ensureProject(auth, app) {
-  if (!app.repo) fail(`missing repo URL for ${app.name} (E2E_PYTHON_REPO / E2E_NODE_REPO / E2E_PYTHON_CLEAN_REPO)`);
+  if (!app.repo) fail(`missing repo URL for ${app.name} (E2E_PYTHON_REPO / E2E_NODE_REPO / E2E_PYTHON_CLEAN_REPO / E2E_NODE_CLEAN_REPO)`);
   const found = await pool.query("SELECT id FROM projects WHERE user_id=$1 AND name=$2 AND repo_url=$3 ORDER BY id DESC LIMIT 1", [auth.userId, app.name, app.repo]);
   if (found.rows.length) return found.rows[0].id;
   const r = await axios.post(`${API}/api/projects`, { name: app.name, repoUrl: app.repo, githubToken: process.env.E2E_GITHUB_TOKEN }, { headers: { Authorization: `Bearer ${auth.token}` } });
