@@ -129,6 +129,27 @@ class WorkloadInfrastructure {
     if (id.code !== 0 || account !== W.ACCOUNT) throw fail('AWS identity is not account 229032674007');
     return secrets;
   }
+  // The workload root reads the shared aws-demo cluster (data "aws_eks_cluster" "shared", its OIDC provider,
+  // subnets and node security group), so a plan cannot succeed without it. Checked before fmt/Trivy/init so a
+  // missing cluster is a clear 409 in seconds instead of "Terraform plan failed" after ~85 s.
+  // eks:ListClusters first (dev policy); eks:DescribeCluster (already required by the plan) as the fallback.
+  async sharedCluster(env, cwd) {
+    const notRunning = () => fail('The shared EKS environment is not running; create it first', 409);
+    const name = this.clusterName;
+    let listed = null;
+    const list = await this.run(TOOLS.aws, ['eks', 'list-clusters', '--output', 'json'], { env, cwd, timeout: 20000 });
+    if (list.code === 0) { try { const c = JSON.parse(list.stdout).clusters; if (Array.isArray(c)) listed = c.includes(name); } catch { /* fall back */ } }
+    if (listed === false) throw notRunning();
+    const d = await this.run(TOOLS.aws, ['eks', 'describe-cluster', '--name', name, '--output', 'json'], { env, cwd, timeout: 20000 });
+    if (d.code === 0) {
+      let status = null; try { status = JSON.parse(d.stdout).cluster?.status || null; } catch { /* below */ }
+      if (status === 'ACTIVE') return { name, status };
+      if (status) throw fail(`The shared EKS environment is ${status.toLowerCase()}, not ACTIVE; wait until it is ACTIVE`, 409);
+    } else if (/ResourceNotFoundException|No cluster found/i.test(d.stderr || '')) throw notRunning();
+    if (listed === true) return { name, status: 'LISTED' };
+    throw fail('Could not check whether the shared EKS environment exists (eks:ListClusters / eks:DescribeCluster); nothing planned', 503);
+  }
+
   async step(logs, name, args, { cwd, env, secrets = [], timeout = 300000, exe = TOOLS.terraform, allowCodes = [0] }) {
     const r = await this.run(exe, args, { cwd, env, timeout, limit: 32 * 1024 * 1024 });
     logs.push({ step: name, code: r.code, stdout: name === 'show' || name === 'output' ? '[WITHHELD]' : redact(r.stdout, secrets), stderr: redact(r.stderr, secrets) });
@@ -159,6 +180,9 @@ class WorkloadInfrastructure {
       const env = this.baseEnv(), logs = [];
       let secrets = [];
       try {
+        const checkEnv = this.baseEnv();
+        await this.credentials(checkEnv, root);
+        logs.push({ step: 'shared-cluster', ...(await this.sharedCluster(checkEnv, root).catch(e => { logs.push({ step: 'shared-cluster', error: e.message }); throw e; })) });
         await this.step(logs, 'fmt', ['fmt', '-check', '-recursive', job], { cwd: root, env });
         // IaC scan of the generated folder before init (so .terraform/ is not walked); any CRITICAL finding stops here.
         // --tf-vars is required: without it Trivy cannot expand the for_each/count modules and silently checks nothing.

@@ -234,6 +234,8 @@ function fakeTools(id, calls) {
   return async (exe, args, { cwd }) => {
     calls.push([path.basename(exe), args[0]]);
     if (args[0] === 'configure') return { code: 0, stdout: JSON.stringify({ AccessKeyId: 'test-only-access-key-id', SecretAccessKey: 'test-only', SessionToken: 'test-only-token', Expiration: new Date(Date.now() + 3600e3).toISOString() }), stderr: '' };
+    if (args[0] === 'eks' && args[1] === 'list-clusters') return { code: 0, stdout: JSON.stringify({ clusters: ['cloudsentinel-eks'] }), stderr: '' };
+    if (args[0] === 'eks' && args[1] === 'describe-cluster') return { code: 0, stdout: JSON.stringify({ cluster: { name: 'cloudsentinel-eks', status: 'ACTIVE' } }), stderr: '' };
     if (args[0] === 'sts') return { code: 0, stdout: JSON.stringify({ Account: '229032674007' }), stderr: '' };
     if (args[0] === 'plan') { const out = args.find(a => a.startsWith('-out=')).slice(5); await fs.writeFile(path.join(cwd, out), `plan-${Date.now()}-${args.includes('-destroy')}`); return { code: 0, stdout: '', stderr: '' }; }
     if (args[0] === 'show') {
@@ -363,4 +365,34 @@ test('terraform runs with the AWS profile (refreshable), never with exported sta
     assert.equal(env.AWS_PROFILE, 'cloudsentinel-dev');
     for (const k of ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']) assert.equal(env[k], undefined);
   }
+});
+
+// ---- shared cluster precheck (project 29: "Terraform plan failed" after 85 s because aws-demo was destroyed) ------
+const clusterCase = (list, describe) => async (exe, args, o) => {
+  if (args[0] === 'eks' && args[1] === 'list-clusters') return list;
+  if (args[0] === 'eks' && args[1] === 'describe-cluster') return describe;
+  return fakeTools(42, [])(exe, args, o);
+};
+const ok = v => ({ code: 0, stdout: JSON.stringify(v), stderr: '' });
+const denied = { code: 254, stdout: '', stderr: 'An error occurred (AccessDeniedException) when calling the ListClusters operation' };
+for (const [label, list, describe, expect] of [
+  ['cluster absent from ListClusters', ok({ clusters: [] }), ok({}), { status: 409, msg: /^The shared EKS environment is not running; create it first$/ }],
+  ['ListClusters denied, DescribeCluster not found', denied, { code: 254, stdout: '', stderr: 'An error occurred (ResourceNotFoundException) when calling the DescribeCluster operation: No cluster found for name: cloudsentinel-eks.' }, { status: 409, msg: /not running; create it first/ }],
+  ['cluster still creating', ok({ clusters: ['cloudsentinel-eks'] }), ok({ cluster: { status: 'CREATING' } }), { status: 409, msg: /is creating, not ACTIVE/ }],
+  ['both checks unavailable', denied, { code: 255, stdout: '', stderr: 'Could not connect to the endpoint URL' }, { status: 503, msg: /Could not check whether the shared EKS environment exists/ }],
+]) test(`workload plan precheck: ${label} -> ${expect.status} before any Terraform step`, async t => {
+  const calls = [], e = await engine(t, calls), base = clusterCase(list, describe);
+  e.run = async (exe, args, o) => { calls.push([path.basename(exe), args[0], args[1]]); return base(exe, args, o); };
+  await e.analyze({ id: 42 }, 'u'); await e.confirm({ id: 42 }, 'u', { architecture: 'two-tier' });
+  await assert.rejects(e.plan({ id: 42 }, 'u'), err => err.status === expect.status && expect.msg.test(err.message));
+  assert.deepEqual(calls.filter(c => c[0] === 'terraform' || c[0] === 'trivy'), []);
+  const audit = (await fs.readFile(path.join(e.root, '42', 'audit.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse).pop();
+  assert.equal(audit.action, 'plan'); assert.equal(audit.result, 'REJECTED'); assert.match(audit.error, expect.msg);
+});
+
+test('workload plan precheck: listed cluster with DescribeCluster denied still plans', async t => {
+  const calls = [], e = await engine(t, calls), base = clusterCase(ok({ clusters: ['cloudsentinel-eks'] }), { code: 254, stdout: '', stderr: 'AccessDeniedException' });
+  e.run = async (exe, args, o) => { calls.push([path.basename(exe), args[0]]); return base(exe, args, o); };
+  await e.analyze({ id: 42 }, 'u'); await e.confirm({ id: 42 }, 'u', { architecture: 'two-tier' });
+  assert.equal((await e.plan({ id: 42 }, 'u')).status, 'AWAITING_APPROVAL');
 });
