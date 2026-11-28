@@ -10,11 +10,17 @@ const { generateK8sManifests } = require('../services/deployment');
 
 const FIX = path.resolve(__dirname, '../../test-fixtures');
 const fixture = name => W.localSource(path.join(FIX, name));
+// python-clean ships its own Dockerfile (PR #29); the generator tests use a copy without it.
+const noDockerfile = async name => { const s = await fixture(name); const drop = k => k !== 'Dockerfile';
+  return { ...s, files: Object.fromEntries(Object.entries(s.files).filter(([k]) => drop(k))), code: Object.fromEntries(Object.entries(s.code || {}).filter(([k]) => drop(k))), paths: s.paths.filter(drop) }; };
 const mem = (files, code = {}) => ({ commit: 'c'.repeat(40), files, code, paths: [...Object.keys(files), ...Object.keys(code)] });
 
 // ---- classification per architecture -------------------------------------------------------------------------
 test('one-tier: python-clean is one app component, no database, entrypoint and port detected', async () => {
-  const c = W.classify(await fixture('cloudsentinel-test-python-clean'));
+  const own = W.classify(await fixture('cloudsentinel-test-python-clean'));
+  assert.equal(own.result, 'CONTAINER'); assert.equal(own.components[0].dockerfile, 'repository');
+  assert.deepEqual(own.components[0].entrypoint, { kind: 'repository-dockerfile', nonRootUser: true });
+  const c = W.classify(await noDockerfile('cloudsentinel-test-python-clean'));
   assert.equal(c.result, 'CONTAINER'); assert.equal(c.architecture, 'one-tier'); assert.equal(c.database, null);
   assert.deepEqual(c.components.map(x => x.name), ['app']);
   const app = c.components[0];
@@ -109,7 +115,7 @@ test('generate copies only the fixed templates and writes values only to terrafo
 // ---- Dockerfile and manifests ------------------------------------------------------------------------------
 test('generated Dockerfiles are pinned, non-root and never use latest', async () => {
   for (const name of ['cloudsentinel-test-python-clean', 'cloudsentinel-test-three-tier']) {
-    for (const comp of W.classify(await fixture(name)).components) {
+    for (const comp of W.classify(await noDockerfile(name)).components) {
       const d = W.generateDockerfile(comp);
       assert.match(d, /^USER 10001:10001$/m); assert.doesNotMatch(d, /:latest|USER root/);
       assert.match(d, /^FROM (python:3\.12\.15-slim-bookworm|node:22\.23\.3-alpine)$/m);
