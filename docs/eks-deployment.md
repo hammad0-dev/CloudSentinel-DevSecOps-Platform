@@ -392,7 +392,9 @@ Everything below creates billable AWS resources except the plans. Read `docs/eks
 2. **IAM policies for `cloudsentinel-dev`:** after the shared apply has created the permissions boundary, create
    and attach the two managed policies from `terraform/docs/policies/cloudsentinel-dev-container.json` and
    `terraform/docs/policies/cloudsentinel-dev-container-guardrails.json` in the IAM console. Keep the live policies
-   equal to the repository copies.
+   equal to the repository copies. The dev policy includes `eks:ListClusters` (region-scoped, `Resource: "*"`, because the action has no
+   resource-level permissions): the workload plan uses it to check that the shared cluster exists before running
+   Terraform. Until the live policy is updated, the check falls back to `eks:DescribeCluster`.
 3. **Alert address:** put it in `~/.config/cloudsentinel/alert-email` (mode 600, outside the repo) or export
    `TF_VAR_alert_email`. Never commit it.
 4. **SNS confirmation:** after the shared apply, click the confirmation link in the email. Without it, alarms send

@@ -97,8 +97,16 @@ function create({ db = pool, logs = loki.queryLogs, bus = alerts.alertBus } = {}
       const scope = await projectScope(db, req.user);
       const { q, from, to, limit } = req.query;
       let source = req.query.source || undefined;
-      if (scope && !source) source = "backend";
-      const result = await logs({ source, q, from, to, limit, projectIds: scope });
+      // Optional project selector (Monitoring page): narrows to one of the caller's projects.
+      let projectIds = scope;
+      if (req.query.projectId !== undefined && req.query.projectId !== "") {
+        const id = Number(req.query.projectId);
+        if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: "Invalid projectId" });
+        if (scope && !scope.includes(id)) return res.status(404).json({ error: "Project not found" });
+        projectIds = [id];
+      }
+      if (projectIds && !source) source = "backend";
+      const result = await logs({ source, q, from, to, limit, projectIds });
       res.json(result);
     } catch (err) {
       if (err.status === 400 || err.status === 503) return res.status(err.status).json({ error: err.message });

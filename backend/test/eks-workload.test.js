@@ -10,11 +10,17 @@ const { generateK8sManifests } = require('../services/deployment');
 
 const FIX = path.resolve(__dirname, '../../test-fixtures');
 const fixture = name => W.localSource(path.join(FIX, name));
+// python-clean ships its own Dockerfile (PR #29); the generator tests use a copy without it.
+const noDockerfile = async name => { const s = await fixture(name); const drop = k => k !== 'Dockerfile';
+  return { ...s, files: Object.fromEntries(Object.entries(s.files).filter(([k]) => drop(k))), code: Object.fromEntries(Object.entries(s.code || {}).filter(([k]) => drop(k))), paths: s.paths.filter(drop) }; };
 const mem = (files, code = {}) => ({ commit: 'c'.repeat(40), files, code, paths: [...Object.keys(files), ...Object.keys(code)] });
 
 // ---- classification per architecture -------------------------------------------------------------------------
 test('one-tier: python-clean is one app component, no database, entrypoint and port detected', async () => {
-  const c = W.classify(await fixture('cloudsentinel-test-python-clean'));
+  const own = W.classify(await fixture('cloudsentinel-test-python-clean'));
+  assert.equal(own.result, 'CONTAINER'); assert.equal(own.components[0].dockerfile, 'repository');
+  assert.deepEqual(own.components[0].entrypoint, { kind: 'repository-dockerfile', nonRootUser: true });
+  const c = W.classify(await noDockerfile('cloudsentinel-test-python-clean'));
   assert.equal(c.result, 'CONTAINER'); assert.equal(c.architecture, 'one-tier'); assert.equal(c.database, null);
   assert.deepEqual(c.components.map(x => x.name), ['app']);
   const app = c.components[0];
@@ -109,7 +115,7 @@ test('generate copies only the fixed templates and writes values only to terrafo
 // ---- Dockerfile and manifests ------------------------------------------------------------------------------
 test('generated Dockerfiles are pinned, non-root and never use latest', async () => {
   for (const name of ['cloudsentinel-test-python-clean', 'cloudsentinel-test-three-tier']) {
-    for (const comp of W.classify(await fixture(name)).components) {
+    for (const comp of W.classify(await noDockerfile(name)).components) {
       const d = W.generateDockerfile(comp);
       assert.match(d, /^USER 10001:10001$/m); assert.doesNotMatch(d, /:latest|USER root/);
       assert.match(d, /^FROM (python:3\.12\.15-slim-bookworm|node:22\.23\.3-alpine)$/m);
@@ -228,6 +234,8 @@ function fakeTools(id, calls) {
   return async (exe, args, { cwd }) => {
     calls.push([path.basename(exe), args[0]]);
     if (args[0] === 'configure') return { code: 0, stdout: JSON.stringify({ AccessKeyId: 'test-only-access-key-id', SecretAccessKey: 'test-only', SessionToken: 'test-only-token', Expiration: new Date(Date.now() + 3600e3).toISOString() }), stderr: '' };
+    if (args[0] === 'eks' && args[1] === 'list-clusters') return { code: 0, stdout: JSON.stringify({ clusters: ['cloudsentinel-eks'] }), stderr: '' };
+    if (args[0] === 'eks' && args[1] === 'describe-cluster') return { code: 0, stdout: JSON.stringify({ cluster: { name: 'cloudsentinel-eks', status: 'ACTIVE' } }), stderr: '' };
     if (args[0] === 'sts') return { code: 0, stdout: JSON.stringify({ Account: '229032674007' }), stderr: '' };
     if (args[0] === 'plan') { const out = args.find(a => a.startsWith('-out=')).slice(5); await fs.writeFile(path.join(cwd, out), `plan-${Date.now()}-${args.includes('-destroy')}`); return { code: 0, stdout: '', stderr: '' }; }
     if (args[0] === 'show') {
@@ -357,4 +365,34 @@ test('terraform runs with the AWS profile (refreshable), never with exported sta
     assert.equal(env.AWS_PROFILE, 'cloudsentinel-dev');
     for (const k of ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']) assert.equal(env[k], undefined);
   }
+});
+
+// ---- shared cluster precheck (project 29: "Terraform plan failed" after 85 s because aws-demo was destroyed) ------
+const clusterCase = (list, describe) => async (exe, args, o) => {
+  if (args[0] === 'eks' && args[1] === 'list-clusters') return list;
+  if (args[0] === 'eks' && args[1] === 'describe-cluster') return describe;
+  return fakeTools(42, [])(exe, args, o);
+};
+const ok = v => ({ code: 0, stdout: JSON.stringify(v), stderr: '' });
+const denied = { code: 254, stdout: '', stderr: 'An error occurred (AccessDeniedException) when calling the ListClusters operation' };
+for (const [label, list, describe, expect] of [
+  ['cluster absent from ListClusters', ok({ clusters: [] }), ok({}), { status: 409, msg: /^The shared EKS environment is not running; create it first$/ }],
+  ['ListClusters denied, DescribeCluster not found', denied, { code: 254, stdout: '', stderr: 'An error occurred (ResourceNotFoundException) when calling the DescribeCluster operation: No cluster found for name: cloudsentinel-eks.' }, { status: 409, msg: /not running; create it first/ }],
+  ['cluster still creating', ok({ clusters: ['cloudsentinel-eks'] }), ok({ cluster: { status: 'CREATING' } }), { status: 409, msg: /is creating, not ACTIVE/ }],
+  ['both checks unavailable', denied, { code: 255, stdout: '', stderr: 'Could not connect to the endpoint URL' }, { status: 503, msg: /Could not check whether the shared EKS environment exists/ }],
+]) test(`workload plan precheck: ${label} -> ${expect.status} before any Terraform step`, async t => {
+  const calls = [], e = await engine(t, calls), base = clusterCase(list, describe);
+  e.run = async (exe, args, o) => { calls.push([path.basename(exe), args[0], args[1]]); return base(exe, args, o); };
+  await e.analyze({ id: 42 }, 'u'); await e.confirm({ id: 42 }, 'u', { architecture: 'two-tier' });
+  await assert.rejects(e.plan({ id: 42 }, 'u'), err => err.status === expect.status && expect.msg.test(err.message));
+  assert.deepEqual(calls.filter(c => c[0] === 'terraform' || c[0] === 'trivy'), []);
+  const audit = (await fs.readFile(path.join(e.root, '42', 'audit.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse).pop();
+  assert.equal(audit.action, 'plan'); assert.equal(audit.result, 'REJECTED'); assert.match(audit.error, expect.msg);
+});
+
+test('workload plan precheck: listed cluster with DescribeCluster denied still plans', async t => {
+  const calls = [], e = await engine(t, calls), base = clusterCase(ok({ clusters: ['cloudsentinel-eks'] }), { code: 254, stdout: '', stderr: 'AccessDeniedException' });
+  e.run = async (exe, args, o) => { calls.push([path.basename(exe), args[0]]); return base(exe, args, o); };
+  await e.analyze({ id: 42 }, 'u'); await e.confirm({ id: 42 }, 'u', { architecture: 'two-tier' });
+  assert.equal((await e.plan({ id: 42 }, 'u')).status, 'AWAITING_APPROVAL');
 });

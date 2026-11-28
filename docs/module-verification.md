@@ -166,7 +166,7 @@ Project 26 after execution 122 (API and screen).
 |---|---|---|---|
 | FE-1 | Aggregate security results from all scanning modules | met | `POST /api/governance/sync`: SAST, dependency, IaC, image and DAST sources imported (1392 observations on the first sync) |
 | FE-2 | Display vulnerabilities and risk levels on the dashboard | met | `GET /api/governance/summary?project=24`: 274 findings (5 CRITICAL, 51 HIGH, 125 MEDIUM, 87 LOW); **Dashboard** screen |
-| FE-3 | Map findings to OWASP Top 10 and CIS benchmarks | partly | OWASP Top 10:2021 mapping works: project 24 maps to 4 of 10 categories (A01 6, A03 2, A06 245, A07 1). The CIS Docker benchmark (controls 4.1-4.12) is assessed only when the repository has its own Dockerfile. Projects without one show all 12 as Not Assessed. After execution 122 (fixture Dockerfile), project 26 has 4 assessed (4.1, 4.7, 4.9 PASS; 4.6 FAIL, no HEALTHCHECK), 8 Not Assessed, pass rate 75 %, coverage 33 %. No Kubernetes CIS benchmark |
+| FE-3 | Map findings to OWASP Top 10 and CIS benchmarks | partly | The OWASP card now reads "categories with findings", not "failed / 0 % pass rate" (section E). OWASP Top 10:2021 mapping works: project 24 maps to 4 of 10 categories (A01 6, A03 2, A06 245, A07 1). The CIS Docker benchmark (controls 4.1-4.12) is assessed only when the repository has its own Dockerfile. Projects without one show all 12 as Not Assessed. After execution 122 (fixture Dockerfile), project 26 has 4 assessed (4.1, 4.7, 4.9 PASS; 4.6 FAIL, no HEALTHCHECK), 8 Not Assessed, pass rate 75 %, coverage 33 %. No Kubernetes CIS benchmark |
 | FE-4 | Generate security and compliance reports | met | `GET /api/governance/export/{security,compliance,csv,compliance-csv}?project=24`: security PDF 151,624 bytes, compliance PDF 154,482 bytes, findings CSV 275 lines, compliance CSV 13 lines (all valid; PDFs start with `%PDF-`) |
 | FE-5 | Provide visual analytics and security score metrics | met, with a caveat | score card and charts on **Dashboard** / **Compliance**. Project 26's posture score is 0 because about 1300 unique unresolved HIGH image findings from earlier runs remain open (history is kept, not reset per run); see the methodology text on the score card |
 
@@ -183,6 +183,42 @@ Project 26 after execution 122 (API and screen).
 2. Sidebar **Compliance**, select project 26: capture the OWASP table and the CIS Docker controls (4.1/4.7/4.9 PASS,
    4.6 FAIL).
 3. Press **Export Readable Report** (PDF) and **Export JSON**.
+
+## E. UI and report polish (2026-11-28, `fix/ui-report-polish`)
+
+Verified by unit and route tests and by running the new report route read-only against the real database for
+execution 123 (project 29). The running backend was not restarted, so the screens below show the new behaviour only
+after the backend and frontend run from this branch.
+
+| Item | Change | Evidence |
+|---|---|---|
+| Execution report | Repository, branch, commit and message, trigger, duration (35.3 s for execution 123), per-stage result, duration and engine (SAST `ml-sast-v3-ensemble 3.0.0`, DAST `ml-dast-lr 4.0.0`, dependency Trivy 0.52.2 from the SBOM; IaC/image say their version is not recorded), gate rules, report ID, generated-at, admission + live Kyverno summary | report route on execution 123 |
+| Commit for older runs | Execution 123 and earlier show "Commit not recorded"; webhook runs record it after migration 026 (`npm run migrate:source`, not applied by this branch) | `backend/migrations/026_execution_source.sql` |
+| SAST text | A clean completed scan reads "No findings" | execution 123: 0 issues |
+| Dependency rows | Flask-WTF 1.2.2 and waitress 3.0.2 were inventory rows (severity NONE, no CVE), counted as UNKNOWN by `summarize()` in `routes/dependency.js`. The report lists them as clean packages; Flask's LOW advisory stays a finding. `summarize()` itself is unchanged (see gaps) | execution 123: UNKNOWN 2 -> 0 |
+| Eligibility | Project 29's decision is PENDING_EVIDENCE (no approved policy). Its stored expiry 20:11:34Z was the 60 s placeholder (SAST end + 60 s); the page now keeps the real reasons and says no window applies | `deployment_eligibility` row for execution 123 |
+| Workload plan | Without the shared cluster the plan returns 409 "The shared EKS environment is not running; create it first" before Terraform runs | `backend/test/eks-workload.test.js` |
+| Staging | `kubectl --context minikube -n cloudsentinel-p-29 port-forward service/test1 8080:80`, then http://localhost:8080 (Service `test1`, port 80, NodePort 32559 checked live) | live `kubectl get service` |
+
+**Screenshot steps:**
+
+1. **CI/CD Pipeline**, project 29: the Live Staging link with "reachable from the WSL host only" and the Copy button.
+   Run the command in WSL and open http://localhost:8080 in the Windows browser.
+2. Open the report of execution 123: run panel, stage table, gate rules, Kubernetes and compliance card, SAST
+   "No findings", dependency footnote with the two clean packages, Container image "View results".
+3. Press **JSON** and **HTML** and check that both carry the report ID.
+4. **Cloud**, project 29: eligibility shows PENDING_EVIDENCE with its reasons; press the workload plan to get the 409.
+5. **Monitoring**: pick a project; the alert list and log search narrow to it.
+6. **Compliance**: the OWASP card shows "N categories with findings" and the explanation.
+7. **Projects**: delete a project that has completed scans; the toast shows the readable message.
+
+**Gaps found (not fixed):**
+
+- `summarize()` in `backend/routes/dependency.js` still counts clean packages as `unknown` in `dependency_scans`.
+  Fixing it would change the dependency stage's stored summary, and in provenance mode `stageProvenance` rejects any
+  scan with `unknown > 0`, so it would change gate behaviour. Left for a separate, gate-reviewed change.
+- IaC and image scans do not store the Trivy version.
+- Manual runs do not record the commit they scanned.
 
 ## Mistakes during this verification
 

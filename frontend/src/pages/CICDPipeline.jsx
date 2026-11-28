@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import PageHeader from "../components/PageHeader";
 import api from "../lib/api";
-import { ChevronDown, AlertTriangle, CheckCircle, Clock, XCircle, Play, ArrowRight, Server } from "lucide-react";
+import { ChevronDown, AlertTriangle, CheckCircle, Clock, XCircle, Play, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { pipelineStageList, promoteStageView } from "../utils/pipelineStages";
+import StagingAccess from "../components/StagingAccess";
 
 const PIPELINE_STAGES = ["SAST", "Dependency", "IaC", "Deploy", "DAST"];
 
@@ -124,15 +125,7 @@ export default function CICDPipeline() {
         <div className="flex items-start justify-between mb-4 flex-wrap gap-2">
           <h3 className="font-bold">Latest Pipeline Workflow (Execution #{latestPipeline.id})</h3>
           {deployInfo?.staging_url && deployInfo.status === "SUCCESS" && (
-            <a
-              href={deployInfo.staging_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-colors"
-            >
-              <Server size={12} />
-              Live Staging: {deployInfo.staging_url}
-            </a>
+            <StagingAccess projectId={selectedProjectId} appName={deployInfo.app_name} stagingUrl={deployInfo.staging_url} />
           )}
         </div>
         <div className="flex items-start gap-4 min-w-max pb-2">

@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getExecutionResultsLink, executionResultsApi, executionScanData } from "./executionScan.js";
+import { getExecutionResultsLink, executionResultsApi, executionScanData, imageScanView } from "./executionScan.js";
 
 test("links scanner results to the same project and execution", () => {
-  for (const name of ["SAST", "Dependency / SBOM", "IaC", "DAST"]) {
+  for (const name of ["SAST", "Dependency / SBOM", "IaC", "Container image", "DAST"]) {
     const url = new URL(getExecutionResultsLink(name, 8, 17), "http://localhost");
     assert.equal(url.searchParams.get("projectId"), "8");
     assert.equal(url.searchParams.get("executionId"), "17");
@@ -26,4 +26,12 @@ test("historical result links read saved evidence instead of newer scan results"
 test("completed empty IaC scans remain distinct from missing scans", () => {
   assert.equal(executionScanData({ scans: { iac: { status: "COMPLETED" } } }, "iac").latestScan.status, "COMPLETED");
   assert.equal(executionScanData({}, "iac").latestScan, null);
+});
+
+test("Container image section links to the execution-bound image results view", () => {
+  assert.equal(getExecutionResultsLink("Container image", 8, 17), "/projects/8/image?projectId=8&executionId=17");
+  const v = imageScanView({ scans: { image: { status: "COMPLETED", image_tag: "cloudsentinel-p-8:17" } }, findings: { image: [{ severity: "HIGH", fixed_version: "1.2" }, { severity: "LOW", fixed_version: "" }] }, gateRules: { rules: [{ stage: "Container image", blocks: "blocks CRITICAL always; HIGH when a fix is available" }] }, stages: [{ stage: "Container image", result: "PASSED" }] });
+  assert.deepEqual(v.bySeverity, { HIGH: 1, LOW: 1 }); assert.equal(v.fixable, 1); assert.equal(v.result, "PASSED");
+  assert.equal(v.imageTag, "cloudsentinel-p-8:17"); assert.match(v.rule.blocks, /HIGH when a fix/);
+  assert.equal(imageScanView({}).scan, null);
 });

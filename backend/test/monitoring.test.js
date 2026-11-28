@@ -293,6 +293,14 @@ test("monitoring routes: scoped logs, context, SSE", async () => {
     assert.deepEqual(logCalls[0], { source: "backend", q: "deploy", from: undefined, to: undefined, limit: undefined, projectIds: [4] });
     assert.equal((await fetch(base + "/logs?source=kyverno", { headers })).status, 400, "non-admin cannot read kyverno logs");
     assert.equal((await fetch(base + "/logs?q=%22%7D", { headers })).status, 400);
+    // project selector: own project narrows the scope; foreign or invalid ids are refused before Loki is queried
+    const before = logCalls.length;
+    assert.equal((await fetch(base + "/logs?projectId=4&source=k8s", { headers })).status, 200);
+    assert.deepEqual(logCalls.at(-1).projectIds, [4]); assert.equal(logCalls.at(-1).source, "k8s");
+    assert.equal(buildLogQL(logCalls.at(-1)), '{source="k8s", project_id=~"4"}');
+    assert.equal((await fetch(base + "/logs?projectId=99", { headers })).status, 404);
+    assert.equal((await fetch(base + "/logs?projectId=abc", { headers })).status, 400);
+    assert.equal(logCalls.length, before + 1);
 
     const c = await (await fetch(base + "/alerts/7/context", { headers })).json();
     assert.equal(c.execution.id, 55);

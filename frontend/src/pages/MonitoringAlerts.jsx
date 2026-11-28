@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../lib/api";
 import PageHeader from "../components/PageHeader";
 import SeverityBadge from "../components/SeverityBadge";
+import { alertMatches, alertParams, logParams, logSources } from "../utils/monitoringFilters";
 
 // Module 11 FE-3/FE-5: live security alerts (SSE with polling fallback), triage and log search.
 const SEVERITIES = ["", "CRITICAL", "HIGH", "MEDIUM", "LOW"];
@@ -92,12 +93,20 @@ export default function MonitoringAlerts() {
   const [logResult, setLogResult] = useState(null);
   const [logError, setLogError] = useState("");
   const [logLoading, setLogLoading] = useState(false);
-  const filtersRef = useRef({ severity, status });
-  filtersRef.current = { severity, status };
+  const [projects, setProjects] = useState([]);
+  const [project, setProject] = useState(""); // "" = all my projects
+  const filtersRef = useRef({ severity, status, project });
+  filtersRef.current = { severity, status, project };
+
+  useEffect(() => {
+    let active = true;
+    api.get("/projects").then(({ data }) => { if (active) setProjects(data.projects || []); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   const load = useCallback(async () => {
     try {
-      const { data } = await api.get("/monitoring/alerts", { params: { severity: severity || undefined, status: status || undefined, limit: 200 } });
+      const { data } = await api.get("/monitoring/alerts", { params: alertParams({ severity, status, project }) });
       setAlerts(data.alerts || []);
       setError("");
     } catch (e) {
@@ -105,14 +114,13 @@ export default function MonitoringAlerts() {
     } finally {
       setLoading(false);
     }
-  }, [severity, status]);
+  }, [severity, status, project]);
 
   useEffect(() => { setLoading(true); load(); }, [load]);
+  // Log results belong to the previously selected project; clear them on change.
+  useEffect(() => { setLogResult(null); setLogError(""); setSelected(null); }, [project]);
 
-  const matches = (a) => {
-    const f = filtersRef.current;
-    return (!f.severity || a.severity === f.severity) && (!f.status || f.status.split(",").includes(a.status));
-  };
+  const matches = (a) => alertMatches(a, filtersRef.current);
 
   // Live updates: SSE first, polling fallback, SSE retried every minute.
   useEffect(() => {
@@ -190,7 +198,7 @@ export default function MonitoringAlerts() {
     try {
       const to = Date.now();
       const from = to - RANGES[logQuery.range] * 60000;
-      const { data } = await api.get("/monitoring/logs", { params: { source: logQuery.source || undefined, q: logQuery.q || undefined, from, to, limit: 300 } });
+      const { data } = await api.get("/monitoring/logs", { params: logParams({ ...logQuery, project, from, to }) });
       setLogResult(data);
     } catch (err) {
       setLogResult(null);
@@ -212,6 +220,10 @@ export default function MonitoringAlerts() {
       />
 
       <div className="flex flex-wrap gap-3 items-center">
+        <select className="input w-auto" value={project} onChange={(e) => { setProject(e.target.value); if (!logSources(e.target.value).includes(logQuery.source)) setLogQuery({ ...logQuery, source: "" }); }} aria-label="Project">
+          <option value="">All my projects</option>
+          {projects.map((p) => <option key={p.id} value={p.id}>{p.name} (#{p.id})</option>)}
+        </select>
         <select className="input w-auto" value={severity} onChange={(e) => setSeverity(e.target.value)} aria-label="Severity filter">
           {SEVERITIES.map((s) => <option key={s} value={s}>{s || "All severities"}</option>)}
         </select>
@@ -225,7 +237,7 @@ export default function MonitoringAlerts() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="space-y-2">
-          {!loading && !alerts.length && !error ? <div className="card p-4 text-sm text-[#64748b]">No alerts match these filters.</div> : null}
+          {!loading && !alerts.length && !error ? <div className="card p-4 text-sm text-[#64748b]">No alerts match these filters{project ? ` for project #${project}` : ""}.</div> : null}
           {alerts.map((a) => (
             <button
               key={a.id}
@@ -297,12 +309,11 @@ export default function MonitoringAlerts() {
 
       <form className="card p-4 space-y-3" onSubmit={searchLogs}>
         <h3 className="font-bold">Log search</h3>
+        <p className="text-xs text-[#64748b]">{project ? `Scoped to project #${project}: backend logs carrying its projectId, or k8s logs from its namespace.` : "All projects you own (platform admins: all logs)."}</p>
         <div className="flex flex-wrap gap-2">
           <select className="input w-auto" value={logQuery.source} onChange={(e) => setLogQuery({ ...logQuery, source: e.target.value })} aria-label="Log source">
             <option value="">All sources</option>
-            <option value="backend">backend</option>
-            <option value="k8s">k8s</option>
-            <option value="kyverno">kyverno</option>
+            {logSources(project).map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
           <input className="input flex-1 min-w-[12rem]" maxLength={200} placeholder="Text (letters, digits, . , : ; @ / = + # ( ) [ ] - _)" value={logQuery.q} onChange={(e) => setLogQuery({ ...logQuery, q: e.target.value })} />
           <select className="input w-auto" value={logQuery.range} onChange={(e) => setLogQuery({ ...logQuery, range: e.target.value })} aria-label="Time range">
