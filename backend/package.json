@@ -19,7 +19,9 @@
     "migrate:secrets": "node scripts/migrate-secrets.js",
     "test:secrets": "node --test test/secrets-management.test.js",
     "test:eks": "node --test test/eks-workload.test.js",
-    "test:eks:terraform": "EKS_TF_TEST=1 node --test test/eks-terraform.test.js"
+    "test:eks:terraform": "EKS_TF_TEST=1 node --test test/eks-terraform.test.js",
+    "migrate:source": "node scripts/migrate-source.js",
+    "test:report": "node --test test/execution-report.test.js test/unified-report.test.js"
   },
   "dependencies": {
     "axios": "^1.9.0",

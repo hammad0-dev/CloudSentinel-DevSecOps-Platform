@@ -133,10 +133,21 @@ router.post("/github", async (req, res) => {
       return res.status(409).json({ error: "Pipeline is already active for this project." });
     }
 
-    const execRes = await pool.query(
-      "INSERT INTO pipeline_executions (project_id, status, triggered_by) VALUES ($1, 'TRIGGERED', 'webhook') RETURNING id",
-      [project.id]
-    );
+    // Branch, commit and message for the execution report (migration 026); falls back if 026 is not applied.
+    const src = require("../services/executionReport").pushSource(req.body);
+    let execRes;
+    try {
+      execRes = await pool.query(
+        "INSERT INTO pipeline_executions (project_id, status, triggered_by, source_branch, source_commit, source_commit_message) VALUES ($1, 'TRIGGERED', 'webhook', $2, $3, $4) RETURNING id",
+        [project.id, src.branch, src.commit, src.message]
+      );
+    } catch (insertError) {
+      if (insertError.code !== "42703") throw insertError;
+      execRes = await pool.query(
+        "INSERT INTO pipeline_executions (project_id, status, triggered_by) VALUES ($1, 'TRIGGERED', 'webhook') RETURNING id",
+        [project.id]
+      );
+    }
     const executionId = execRes.rows[0].id;
 
     res.status(202).json({ success: true, executionId, message: "Pipeline triggered" });

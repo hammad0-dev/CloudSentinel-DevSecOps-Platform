@@ -15,9 +15,11 @@ export function executionScanData(report, kind) {
     sonarMetrics: null, lastScan: scan?.completed_at || scan?.started_at,
   };
   if (kind === "dependency") {
+    // Clean packages (no known vulnerability) come back separately as inventory, not as findings.
+    const packages = [...findings, ...(report.inventory?.dependencyClean || []).map(p => ({ ...p, cve_id: null, severity: "NONE" }))];
     const licenses = new Map();
-    findings.forEach(f => licenses.set(f.license || "Unknown", (licenses.get(f.license || "Unknown") || 0) + 1));
-    return { latestScan: scan, packages: findings, vulnerable: findings.filter(f => f.cve_id), licenses: [...licenses].map(([name, value]) => ({ name, value })) };
+    packages.forEach(f => licenses.set(f.license || "Unknown", (licenses.get(f.license || "Unknown") || 0) + 1));
+    return { latestScan: scan, packages, vulnerable: findings.filter(f => f.cve_id), licenses: [...licenses].map(([name, value]) => ({ name, value })) };
   }
   return { latestScan: scan, findings, summary: { ...scan, total: scan?.total_findings || 0 }, target_url: scan?.target_url || "" };
 }
