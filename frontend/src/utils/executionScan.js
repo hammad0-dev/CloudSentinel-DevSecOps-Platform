@@ -2,7 +2,7 @@ import { normalizeSeverity } from "./executionReport.js";
 
 export function getExecutionResultsLink(name, projectId, executionId) {
   const query = `?projectId=${encodeURIComponent(projectId)}&executionId=${encodeURIComponent(executionId)}`;
-  const paths = { SAST: `/projects/${projectId}/sast`, "Dependency / SBOM": "/dependencies", IaC: "/iac", DAST: `/projects/${projectId}/dast` };
+  const paths = { SAST: `/projects/${projectId}/sast`, "Dependency / SBOM": "/dependencies", IaC: "/iac", "Container image": `/projects/${projectId}/image`, DAST: `/projects/${projectId}/dast` };
   return paths[name] ? paths[name] + query : null;
 }
 
@@ -33,4 +33,15 @@ export function executionResultsApi(api, projectId, executionId) {
     const response = await api.get(`/reports/projects/${projectId}/executions/${executionId}`);
     return { ...response, data: executionScanData(response.data, match[1] === "dependencies" ? "dependency" : match[1]) };
   } };
+}
+
+// Container image results page: the image scan and its vulnerabilities saved with one execution.
+export function imageScanView(report) {
+  const scan = report?.scans?.image || null, items = report?.findings?.image || [];
+  const rule = (report?.gateRules?.rules || []).find(r => r.stage === "Container image") || null;
+  const bySeverity = {};
+  for (const v of items) { const s = normalizeSeverity(v.severity); bySeverity[s] = (bySeverity[s] || 0) + 1; }
+  const fixable = items.filter(v => v.fixed_version && String(v.fixed_version).trim()).length;
+  const stage = (report?.stages || []).find(s => s.stage === "Container image") || null;
+  return { scan, items, rule, bySeverity, fixable, result: stage?.result || null, imageTag: scan?.image_tag || report?.deployment?.image_tag || null };
 }
