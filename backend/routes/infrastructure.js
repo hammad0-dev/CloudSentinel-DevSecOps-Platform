@@ -23,8 +23,7 @@ router.get('/:projectId/deployment-eligibility',async(req,res)=>{
   const p=await ownedProject(pool,req.user.id,req.params.projectId);
   const r=await pool.query('SELECT pipeline_execution_id AS "executionId",decision,evidence,created_at AS "createdAt",expires_at AS "expiresAt" FROM deployment_eligibility WHERE project_id=$1 ORDER BY id DESC LIMIT 1',[p.id]);
   if(!r.rows.length)return res.json({decision:'PENDING_EVIDENCE',reasons:['No deployment eligibility evidence recorded'],awsDeployment:'NOT_STARTED'});
-  const row=r.rows[0],expiry=Date.parse(row.expiresAt),expired=!Number.isFinite(expiry)||expiry<=Date.now();
-  return res.json({executionId:row.executionId,decision:expired?'BLOCKED':row.decision,reasons:expired?['Eligibility expired']:row.evidence.reasons,createdAt:row.createdAt,expiresAt:row.expiresAt,awsDeployment:'NOT_STARTED'});
+  return res.json(require('../services/eligibilityView').view(r.rows[0]));
  }catch(e){res.status(e.safe?e.status:503).json({error:e.safe?e.message:'Deployment eligibility evidence unavailable; deployment blocked'});}
 });
 router.get('/:projectId', (req,res)=>handle(req,res,p=>planner.get(p.id)));
