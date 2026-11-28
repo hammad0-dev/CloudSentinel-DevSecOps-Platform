@@ -325,6 +325,7 @@ router.get("/:id/pipelines", auth, async (req, res) => {
   }
 });
 
+const EVIDENCE_RETENTION = /\b(COMPLETED_SCAN_EVIDENCE_IMMUTABLE|COMPLETED_SCAN_RETENTION_REQUIRED|ATTESTED_SCAN_RECORD_IMMUTABLE)\b/;
 router.delete("/:id", auth, async (req, res) => {
   const projectId = Number.parseInt(String(req.params.id ?? "").trim(), 10);
   if (!Number.isInteger(projectId) || projectId < 1) {
@@ -368,13 +369,21 @@ router.delete("/:id", auth, async (req, res) => {
       /* ignore */
     }
     console.error("[projects DELETE]", error.code || "", error.message);
+    // Migration 019 keeps completed scan evidence for audit: the delete is refused, not a server error.
+    if (EVIDENCE_RETENTION.test(String(error.message || ""))) {
+      return res.status(409).json({
+        error:
+          "This project can't be deleted because it has completed security scans. Their results are kept as audit evidence and cannot be removed.",
+        code: "PROJECT_HAS_RETAINED_SCAN_EVIDENCE",
+      });
+    }
     if (error.code === "23503") {
       return res.status(409).json({
         error:
           "Could not delete project because related rows still reference it. Run DB migrations so project FKs use ON DELETE CASCADE, or retry.",
       });
     }
-    return res.status(500).json({ error: error.message || "Server error. Please try again." });
+    return res.status(500).json({ error: "Could not delete the project. Please try again." });
   } finally {
     client.release();
   }

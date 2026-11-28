@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import api from "../lib/api";
 import { readLocalProjects, upsertLocalProject, writeLocalProjects } from "../lib/projectStorage";
+import { deleteErrorMessage } from "../utils/projectErrors";
 
 const emptyForm = { projectName: "", repositoryUrl: "", githubToken: "", description: "" };
 const statusStyles = {
@@ -121,12 +122,7 @@ export default function ProjectsPage() {
       toast.success("Project deleted");
       setProjects((prev) => dropFromState(prev));
     } catch (error) {
-      const msg =
-        error.response?.data?.error ||
-        (error.response?.status === 401
-          ? "Session expired. Sign in again, then delete the project."
-          : "Could not delete project on the server.");
-      toast.error(msg);
+      toast.error(deleteErrorMessage(error));
       if (error.response?.status === 404) {
         setProjects((prev) => dropFromState(prev));
       }
