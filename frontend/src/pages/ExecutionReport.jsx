@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, CheckCircle, Download, ExternalLink, FileCode2, Loader2, Printer, XCircle } from "lucide-react";
 import PageHeader from "../components/PageHeader";
+import StagingAccess from "../components/StagingAccess";
 import api from "../lib/api";
 import { SEVERITIES, buildPrintableExecutionReport, downloadReport, formatDuration, getCleanPackagesText, getDetailedFindingCount, getDetailedFindingGroups, getFindingDetails, getFindingIdentifier, getFindingLocation, getKubernetesSummary, getSastStatusText, getSastSummaryCount, getStageRows, normalizeSeverity, shortCommit } from "../utils/executionReport";
 
@@ -143,7 +144,7 @@ export default function ExecutionReport() {
           <p className="text-sm text-[var(--text-secondary)] mt-3">Image</p><p className="font-mono text-xs break-all">{display(deployment?.image_tag || scans.image?.image_tag)}</p>
           <p className="text-sm text-[var(--text-secondary)] mt-3">DAST scan mode</p><p>{scans.dast?.scan_mode || "Legacy / unknown"}</p>
           <p className="text-sm text-[var(--text-secondary)] mt-3">Staging URL</p>
-          {staging ? <a href={staging} target="_blank" rel="noreferrer" className="text-[var(--accent-green)] inline-flex gap-1 break-all">{staging}<ExternalLink size={13} /></a> : <p>—</p>}
+          {staging ? <StagingAccess compact projectId={execution.project_id || projectId} appName={deployment?.app_name} stagingUrl={staging} /> : <p>—</p>}
         </div>
         <div className="card p-5">
           <h2 className="font-semibold mb-3">Kubernetes and compliance</h2>

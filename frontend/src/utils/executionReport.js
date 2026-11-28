@@ -1,3 +1,4 @@
+import { STAGING_SCOPE_LABEL, portForwardCommand } from "./stagingAccess.js";
 export const SEVERITIES = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFORMATIONAL", "UNKNOWN"];
 
 export function normalizeSeverity(value) {
@@ -109,7 +110,7 @@ export function buildPrintableExecutionReport(report) {
     + `<div class="card"><h2>Stages</h2><table><thead><tr><th>Stage</th><th>Result</th><th>Duration</th><th>Engine and version</th></tr></thead><tbody>${stageRows || "<tr><td colspan=\"4\">No stage records.</td></tr>"}</tbody></table></div>`
     + `<div class="card"><h2>Gate rules in force</h2><p class="muted">${escapeHtml(report?.gateRules?.note || "")}</p><table><thead><tr><th>Stage</th><th>Blocks</th><th>Why</th></tr></thead><tbody>${ruleRows}</tbody></table></div>`
     + `<div class="card"><h2>Kubernetes and compliance</h2><ul>${getKubernetesSummary(report).map((l) => `<li>${escapeHtml(l)}</li>`).join("")}</ul></div>`
-    + `<div class="card"><h2>Deployment</h2><p><strong>Staging URL:</strong> ${escapeHtml(deployment.staging_url || "Not deployed")}</p><p><strong>Image:</strong> ${escapeHtml(deployment.image_tag || report?.scans?.image?.image_tag || "Unavailable")}</p></div>`
+    + `<div class="card"><h2>Deployment</h2><p><strong>Staging URL:</strong> ${escapeHtml(deployment.staging_url || "Not deployed")}${deployment.staging_url ? ` (${STAGING_SCOPE_LABEL})` : ""}</p>${deployment.staging_url && portForwardCommand(execution.project_id, deployment.app_name) ? `<p><strong>From Windows:</strong> <code>${escapeHtml(portForwardCommand(execution.project_id, deployment.app_name))}</code>, then open http://localhost:8080</p>` : ""}<p><strong>Image:</strong> ${escapeHtml(deployment.image_tag || report?.scans?.image?.image_tag || "Unavailable")}</p></div>`
     + `<div class="card"><h2>Execution-linked detailed findings</h2><p>${getDetailedFindingCount(report)} detailed findings, including linked SAST details when available.</p><ul>${severityCells}</ul></div>`
     + `<div class="card"><h2>SAST summary (separate context)</h2><p>${escapeHtml(getSastStatusText(report))}</p></div>`
     + `<div class="card"><h2>Detailed findings</h2><table><thead><tr><th>Scanner</th><th>Severity</th><th>Rule / CVE</th><th>Location or package</th><th>Details</th></tr></thead><tbody>${findingRows || "<tr><td colspan=\"5\">No execution-linked detailed findings.</td></tr>"}</tbody></table>${clean ? `<p class="muted">${escapeHtml(clean)}</p>` : ""}</div></body></html>`;

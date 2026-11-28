@@ -57,3 +57,9 @@ test("HTML export contains run metadata, stages, rules, report ID and escapes va
   for (const s of ["CSR-123-abcdefabcdef", "https://github.com/o/python-clean", "main", "a".repeat(40), "35.3 s", "Gate rules in force", "blocks CRITICAL always", "Kyverno compliance", "ml-sast-v3-ensemble 3.0.0", "No findings. The SAST scan", "Flask-WTF 1.2.2"]) assert.ok(html.includes(s), s);
   assert.ok(!html.includes("<img src=x"));
 });
+
+test("HTML export labels the staging URL and gives the port-forward command", () => {
+  const html = buildPrintableExecutionReport({ ...r123, execution: { ...r123.execution, project_id: 29 }, deployment: { staging_url: "http://192.168.49.2:32559", app_name: "test1" } });
+  assert.ok(html.includes("http://192.168.49.2:32559 (reachable from the WSL host only)"));
+  assert.ok(html.includes("kubectl --context minikube -n cloudsentinel-p-29 port-forward service/test1 8080:80"));
+});
